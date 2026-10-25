@@ -1,0 +1,231 @@
+<div class="page" (input)="touch()" (change)="touch()">
+  <div class="head">
+    <div>
+      <span class="num money">{{ q.num }}</span>
+      <h1>{{ isNew && !saved() ? 'Nueva cotización' : 'Cotización de ' + (q.client.name || 'cliente') }}</h1>
+    </div>
+  </div>
+
+  <ol class="stepper" aria-label="Pasos">
+    @for (s of steps; track s; let i = $index) {
+      <li>
+        <button type="button" [class.on]="step() === i + 1" [class.done]="maxStep() > i + 1 || (i === 3 && saved())"
+                [disabled]="i + 1 > maxStep()" (click)="go(i + 1)" [attr.aria-current]="step() === i + 1 ? 'step' : null">
+          <span class="n">{{ i + 1 }}</span><span class="l">{{ s }}</span>
+        </button>
+      </li>
+    }
+  </ol>
+
+  <div class="tip" role="status">
+    <span class="tn">Paso {{ step() }} de 4</span>
+    <span>{{ tips[step() - 1] }}</span>
+  </div>
+
+  @if (err()) {
+    <div class="err" role="alert">{{ err() }}</div>
+  }
+
+  <!-- PASO 1 -->
+  @if (step() === 1) {
+    <section class="card">
+      <h2>¿Para quién es?</h2>
+      <div class="paste">
+        <label class="f" for="msg">Atajo: pega aquí el mensaje de WhatsApp del cliente</label>
+        <textarea id="msg" [(ngModel)]="msg" placeholder="Ej: Hola, soy Rosa Quispe, DNI 45892104, cel 966 123 456. Quiero un portón corredizo de 3 x 2.4 m en Jr. Libertad 123, Huamanga"></textarea>
+        <div class="row">
+          <button type="button" class="btn dark" (click)="readMessage()" [disabled]="!msg.trim()">Sacar datos del mensaje</button>
+          <span class="muted small">Llena nombre, DNI o RUC, celular y lugar si los encuentra.</span>
+        </div>
+      </div>
+      <div class="grid">
+        <label class="f" [class.bad]="show(1, ce.name)">
+          <span>Nombre del cliente <span class="req">*</span></span>
+          <input id="c-name" [(ngModel)]="q.client.name" autocomplete="off" placeholder="Nombre y apellido" required [attr.aria-invalid]="!!show(1, ce.name)">
+          @if (show(1, ce.name); as m) { <span class="fe">{{ m }}</span> }
+        </label>
+        <label class="f" [class.bad]="show(1, ce.doc, q.client.doc)">
+          <span>DNI o RUC <span class="muted">(opcional)</span></span>
+          <input id="c-doc" [(ngModel)]="q.client.doc" inputmode="numeric" autocomplete="off" maxlength="11" placeholder="8 o 11 números">
+          @if (show(1, ce.doc, q.client.doc); as m) { <span class="fe">{{ m }}</span> }
+        </label>
+        <label class="f" [class.bad]="show(1, ce.tel, q.client.tel)">
+          <span>Celular / WhatsApp <span class="muted">(opcional)</span></span>
+          <input id="c-tel" [(ngModel)]="q.client.tel" inputmode="tel" autocomplete="off" placeholder="9XX XXX XXX">
+          @if (show(1, ce.tel, q.client.tel); as m) { <span class="fe">{{ m }}</span> }
+        </label>
+        <label class="f">Lugar de la obra<input id="c-place" [(ngModel)]="q.client.place" placeholder="Jr., Av., barrio o distrito"></label>
+      </div>
+      <p class="muted small">Los campos con <span class="req">*</span> son obligatorios. Si pones DNI o celular, revisamos que tengan los números correctos.</p>
+      <label class="f">¿Qué necesita? (sale en la hoja)<textarea id="c-desc" [(ngModel)]="q.desc" placeholder="Ej: Fabricación e instalación de portón corredizo para cochera"></textarea></label>
+    </section>
+  }
+
+  <!-- PASO 2 -->
+  @if (step() === 2) {
+    <div class="two">
+      <section class="card cat">
+        <h2>Elige los trabajos</h2>
+        <input type="search" placeholder="Buscar: portón, reja, techo…" [ngModel]="search()" (ngModelChange)="search.set($event)" aria-label="Buscar trabajo">
+        <div class="chips">
+          <button type="button" class="chip" [class.on]="cat() === ''" (click)="cat.set('')">Todos</button>
+          @for (c of store.categories(); track c) {
+            <button type="button" class="chip cchip" [class.on]="cat() === c" (click)="cat.set(c)"><app-icon [name]="catIcon(c)" [size]="16" /> {{ c }}</button>
+          }
+        </div>
+        <div class="tiles">
+          @for (c of catalog(); track c.code) {
+            <button type="button" class="tile" (click)="add(c)">
+              <span class="cic"><app-icon [name]="catIcon(c.cat)" [size]="22" /></span>
+              <span class="tn">{{ c.name }}</span>
+              <span class="ti">{{ c.inc }}</span>
+              <span class="tp"><b class="money">{{ fmt(c.material + c.labor) }}</b> / {{ c.unit }}</span>
+              @if (count(c.code)) { <span class="badge">{{ count(c.code) }}</span> }
+              <span class="plus" aria-hidden="true">+</span>
+            </button>
+          } @empty {
+            <div class="empty">No hay trabajos con ese nombre.</div>
+          }
+          <button type="button" class="tile other" (click)="addCustom()">
+            <span class="cic"><app-icon name="edit" [size]="22" /></span>
+            <span class="tn">Otro trabajo</span><span class="ti">Escribe el nombre y el precio tú mismo</span><span class="plus">+</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="card cart">
+        <div class="row"><h2>En la cotización</h2><span class="spacer"></span><b class="money">{{ fmt(t.sub) }}</b></div>
+        @for (it of q.items; track $index; let i = $index) {
+          @let e = ie[i];
+          <div class="line" [class.lbad]="show(2, e.name) || show(2, e.w) || show(2, e.h) || show(2, e.q) || show(2, e.price)">
+            <div class="lh">
+              @if (it.code === 'OTRO') {
+                <input [(ngModel)]="it.name" placeholder="Nombre del trabajo *" aria-label="Nombre del trabajo" [class.bad]="show(2, e.name)">
+              } @else {
+                <b>{{ it.name }}</b>
+              }
+              <button type="button" class="x" (click)="remove(i)" aria-label="Quitar">Quitar</button>
+            </div>
+            <div class="dims">
+              @if (it.code === 'OTRO') {
+                <label class="f">Unidad<select [(ngModel)]="it.unit">@for (u of units; track u) { <option [value]="u">{{ u }}</option> }</select></label>
+              }
+              @if (isArea(it)) {
+                <label class="f" [class.bad]="show(2, e.w, it.w)">Ancho (m) *<input type="number" inputmode="decimal" min="0" step="0.01" [(ngModel)]="it.w"></label>
+                <span class="by">×</span>
+                <label class="f" [class.bad]="show(2, e.h, it.h)">Alto / largo (m) *<input type="number" inputmode="decimal" min="0" step="0.01" [(ngModel)]="it.h"></label>
+                <span class="by">×</span>
+                <label class="f" [class.bad]="show(2, e.q, it.q)">Piezas *<input type="number" inputmode="numeric" min="1" step="1" [(ngModel)]="it.q"></label>
+              } @else {
+                <label class="f" [class.bad]="show(2, e.q, it.q)">Cantidad ({{ it.unit }}) *<input type="number" inputmode="decimal" min="0" step="0.5" [(ngModel)]="it.q"></label>
+              }
+              <label class="f" [class.bad]="show(2, e.price, it.price)">S/ por {{ it.unit }} *<input type="number" inputmode="decimal" min="0" step="0.5" [(ngModel)]="it.price"></label>
+            </div>
+            @if (show(2, e.name) || show(2, e.w, it.w) || show(2, e.h, it.h) || show(2, e.q, it.q) || show(2, e.price, it.price)) {
+              <span class="fe">{{ show(2, e.name) || show(2, e.w, it.w) || show(2, e.h, it.h) || show(2, e.q, it.q) || show(2, e.price, it.price) }}</span>
+            }
+            <div class="lt">
+              <span class="muted small">{{ fmtQty(qty(it)) }} {{ it.unit }}</span>
+              <b class="money">{{ fmt(lineTotal(it)) }}</b>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty">Toca un trabajo de la lista para agregarlo.</div>
+        }
+      </section>
+    </div>
+  }
+
+  <!-- PASO 3 -->
+  @if (step() === 3) {
+    <div class="two">
+      <section class="card">
+        <h2>Pago y condiciones</h2>
+        <div class="opt">
+          <span class="f-l">Descuento</span>
+          <div class="chips">
+            @for (d of [0, 5, 10, store.shop().maxDiscount]; track $index) {
+              <button type="button" class="chip" [class.on]="q.discount === d" (click)="setDiscount(d)">{{ d }}%</button>
+            }
+            <input class="mini" type="number" min="0" [max]="store.shop().maxDiscount" [(ngModel)]="q.discount" aria-label="Otro descuento" [class.bad]="show(3, pe.discount, q.discount)">
+          </div>
+          @if (show(3, pe.discount, q.discount); as m) { <span class="fe">{{ m }} El máximo lo cambias en Precios y taller.</span> }
+        </div>
+        <div class="opt">
+          <span class="f-l">Adelanto al aceptar <app-hint>Lo que el cliente paga para que empieces a fabricar. Lo demás lo paga al entregar.</app-hint></span>
+          <div class="chips">
+            @for (a of [30, 50, 70, 100]; track a) {
+              <button type="button" class="chip" [class.on]="q.advance === a" (click)="setAdvance(a)">{{ a }}%</button>
+            }
+          </div>
+        </div>
+        <div class="grid">
+          <label class="f" [class.bad]="show(3, pe.days, q.days)">Entrega en (días hábiles) *<input type="number" min="1" [(ngModel)]="q.days" (input)="daysEdited()">
+            @if (show(3, pe.days, q.days); as m) { <span class="fe">{{ m }}</span> }</label>
+          <label class="f" [class.bad]="show(3, pe.validity, q.validity)">Precio válido por (días) *<input type="number" min="1" [(ngModel)]="q.validity">
+            @if (show(3, pe.validity, q.validity); as m) { <span class="fe">{{ m }}</span> }</label>
+          <label class="f" [class.bad]="show(3, pe.warranty, q.warranty)">Garantía (meses) *<input type="number" min="0" [(ngModel)]="q.warranty">
+            @if (show(3, pe.warranty, q.warranty); as m) { <span class="fe">{{ m }}</span> }</label>
+          <label class="f" [class.bad]="show(3, pe.penalty, q.penalty)"><span class="f-l">Multa por retraso del taller (% por día) <app-hint>Opcional. Si pones un número, el contrato dice que el taller paga ese % por cada día de retraso, hasta 10%. Déjalo en 0 para no incluirlo.</app-hint></span><input type="number" min="0" max="2" step="0.1" [(ngModel)]="q.penalty" placeholder="0 = sin multa">
+            @if (show(3, pe.penalty, q.penalty); as m) { <span class="fe">{{ m }}</span> }</label>
+        </div>
+        <label class="check"><input type="checkbox" [(ngModel)]="q.igv"> Sumar IGV 18% (si das factura)</label>
+        <label class="f">Notas para el cliente<textarea [(ngModel)]="q.notes" placeholder="Ej: El vidrio no está incluido. El cliente da el punto de luz para soldar en obra."></textarea></label>
+      </section>
+      <section class="card sum">
+        <h2>Resumen</h2>
+        <div class="sl"><span>Subtotal</span><span class="money">{{ fmt(t.sub) }}</span></div>
+        @if (t.dsc) { <div class="sl ok"><span>Descuento {{ q.discount }}%</span><span class="money">−{{ fmt(t.dsc) }}</span></div> }
+        @if (t.igv) { <div class="sl"><span>IGV 18%</span><span class="money">{{ fmt(t.igv) }}</span></div> }
+        <div class="sl big"><span>Total</span><span class="money">{{ fmt(t.tot) }}</span></div>
+        <div class="pay">
+          <div><span>Adelanto {{ q.advance }}%</span><b class="money">{{ fmt(t.advM) }}</b></div>
+          <div><span>Al entregar {{ 100 - q.advance }}%</span><b class="money">{{ fmt(t.balM) }}</b></div>
+        </div>
+      </section>
+    </div>
+  }
+
+  <!-- PASO 4 -->
+  @if (step() === 4) {
+    <section class="card done">
+      <div class="ok-head">
+        <span class="tick" aria-hidden="true">✓</span>
+        <div>
+          <h2>{{ saved() ? 'Cotización guardada' : 'Guarda los cambios' }}</h2>
+          <p class="muted">{{ q.num }} · {{ q.client.name }} · {{ q.items.length }} trabajo{{ q.items.length === 1 ? '' : 's' }}</p>
+        </div>
+        <span class="spacer"></span>
+        <b class="money total">{{ fmt(t.tot) }}</b>
+      </div>
+      @if (!saved()) {
+        <button type="button" class="btn primary big" (click)="save()">Guardar cambios</button>
+      }
+      <div class="acts">
+        <a class="act wa" [href]="waHref" target="_blank" rel="noopener" (click)="save()"><b>Enviar por WhatsApp</b><span>Abre el chat con el resumen listo</span></a>
+        <a class="act" [routerLink]="['/hoja', q.num, 'cotizacion']" (click)="save()"><b>Ver hoja / PDF</b><span>Con tu logo, para imprimir o guardar en PDF</span></a>
+        <a class="act" [routerLink]="['/hoja', q.num, 'contrato']" (click)="save()"><b>Hacer contrato</b><span>Cuando el cliente acepte</span></a>
+        <a class="act" routerLink="/venta" [queryParams]="{ cot: q.num }" (click)="save()"><b>Cobrar adelanto</b><span>Da la nota de venta y marca como aceptada</span></a>
+      </div>
+      <label class="f estado">Estado
+        <select [(ngModel)]="q.estado" (change)="save()">@for (e of estados; track e) { <option [value]="e">{{ e }}</option> }</select>
+      </label>
+      <div class="row">
+        <button type="button" class="btn" (click)="restart()">+ Otra cotización</button>
+        <a class="btn ghost" routerLink="/cotizaciones">Ver todas las cotizaciones</a>
+      </div>
+    </section>
+  }
+
+  <div class="bar no-print">
+    <div class="in">
+      <button type="button" class="btn" [disabled]="step() === 1" (click)="go(step() - 1)">Atrás</button>
+      <div class="bt"><span>Total</span><b class="money">{{ fmt(t.tot) }}</b></div>
+      @if (step() < 4) {
+        <button type="button" class="btn primary" (click)="next()">{{ step() === 3 ? 'Guardar y terminar' : 'Siguiente' }}</button>
+      } @else {
+        <a class="btn wa" [href]="waHref" target="_blank" rel="noopener" (click)="save()">WhatsApp</a>
+      }
+    </div>
+  </div>
+</div>

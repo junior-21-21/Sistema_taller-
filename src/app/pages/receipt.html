@@ -1,0 +1,91 @@
+@if (s(); as s) {
+  <div class="tools no-print">
+    <div class="in">
+      <a class="btn" routerLink="/ventas"><app-icon name="back" [size]="18" /> Ventas</a>
+      <div class="chips">
+        <button type="button" class="chip" [class.on]="format() === 'ticket'" (click)="format.set('ticket')">Ticket 80 mm</button>
+        <button type="button" class="chip" [class.on]="format() === 'a4'" (click)="format.set('a4')">Hoja A4</button>
+      </div>
+      <span class="spacer"></span>
+      <button type="button" class="btn ghost" (click)="toggleVoid()">{{ s.void ? 'Quitar anulación' : armed() ? '¿Anular? Toca otra vez' : 'Anular' }}</button>
+      <a class="btn wa" [href]="wa()" target="_blank" rel="noopener"><app-icon name="wa" [size]="18" /> WhatsApp</a>
+      <button type="button" class="btn primary" (click)="print()"><app-icon name="print" [size]="18" /> Imprimir o PDF</button>
+      <a class="btn" routerLink="/venta"><app-icon name="plus" [size]="18" /> Otra venta</a>
+    </div>
+    <p class="hint"><b>Ticket 80 mm</b>: para la ticketera térmica. <b>Hoja A4</b>: para impresora normal. Para PDF, al imprimir elige <b>Guardar como PDF</b>. El QR guarda el número, la fecha y el total para verificarla.</p>
+  </div>
+
+  <div class="paper" [class.a4mode]="format() === 'a4'">
+    <article class="rc" [class.ticket]="format() === 'ticket'" [class.a4]="format() === 'a4'">
+      @if (s.void) { <div class="stamp">ANULADA</div> }
+
+      <header class="hd">
+        <img src="logo-runrun.webp" alt="Run Run Estructuras Metálicas">
+        <div class="biz">
+          <b>{{ shop().name }}</b>
+          @if (shop().ruc) { <span>RUC {{ shop().ruc }}</span> }
+          <span>{{ shop().address }}</span>
+          @if (shop().tel) { <span>Cel. {{ shop().tel }}</span> }
+        </div>
+        <div class="box">
+          <span>NOTA DE VENTA</span>
+          <b class="money">{{ s.num }}</b>
+        </div>
+      </header>
+
+      <div class="meta">
+        <div><span>Fecha</span><b>{{ fmtDate(s.date) }} {{ s.time }}</b></div>
+        <div><span>Cliente</span><b>{{ s.client.name || 'Clientes varios' }}</b></div>
+        @if (s.client.doc) { <div><span>{{ s.client.doc.length === 11 ? 'RUC' : 'DNI' }}</span><b>{{ s.client.doc }}</b></div> }
+        @if (s.quoteNum) { <div><span>Referencia</span><b>{{ s.concept }} · {{ s.quoteNum }}</b></div> }
+      </div>
+
+      <table>
+        <thead><tr><th class="n">Cant.</th><th>Descripción</th><th class="n hide-t">P. unit.</th><th class="n">Importe</th></tr></thead>
+        <tbody>
+          @for (it of s.items; track $index) {
+            <tr>
+              <td class="n">{{ it.qty }}<span class="u"> {{ it.unit }}</span></td>
+              <td>{{ it.desc }}<span class="show-t"><br>{{ fmt(+it.price) }} c/u</span></td>
+              <td class="n hide-t">{{ fmt(+it.price) }}</td>
+              <td class="n">{{ fmt((+it.qty || 0) * (+it.price || 0)) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <div class="tt">
+        @if (+s.discount) {
+          <div><span>Subtotal</span><span class="money">{{ fmt(t()!.sub) }}</span></div>
+          <div><span>Descuento</span><span class="money">−{{ fmt(+s.discount) }}</span></div>
+        }
+        @if (shop().igv) {
+          <div><span>Op. gravada</span><span class="money">{{ fmt(t()!.base) }}</span></div>
+          <div><span>IGV 18%</span><span class="money">{{ fmt(t()!.igv) }}</span></div>
+        }
+        <div class="g"><span>TOTAL</span><span class="money">{{ fmt(t()!.tot) }}</span></div>
+      </div>
+      <p class="words">SON: {{ inWords(t()!.tot) }}</p>
+
+      <div class="payrow">
+        <div><span>Forma de pago</span><b>{{ s.pay }}</b></div>
+        @if (s.pay === 'Efectivo') {
+          <div><span>Recibido</span><b class="money">{{ fmt(+s.received) }}</b></div>
+          <div><span>Vuelto</span><b class="money">{{ fmt(t()!.change) }}</b></div>
+        }
+      </div>
+      @if (s.notes) { <p class="note">{{ s.notes }}</p> }
+
+      <footer class="ft">
+        @if (qr()) { <img class="qr" [src]="qr()" alt="Código QR de control"> }
+        <div>
+          @if (shop().payInfo) { <p><b>Pagos:</b> {{ shop().payInfo }}</p> }
+          <p class="thanks">{{ shop().footer }}</p>
+          <p class="legal">Documento de control interno del taller.</p>
+        </div>
+      </footer>
+    </article>
+  </div>
+} @else {
+  <div class="page"><div class="empty"><p>No encontré la nota de venta {{ num() }}.</p><a class="btn primary" routerLink="/ventas">Ir a ventas</a></div></div>
+}

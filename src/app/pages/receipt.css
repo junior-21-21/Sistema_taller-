@@ -1,0 +1,78 @@
+.tools { background: var(--panel); border-bottom: 1px solid var(--line); }
+.tools .in { max-width: 1180px; margin: 0 auto; padding: 12px 16px 4px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.hint { max-width: 1180px; margin: 0 auto; padding: 0 16px 10px; font-size: 13px; color: var(--muted); }
+.paper { overflow-x: auto; padding: 24px 16px 60px; }
+
+/* El comprobante siempre es papel blanco */
+.rc { position: relative; background: #fff; color: #111; margin: 0 auto; box-shadow: 0 10px 40px rgba(0, 0, 0, .15); }
+.money { font-family: var(--f-num); }
+.stamp {
+  position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-18deg); border: 4px solid #b91c1c; color: #b91c1c;
+  font: 800 34px var(--f-display); letter-spacing: .15em; padding: 6px 18px; border-radius: 8px; opacity: .75; pointer-events: none;
+}
+table { width: 100%; border-collapse: collapse; }
+.n { text-align: right; white-space: nowrap; }
+p { margin: 0; }
+
+/* ---------- Ticket 80 mm: como el de las tiendas ---------- */
+.ticket { width: 80mm; padding: 5mm 4mm 7mm; font: 12px/1.35 var(--f-num); }
+.ticket .hd { display: grid; justify-items: center; text-align: center; gap: 4px; }
+.ticket .hd img { width: 60mm; filter: grayscale(1) contrast(1.4); }
+.ticket .biz { display: grid; font-size: 11px; }
+.ticket .biz b { font: 700 13px var(--f-body); }
+.ticket .box { display: grid; border: 1.5px solid #111; padding: 4px 10px; margin-top: 4px; width: 100%; }
+.ticket .box span { font: 800 14px var(--f-display); letter-spacing: .08em; }
+.ticket .meta { border-top: 1px dashed #111; border-bottom: 1px dashed #111; padding: 6px 0; margin: 8px 0; display: grid; gap: 1px; }
+.ticket .meta div { display: flex; justify-content: space-between; gap: 8px; }
+.ticket .meta span { color: #444; }
+.ticket .meta b { font-weight: 700; text-align: right; }
+.ticket th { font-size: 11px; text-align: left; border-bottom: 1px solid #111; padding: 2px 0; }
+.ticket th.n { text-align: right; }
+.ticket td { padding: 3px 0; vertical-align: top; }
+.ticket td:first-child, .ticket th:first-child { padding-right: 6px; }
+.ticket .u { display: none; }
+.ticket .hide-t { display: none; }
+.ticket .tt { border-top: 1px dashed #111; margin-top: 6px; padding-top: 6px; display: grid; gap: 1px; }
+.ticket .tt div { display: flex; justify-content: space-between; }
+.ticket .tt .g { font: 800 18px var(--f-display); margin-top: 2px; }
+.ticket .words { font-size: 10.5px; margin-top: 4px; }
+.ticket .payrow { border-top: 1px dashed #111; margin-top: 6px; padding-top: 6px; display: grid; }
+.ticket .payrow div { display: flex; justify-content: space-between; }
+.ticket .note { font-size: 11px; margin-top: 4px; }
+.ticket .ft { border-top: 1px dashed #111; margin-top: 8px; padding-top: 8px; display: grid; justify-items: center; text-align: center; gap: 6px; font-size: 11px; }
+.ticket .qr { width: 26mm; }
+.ticket .thanks { font-weight: 700; }
+.ticket .legal { color: #555; font-size: 10px; }
+
+/* ---------- Hoja A4 ---------- */
+.a4 { width: 210mm; min-height: 148mm; padding: 12mm 14mm; font: 13px/1.45 var(--f-body); display: flex; flex-direction: column; gap: 14px; }
+.a4 .show-t { display: none; }
+.a4 .hd { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; }
+.a4 .hd img { height: 24mm; }
+.a4 .biz { display: grid; font-size: 12px; color: #333; }
+.a4 .biz b { font: 800 18px var(--f-display); color: #111; letter-spacing: .02em; }
+.a4 .box { border: 2px solid #e8650f; border-radius: 6px; text-align: center; display: grid; padding: 8px 16px; }
+.a4 .box span { font: 800 16px var(--f-display); letter-spacing: .08em; color: #c4520a; }
+.a4 .box b { font-size: 15px; }
+.a4 .meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 20px; border: 1px solid #e1e5e8; border-radius: 6px; padding: 10px 12px; }
+.a4 .meta div { display: flex; gap: 8px; }
+.a4 .meta span { color: #5d6872; min-width: 80px; }
+.a4 th { background: #1b2126; color: #fff; text-align: left; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 7px 8px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.a4 th.n { text-align: right; }
+.a4 td { padding: 7px 8px; border-bottom: 1px solid #e1e5e8; }
+.a4 .tt { margin-left: auto; width: 280px; display: grid; gap: 3px; }
+.a4 .tt div { display: flex; justify-content: space-between; }
+.a4 .tt .g { border-top: 2px solid #111; padding-top: 5px; font: 800 20px var(--f-display); }
+.a4 .words { font-size: 12px; }
+.a4 .payrow { display: flex; gap: 24px; }
+.a4 .payrow div { display: grid; }
+.a4 .payrow span { font-size: 11px; color: #5d6872; text-transform: uppercase; letter-spacing: .06em; }
+.a4 .ft { margin-top: auto; border-top: 1px solid #e1e5e8; padding-top: 10px; display: flex; gap: 14px; align-items: center; font-size: 12px; }
+.a4 .qr { width: 26mm; }
+.a4 .thanks { font-weight: 700; }
+.a4 .legal { color: #5d6872; font-size: 11px; }
+
+@media print {
+  .paper { padding: 0; overflow: visible; }
+  .rc { box-shadow: none; margin: 0; }
+}

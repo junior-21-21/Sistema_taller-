@@ -1,0 +1,31 @@
+.top { background-color: var(--steel); background-image: var(--plate), linear-gradient(180deg, #262d33, #161a1e); color: #fff; position: sticky; top: 0; z-index: 30; }
+.top::after { content: ''; display: block; height: 6px; background: var(--hazard); }
+.top .in { max-width: 1180px; margin: 0 auto; padding: 8px 16px; display: flex; align-items: center; gap: 16px; }
+.brand img { height: 50px; display: block; }
+.desk { display: flex; gap: 2px; flex-wrap: wrap; }
+.desk a { color: #c9d1d8; text-decoration: none; font-weight: 600; padding: 8px 11px; border-radius: 8px; font-size: 15px; }
+.desk a:hover { color: #fff; background: var(--steel-2); }
+.desk a.on { color: #fff; background: rgba(255, 255, 255, .08); box-shadow: inset 0 -3px 0 var(--fire); }
+.xl { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #c9d1d8; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: #7d8790; flex: none; }
+.dot.ok { background: #4ade80; }
+.dot.warn { background: #fbbf24; }
+.xl button, .xl > a:not(.mob-ic) { font: 600 13px var(--f-body); color: #fff; background: var(--fire); border: none; border-radius: 8px; padding: 7px 12px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+.mob-ic { display: none; color: #c9d1d8; padding: 8px; border-radius: 8px; }
+
+.tabs { display: none; }
+
+@media (max-width: 900px) {
+  .desk { display: none; }
+  .brand img { height: 40px; }
+  .xt { display: none; }
+  .mob-ic { display: inline-flex; }
+  .tabs {
+    display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    background: var(--panel); border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, .06);
+  }
+  .tabs a { display: grid; justify-items: center; gap: 2px; text-decoration: none; color: var(--muted); font-size: 11px; font-weight: 600; padding: 4px 0; }
+  .tabs a.on { color: var(--fire-dark); }
+  .tabs .fab { align-self: center; justify-self: center; width: 56px; height: 56px; border-radius: 50%; background: var(--molten); border: 3px solid var(--panel); color: #fff; place-items: center; margin-top: -22px; box-shadow: 0 6px 16px rgba(232, 101, 15, .45); }
+}

@@ -1,0 +1,176 @@
+@if (q(); as q) {
+  <div class="tools no-print">
+    <div class="in">
+      <a class="btn" routerLink="/">← Inicio</a>
+      <a class="btn" [routerLink]="['/cotizar', q.num]">Editar</a>
+      <div class="chips">
+        <a class="chip" [class.on]="!isContract()" [routerLink]="['/hoja', q.num, 'cotizacion']">Cotización</a>
+        <a class="chip" [class.on]="isContract()" [routerLink]="['/hoja', q.num, 'contrato']">Contrato</a>
+      </div>
+      <span class="spacer"></span>
+      <a class="btn wa" [href]="wa()" target="_blank" rel="noopener">WhatsApp</a>
+      <button type="button" class="btn primary" (click)="print()">Imprimir o guardar PDF</button>
+    </div>
+    <p class="hint">Para PDF: en la ventana de imprimir elige <b>Guardar como PDF</b> como impresora.</p>
+  </div>
+
+  <div class="paper">
+    <article class="a4">
+      <header class="hd">
+        <img src="logo-runrun.webp" alt="Run Run Estructuras Metálicas">
+        <div class="doc">
+          <h3>{{ isContract() ? 'CONTRATO' : 'COTIZACIÓN' }}</h3>
+          <div>{{ isContract() ? conNum() : q.num }}</div>
+          <div>{{ isContract() ? 'Ref. cotización ' + q.num : 'Fecha: ' + fmtDate(q.date) }}</div>
+        </div>
+      </header>
+      <div class="band"></div>
+
+      @if (!isContract()) {
+        <div class="cols">
+          <div>
+            <h4>Cliente</h4>
+            <p><b>{{ q.client.name || '—' }}</b></p>
+            <p>DNI/RUC: {{ q.client.doc || '—' }}</p>
+            <p>Celular: {{ q.client.tel || '—' }}</p>
+            <p>Obra: {{ q.client.place || '—' }}</p>
+          </div>
+          <div>
+            <h4>Taller</h4>
+            <p><b>{{ shop().name }}</b></p>
+            @if (shop().ruc) { <p>RUC: {{ shop().ruc }}</p> }
+            @if (shop().tel) { <p>Cel: {{ shop().tel }}</p> }
+            <p>{{ shop().address }}</p>
+          </div>
+        </div>
+        @if (q.desc) {
+          <div><h4>Trabajo solicitado</h4><p>{{ q.desc }}</p></div>
+        }
+        <table>
+          <thead><tr><th>#</th><th>Descripción</th><th class="n">Cant.</th><th class="n">P. unit.</th><th class="n">Importe</th></tr></thead>
+          <tbody>
+            @for (it of q.items; track $index; let i = $index) {
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td>
+                  <b>{{ it.name }}</b>
+                  @if (it.inc) { <br><span class="sub">{{ it.inc }}</span> }
+                  @if (it.unit === AREA) { <br><span class="sub">{{ it.q }} pza × {{ it.w }} × {{ it.h }} m</span> }
+                </td>
+                <td class="n">{{ fmtQty(qty(it)) }} {{ it.unit }}</td>
+                <td class="n">{{ fmt(it.price) }}</td>
+                <td class="n">{{ fmt(lineTotal(it)) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <div class="tt">
+          <div><span>Subtotal</span><span class="money">{{ fmt(t()!.sub) }}</span></div>
+          @if (t()!.dsc) { <div><span>Descuento {{ q.discount }}%</span><span class="money">−{{ fmt(t()!.dsc) }}</span></div> }
+          @if (t()!.igv) { <div><span>IGV 18%</span><span class="money">{{ fmt(t()!.igv) }}</span></div> }
+          <div class="g"><span>TOTAL</span><span class="money">{{ fmt(t()!.tot) }}</span></div>
+          <div class="sub">{{ q.igv ? 'Incluye IGV' : 'Precios no incluyen IGV' }}</div>
+        </div>
+        <div>
+          <h4>Forma de pago</h4>
+          <div class="pay">
+            <div><b>{{ q.advance }}% al aceptar</b><br><span class="money">{{ fmt(t()!.advM) }}</span></div>
+            <div><b>{{ 100 - q.advance }}% al entregar</b><br><span class="money">{{ fmt(t()!.balM) }}</span></div>
+          </div>
+        </div>
+        <div>
+          <h4>Condiciones</h4>
+          <ul>
+            <li>Plazo de entrega: {{ q.days }} días hábiles desde el pago del adelanto.</li>
+            <li>Garantía de {{ q.warranty }} meses en soldadura y fabricación.</li>
+            <li>Cotización válida hasta el {{ addDays(q.date, q.validity) }}; el precio del fierro puede variar.</li>
+            <li>Las medidas finales se confirman en la visita técnica.</li>
+            @if (q.notes) { <li>{{ q.notes }}</li> }
+          </ul>
+        </div>
+        <div class="sign">
+          <div>{{ shop().name }}</div>
+          <div>Conforme: {{ q.client.name || 'Cliente' }}</div>
+        </div>
+      } @else {
+        <p class="ctitle">CONTRATO DE FABRICACIÓN E INSTALACIÓN DE ESTRUCTURAS METÁLICAS</p>
+        <p class="just">
+          Conste por el presente documento el contrato que celebran, de una parte, <b>{{ shop().name }}</b>@if (shop().ruc) {, con RUC <b>{{ shop().ruc }}</b>},
+          con domicilio en {{ shop().address }}, representado por <b>{{ shop().rep || blank }}</b>, identificado con DNI <b>{{ shop().repDni || blank }}</b>,
+          a quien se denominará <b>EL CONTRATISTA</b>; y de la otra parte, <b>{{ q.client.name || blank }}</b>, identificado con DNI/RUC
+          <b>{{ q.client.doc || blank }}</b>, con domicilio en {{ q.client.place || blank }}, a quien se denominará <b>EL CLIENTE</b>; en los términos siguientes:
+        </p>
+        <div>
+          <h4>{{ clause()['objeto'] }}: OBJETO</h4>
+          <p>EL CONTRATISTA se obliga a fabricar e instalar los siguientes trabajos, según la cotización {{ q.num }}, que forma parte de este contrato:</p>
+          <ul>
+            @for (it of q.items; track $index) {
+              <li>{{ it.name }}: {{ fmtQty(qty(it)) }} {{ it.unit }}@if (it.unit === AREA) { ({{ it.q }} pza de {{ it.w }} × {{ it.h }} m)}, {{ fmt(lineTotal(it)) }}.</li>
+            }
+          </ul>
+          @if (q.desc) { <p>Detalle: {{ trimDot(q.desc) }}.</p> }
+        </div>
+        <div>
+          <h4>{{ clause()['precio'] }}: PRECIO</h4>
+          <p>El precio total es de <b>{{ fmt(t()!.tot) }}</b> ({{ inWords(t()!.tot) }}){{ q.igv ? ', que incluye IGV' : ', sin IGV' }}@if (t()!.dsc) {, con un descuento de {{ q.discount }}% ya aplicado}.
+            Incluye materiales, mano de obra e instalación según lo detallado.</p>
+        </div>
+        <div>
+          <h4>{{ clause()['pago'] }}: FORMA DE PAGO</h4>
+          <p>EL CLIENTE pagará un adelanto de {{ q.advance }}% (<b>{{ fmt(t()!.advM) }}</b>) a la firma de este contrato, y el saldo de {{ 100 - q.advance }}%
+            (<b>{{ fmt(t()!.balM) }}</b>) a la entrega conforme de los trabajos. Sin el pago del adelanto no se inicia la fabricación.</p>
+        </div>
+        <div>
+          <h4>{{ clause()['plazo'] }}: PLAZO</h4>
+          <p>El plazo de entrega es de <b>{{ q.days }} días hábiles</b>, contados desde el pago del adelanto y la confirmación de medidas. El plazo se amplía por
+            causas ajenas a EL CONTRATISTA, como falta de acceso a la obra, cambios pedidos por EL CLIENTE, falta de energía eléctrica o lluvias en trabajos a la intemperie.</p>
+        </div>
+        <div>
+          <h4>{{ clause()['contratista'] }}: OBLIGACIONES DEL CONTRATISTA</h4>
+          <p>Usar los materiales indicados en la cotización, ejecutar el trabajo con personal calificado y con las medidas de seguridad necesarias, y dejar limpia la zona de trabajo al terminar.</p>
+        </div>
+        <div>
+          <h4>{{ clause()['cliente'] }}: OBLIGACIONES DEL CLIENTE</h4>
+          <p>Dar acceso a la obra, un punto de energía eléctrica para la soldadura, pagar en las fechas acordadas, y revisar y dar su conformidad dentro de los 2 días siguientes a la entrega.</p>
+        </div>
+        <div>
+          <h4>{{ clause()['cambios'] }}: CAMBIOS Y ADICIONALES</h4>
+          <p>Todo cambio de medidas, diseño o material se cotiza por separado y se aprueba por escrito antes de ejecutarse. Un mensaje de WhatsApp de EL CLIENTE vale como aprobación.</p>
+        </div>
+        <div>
+          <h4>{{ clause()['garantia'] }}: GARANTÍA</h4>
+          <p>EL CONTRATISTA garantiza la soldadura y la fabricación por <b>{{ q.warranty }} meses</b> desde la entrega. La garantía no cubre mal uso, golpes, modificaciones hechas por terceros ni el desgaste normal de la pintura.</p>
+        </div>
+        @if (q.penalty) {
+          <div>
+            <h4>{{ clause()['multa'] }}: PENALIDAD</h4>
+            <p>Si EL CONTRATISTA se retrasa por causas que le son imputables, pagará una penalidad de {{ q.penalty }}% del precio total por cada día de retraso, hasta un máximo de 10% del precio total.</p>
+          </div>
+        }
+        <div>
+          <h4>{{ clause()['desiste'] }}: DESISTIMIENTO</h4>
+          <p>Si EL CLIENTE desiste después de iniciada la fabricación, el adelanto se aplica al material comprado y al trabajo ya hecho. Si EL CONTRATISTA no cumple, devolverá la parte del pago que corresponda al trabajo no ejecutado.</p>
+        </div>
+        <div>
+          <h4>{{ clause()['controversias'] }}: CONTROVERSIAS</h4>
+          <p>Las partes resolverán cualquier diferencia de manera directa y de buena fe. De no lograrlo, se someten a los jueces de Huamanga, Ayacucho.</p>
+        </div>
+        @if (q.notes) { <div><h4>Notas</h4><p>{{ q.notes }}</p></div> }
+        <p>Firmado en Huamanga, el {{ fmtDate(q.date) }}, en dos ejemplares de igual valor.</p>
+        <div class="sign">
+          <div>EL CONTRATISTA<br>{{ shop().rep || shop().name }}<br>DNI {{ shop().repDni || blank }}</div>
+          <div>EL CLIENTE<br>{{ q.client.name || blank }}<br>DNI/RUC {{ q.client.doc || blank }}</div>
+        </div>
+      }
+
+      <footer class="ft"><span>{{ shop().name }} · {{ shop().address }}</span><span>{{ isContract() ? conNum() : q.num }}</span></footer>
+    </article>
+  </div>
+} @else {
+  <div class="page">
+    <div class="empty">
+      <p>No encontré la cotización {{ num() }}.</p>
+      <a class="btn primary" routerLink="/">Volver al inicio</a>
+    </div>
+  </div>
+}

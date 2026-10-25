@@ -1,0 +1,42 @@
+import { Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter, map } from 'rxjs';
+import { ExcelService } from './core/excel.service';
+import { Store, Toast } from './core/store.service';
+import { Icon } from './pages/icon';
+import { Tour } from './pages/guide';
+
+/** Pantallas con su propia barra de abajo: ahí se esconde el menú del celular. */
+const OWN_BAR = /^\/(cotizar|venta|hoja|boleta)\b/;
+
+@Component({
+  selector: 'app-root',
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, Tour],
+  templateUrl: './app.html',
+  styleUrl: './app.css',
+})
+export class App {
+  protected excel = inject(ExcelService);
+  protected store = inject(Store);
+  protected toast = inject(Toast);
+  private router = inject(Router);
+
+  protected url = toSignal(
+    this.router.events.pipe(
+      filter((e) => e instanceof NavigationEnd),
+      map((e) => (e as NavigationEnd).urlAfterRedirects),
+    ),
+    { initialValue: '/' },
+  );
+  protected ownBar = () => OWN_BAR.test(this.url());
+
+  protected readonly nav = [
+    { to: '/', label: 'Inicio', icon: 'home', exact: true },
+    { to: '/cotizaciones', label: 'Cotizaciones', icon: 'quote', exact: false },
+    { to: '/ventas', label: 'Ventas', icon: 'receipt', exact: false },
+    { to: '/clientes', label: 'Clientes', icon: 'users', exact: false },
+    { to: '/ajustes', label: 'Precios y taller', icon: 'gear', exact: false },
+    { to: '/ayuda', label: 'Ayuda', icon: 'help', exact: false },
+  ];
+}

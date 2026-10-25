@@ -1,0 +1,45 @@
+<header class="top no-print">
+  <div class="in">
+    <a routerLink="/" class="brand" aria-label="Inicio"><img src="logo-runrun.webp" alt="Run Run Estructuras Metálicas"></a>
+    <nav class="desk">
+      @for (n of nav; track n.to) {
+        <a [routerLink]="n.to" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: n.exact }">{{ n.label }}</a>
+      }
+    </nav>
+    <div class="xl">
+      @switch (excel.status()) {
+        @case ('linked') {
+          <span class="dot ok"></span>
+          <span class="xt">{{ excel.saving() ? 'Guardando…' : 'Guardado en Excel' }}</span>
+        }
+        @case ('needs-permission') {
+          <span class="dot warn"></span>
+          <button type="button" (click)="excel.reconnect()">Reconectar Excel</button>
+        }
+        @default {
+          <span class="dot" [class.warn]="store.dirty()"></span>
+          <a routerLink="/ajustes" fragment="excel">Conectar Excel</a>
+        }
+      }
+      <a class="mob-ic" routerLink="/ajustes" aria-label="Precios y taller"><app-icon name="gear" /></a>
+      <a class="mob-ic" routerLink="/ayuda" aria-label="Ayuda"><app-icon name="help" /></a>
+    </div>
+  </div>
+</header>
+
+<router-outlet />
+<app-tour />
+
+@if (!ownBar()) {
+  <nav class="tabs no-print" aria-label="Menú">
+    <a routerLink="/" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: true }"><app-icon name="home" /><span>Inicio</span></a>
+    <a routerLink="/cotizaciones" routerLinkActive="on"><app-icon name="quote" /><span>Cotizaciones</span></a>
+    <a routerLink="/cotizar" class="fab" aria-label="Nueva cotización"><app-icon name="plus" [size]="28" /></a>
+    <a routerLink="/ventas" routerLinkActive="on"><app-icon name="receipt" /><span>Ventas</span></a>
+    <a routerLink="/clientes" routerLinkActive="on"><app-icon name="users" /><span>Clientes</span></a>
+  </nav>
+}
+
+@if (toast.msg(); as m) {
+  <div class="toast no-print" role="status">{{ m }}</div>
+}
