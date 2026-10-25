@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ExcelService } from '../core/excel.service';
+import { SheetService } from '../core/sheet.service';
 import { Store } from '../core/store.service';
 import { fmt, fmtDate, saleTotals, totals } from '../core/calc';
 import { ExcelPanel } from './excel-panel';
@@ -33,7 +33,7 @@ import { Guide, Hint, Sparks } from './guide';
         </ul>
       </app-guide>
 
-      @if (excel.status() !== 'linked') {
+      @if (sheet.status() === 'none' || sheet.status() === 'offline') {
         <section class="card warnbox"><app-excel-panel /></section>
       }
 
@@ -62,7 +62,7 @@ import { Guide, Hint, Sparks } from './guide';
       <section class="more">
         <a class="qa" routerLink="/cotizaciones"><app-icon name="search" [size]="26" /><b>Buscar cotización</b><span>Por cliente, número o fecha</span></a>
         <a class="qa" routerLink="/clientes"><app-icon name="users" [size]="26" /><b>Clientes</b><span>Historial de cada uno</span></a>
-        <a class="qa" routerLink="/ajustes"><app-icon name="gear" [size]="26" /><b>Precios y taller</b><span>Tus precios y tu Excel</span></a>
+        <a class="qa" routerLink="/ajustes"><app-icon name="gear" [size]="26" /><b>Precios y taller</b><span>Tus precios y tus datos</span></a>
         <a class="qa" routerLink="/ayuda"><app-icon name="help" [size]="26" /><b>¿Cómo se usa?</b><span>Paso a paso</span></a>
       </section>
 
@@ -139,7 +139,7 @@ import { Guide, Hint, Sparks } from './guide';
 })
 export class HomePage {
   protected store = inject(Store);
-  protected excel = inject(ExcelService);
+  protected sheet = inject(SheetService);
   protected fmt = fmt;
   protected fmtDate = fmtDate;
   protected stats = computed(() => (this.store.quotes(), this.store.sales(), this.store.monthStats()));

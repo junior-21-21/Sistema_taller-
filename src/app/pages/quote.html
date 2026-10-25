@@ -1,4 +1,4 @@
-@if (excel.status() !== 'linked') {
+@if (!sheet.loaded() && sheet.status() !== 'offline') {
   <app-need-excel />
 } @else {
 <div class="page" (input)="touch()" (change)="touch()">
@@ -90,7 +90,7 @@
             @if (store.catalog().length) {
               <div class="empty">No hay trabajos con ese nombre.</div>
             } @else {
-              <div class="empty">Tu Excel todavía no tiene precios. Agrégalos en <a routerLink="/ajustes">Precios y taller</a> o usa <b>Otro trabajo</b>.</div>
+              <div class="empty">Todavía no tienes precios. Agrégalos en <a routerLink="/ajustes">Precios y taller</a> o usa <b>Otro trabajo</b>.</div>
             }
           }
           <button type="button" class="tile other" (click)="addCustom()">

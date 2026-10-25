@@ -66,13 +66,12 @@ Los datos **no** se suben a GitHub: cada persona guarda su propio Excel en su co
 - `src/app/core/calc.ts`: cálculos, montos en letras, lectura del mensaje y el texto de WhatsApp.
 - `src/app/pages/`: las pantallas (inicio, cotizaciones, cotizar, hoja y contrato, ventas, boleta, clientes, ayuda, precios y taller).
 
-## Guardar el Excel en Google Drive
+## Dónde se guardan los datos
 
-En **Precios y taller → Google Drive** toca **Conectar con Google Drive**, inicia sesión y elige tu `runrun-datos.xlsx` (o crea uno nuevo). Cada cambio se guarda en ese archivo de Drive, y funciona igual en la computadora y en el celular. Si usas los dos equipos, antes de guardar la app junta los cambios del otro: de cada cotización y venta se queda la versión más nueva.
+Todo se guarda en la **hoja de Google del taller**, a través de un Apps Script publicado como aplicación web
+(código en `apps-script/Codigo.gs`). Nadie tiene que iniciar sesión: cualquiera que abra el enlace del sistema ve y usa los mismos datos.
 
-Necesita un **ID de cliente OAuth** de Google Cloud (se crea una sola vez):
-
-1. En console.cloud.google.com crea un proyecto y habilita **Google Drive API**.
-2. Configura la **pantalla de consentimiento** como Externo y agrega tu correo en **Usuarios de prueba**.
-3. En **Credenciales** crea un **ID de cliente de OAuth** de tipo *Aplicación web*, con estos orígenes autorizados: `https://junior-21-21.github.io` y `http://localhost:4200`.
-4. Pega el ID en `src/app/core/drive.ts` (`GOOGLE_CLIENT_ID`), o escríbelo en la app la primera vez.
+- La dirección del Apps Script (termina en `/exec`) está en `src/app/core/sheet.service.ts` (`SHEET_URL`).
+- Si cambias el código del Apps Script: **Implementar > Gestionar implementaciones > Editar > Nueva versión**, así la URL no cambia.
+- En la hoja puedes cambiar precios (pestaña *Precios*) y estados; no borres la columna *Datos (no editar)*.
+- En *Precios y taller* está el botón **Descargar copia en Excel** (.xlsx).

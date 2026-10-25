@@ -30,8 +30,12 @@ export interface ClientSummary {
   last: string;
 }
 
+export type StoreOp =
+  | { t: 'quote' | 'delQuote' | 'sale'; num: string }
+  | { t: 'catalog' | 'shop' };
+
 /** Estado de la app. Se guarda en el navegador como copia de trabajo y el
- *  ExcelService lo escribe en el archivo .xlsx. */
+ *  SheetService lo guarda en la hoja de Google. */
 @Injectable({ providedIn: 'root' })
 export class Store {
   readonly catalog = signal<CatalogItem[]>(load('rr.catalog') ?? []);
@@ -40,7 +44,7 @@ export class Store {
   readonly shop = signal<Shop>({ ...DEFAULT_SHOP, ...(load<Partial<Shop>>('rr.shop') ?? {}) });
   /** Hay cambios que todavía no están en el Excel. */
   readonly dirty = signal<boolean>(load('rr.dirty') ?? false);
-  /** Avisa al ExcelService que hay algo nuevo para guardar. */
+  /** Cuenta los cambios hechos aquí. */
   readonly changes = signal(0);
 
   readonly categories = computed(() => [...new Set(this.catalog().map((c) => c.cat))]);
@@ -95,9 +99,13 @@ export class Store {
     effect(() => persist('rr.dirty', this.dirty()));
   }
 
-  private touch() {
+  /** Lo escucha el servicio de la hoja de Google para guardar cada cambio. */
+  onChange: ((op: StoreOp) => void) | null = null;
+
+  private touch(op: StoreOp) {
     this.dirty.set(true);
     this.changes.update((n) => n + 1);
+    this.onChange?.(op);
   }
 
   // ---------------------------------------------------------------- cotizaciones
@@ -150,12 +158,12 @@ export class Store {
       const i = list.findIndex((x) => x.num === q.num);
       return i < 0 ? [...list, copy] : list.map((x, j) => (j === i ? copy : x));
     });
-    this.touch();
+    this.touch({ t: 'quote', num: q.num });
   }
 
   setEstado(num: string, estado: Estado) {
     this.quotes.update((list) => list.map((q) => (q.num === num ? { ...q, estado, updatedAt: new Date().toISOString() } : q)));
-    this.touch();
+    this.touch({ t: 'quote', num });
   }
 
   /** Notas de venta (no anuladas) que cobran esta cotización. */
@@ -167,7 +175,7 @@ export class Store {
   deleteQuote(num: string): boolean {
     if (this.salesOf(num).length) return false;
     this.quotes.update((list) => list.filter((q) => q.num !== num));
-    this.touch();
+    this.touch({ t: 'delQuote', num });
     return true;
   }
 
@@ -221,23 +229,23 @@ export class Store {
     });
     // Cobrar un adelanto confirma que el cliente aceptó.
     if (s.quoteNum && !s.void && this.get(s.quoteNum)?.estado === 'Pendiente') this.setEstado(s.quoteNum, 'Aceptada');
-    this.touch();
+    this.touch({ t: 'sale', num: s.num });
   }
 
   voidSale(num: string, value = true) {
     this.sales.update((list) => list.map((s) => (s.num === num ? { ...s, void: value, updatedAt: new Date().toISOString() } : s)));
-    this.touch();
+    this.touch({ t: 'sale', num });
   }
 
   // ---------------------------------------------------------------- ajustes
   setCatalog(c: CatalogItem[]) {
     this.catalog.set(c);
-    this.touch();
+    this.touch({ t: 'catalog' });
   }
 
   setShop(s: Shop) {
     this.shop.set(s);
-    this.touch();
+    this.touch({ t: 'shop' });
   }
 
   /** Reemplaza todo con lo leído del Excel. */

@@ -106,11 +106,11 @@ export class Guide {
 }
 
 const SLIDES = [
-  { icon: 'helmet', title: 'Bienvenido a tu taller digital', text: 'Aquí haces cotizaciones, contratos y notas de venta de Run Run, y todo queda guardado en tu Excel. Te muestro cómo funciona en 4 pasos.' },
+  { icon: 'helmet', title: 'Bienvenido a tu taller digital', text: 'Aquí haces cotizaciones, contratos y notas de venta de Run Run, y todo queda guardado en la hoja de Google del taller. Te muestro cómo funciona en 4 pasos.' },
   { icon: 'quote', title: '1. El cliente pide precio', text: 'Toca el botón naranja "+". Pega su mensaje de WhatsApp, elige los trabajos (portón, reja, techo…) y pon las medidas. El precio se calcula solo.' },
   { icon: 'wa', title: '2. Envíale la cotización', text: 'Con un toque le llega por WhatsApp, o sacas una hoja con tu logo para imprimir o guardar en PDF.' },
   { icon: 'cash', title: '3. Acepta y paga', text: 'En Cotizaciones toca "Cobrar". Sale la nota de venta del adelanto, y después la del saldo cuando entregas. Si hace falta, imprime el contrato.' },
-  { icon: 'file', title: '4. Todo queda en tu Excel', text: 'Conecta el archivo runrun-datos.xlsx en "Precios y taller". Cada cambio se guarda solo. Si te pierdes, toca "Ayuda" o los botones "?".' },
+  { icon: 'file', title: '4. Todo se guarda solo', text: 'Cada cambio va a la hoja de Google del taller, y cualquiera que abra este enlace ve lo mismo. Si te pierdes, toca "Ayuda" o los botones "?".' },
 ];
 
 /** Bienvenida paso a paso la primera vez. */
@@ -136,7 +136,7 @@ const SLIDES = [
           @if (i() < slides.length - 1) {
             <button type="button" class="btn primary" (click)="i.set(i() + 1)">Siguiente</button>
           } @else {
-            <a class="btn primary" routerLink="/ajustes" fragment="excel" (click)="svc.endTour()">Conectar mi Excel</a>
+            <a class="btn primary" routerLink="/cotizar" (click)="svc.endTour()">Hacer mi primera cotización</a>
           }
         </div>
       </div>

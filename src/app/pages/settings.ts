@@ -17,7 +17,7 @@ import { Guide } from './guide';
 
       <app-guide id="ajustes" title="Aquí configuras tu taller">
         <ol>
-          <li><b>Tu archivo Excel</b>: conéctalo una vez y todo se guarda ahí solo.</li>
+          <li><b>Tus datos</b>: todo se guarda solo en la hoja de Google del taller.</li>
           <li><b>Datos del taller</b>: salen en tus hojas, contratos y notas de venta.</li>
           <li><b>Lista de precios</b>: cambia el material y la mano de obra; el precio se suma solo. Al terminar toca <b>Guardar cambios</b> (abajo).</li>
         </ol>
@@ -67,7 +67,7 @@ import { Guide } from './guide';
           <span class="spacer"></span>
           <button type="button" class="btn" (click)="addRow()">+ Agregar trabajo</button>
         </div>
-        <p class="muted small">Precio = material + mano de obra. También puedes cambiarlos en la hoja "Precios" del Excel y volver a abrirlo.</p>
+        <p class="muted small">Precio = material + mano de obra. También puedes cambiarlos en la pestaña "Precios" de la hoja de Google.</p>
         @if (samples()) {
           <div class="sample">⚠ Tu lista tiene <b>{{ samples() }} precios de ejemplo</b> (sin cambiar). Pon tus precios reales o quítalos con el botón de abajo.</div>
         }

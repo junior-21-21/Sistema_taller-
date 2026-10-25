@@ -25,8 +25,8 @@ import { Toast } from '../core/store.service';
         <li>
           <a routerLink="/ajustes" fragment="excel">
             <span class="n">1</span><app-icon name="gear" [size]="26" />
-            <b>Una sola vez: conecta tu Excel</b>
-            <span>En <i>Precios y taller</i> toca <i>Abrir mi Excel</i> y elige <b>runrun-datos.xlsx</b> de la carpeta tallersistema. Llena tu RUC, tu celular y quién firma.</span>
+            <b>Una sola vez: tus datos y precios</b>
+            <span>En <i>Precios y taller</i> llena tu RUC, tu celular y quién firma, y pon tus precios reales.</span>
           </a>
         </li>
         <li>
@@ -62,19 +62,19 @@ import { Toast } from '../core/store.service';
       <section class="card">
         <h2>Preguntas frecuentes</h2>
         <details><summary>¿Dónde se guarda todo?</summary>
-          <p>En el archivo <b>runrun-datos.xlsx</b>, en tu <b>Google Drive</b> o en tu computadora (lo eliges en <i>Precios y taller</i>). Tiene hojas para Cotizaciones, Detalle, Ventas, Ventas detalle, Precios y Taller. La app también guarda una copia en el navegador por si cierras la pestaña.</p></details>
-        <details><summary>¿Puedo abrir el Excel mientras uso la app?</summary>
-          <p>Sí para mirar, pero <b>ciérralo antes de guardar</b> en la app. Si está abierto, Windows no deja escribir y la app te avisa.</p></details>
+          <p>En la <b>hoja de Google del taller</b>, en tu Google Drive. No hay que conectar nada: el sistema la usa solo. Tiene hojas para Cotizaciones, Detalle, Ventas, Ventas detalle, Precios y Taller. Si quieres una copia en Excel, toca <i>Descargar copia en Excel</i> en Precios y taller.</p></details>
+        <details><summary>¿Puedo abrir la hoja mientras uso la app?</summary>
+          <p>Sí. Puedes mirarla y cambiar precios o el estado de una cotización ahí mismo. No borres la columna <i>Datos (no editar)</i>.</p></details>
         <details><summary>¿Cómo cambio mis precios?</summary>
-          <p>En <a routerLink="/ajustes">Precios y taller</a> cambia el material y la mano de obra, y toca <i>Guardar cambios</i>. También puedes cambiarlos en la hoja <i>Precios</i> del Excel y luego tocar <i>Abrir mi Excel</i>.</p></details>
+          <p>En <a routerLink="/ajustes">Precios y taller</a> cambia el material y la mano de obra, y toca <i>Guardar cambios</i>. También puedes cambiarlos en la pestaña <i>Precios</i> de la hoja de Google: la app los toma en un minuto.</p></details>
         <details><summary>¿La nota de venta sirve como boleta para SUNAT?</summary>
           <p>No. Es un comprobante de control interno con tu logo, número, QR y monto en letras. Si el cliente pide boleta o factura electrónica, emítela en SUNAT (SOL) o en tu sistema de facturación y anota el número en la nota.</p></details>
         <details><summary>Me equivoqué en una venta</summary>
-          <p>Abre la nota de venta y toca <i>Anular</i> (dos veces para confirmar). Queda marcada como anulada en el Excel y no suma en tus totales. Luego emite una nueva.</p></details>
+          <p>Abre la nota de venta y toca <i>Anular</i> (dos veces para confirmar). Queda marcada como anulada en la hoja y no suma en tus totales. Luego emite una nueva.</p></details>
         <details><summary>¿Funciona en el celular?</summary>
-          <p>Sí. En el celular usa el menú de abajo. Conecta el mismo Excel con <i>Conectar con Google Drive</i> en Precios y taller y verás lo mismo que en la computadora. Al volver a la app, toca <i>Reconectar Drive</i> si te lo pide.</p></details>
+          <p>Sí. En el celular usa el menú de abajo. Abre el mismo enlace y verás lo mismo que en la computadora.</p></details>
         <details><summary>Usé el celular y la computadora a la vez, ¿se pierde algo?</summary>
-          <p>No. Antes de guardar, la app trae lo que se guardó desde el otro equipo y junta los cambios: de cada cotización y venta se queda la versión más nueva.</p></details>
+          <p>No. Cada cotización y venta se guarda por separado en la hoja, y la app trae lo nuevo de los otros equipos cada minuto.</p></details>
         <details><summary>¿Cómo imprimo el ticket?</summary>
           <p>En la nota de venta elige <i>Ticket 80 mm</i> y toca <i>Imprimir o PDF</i>. Funciona con impresoras térmicas de 80 mm. Para impresora normal elige <i>Hoja A4</i>.</p></details>
       </section>

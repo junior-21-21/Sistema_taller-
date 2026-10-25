@@ -8,13 +8,13 @@ import { clientErrors, focusFirstError, hasErrors, saleItemErrors, vRange } from
 import { Icon } from './icon';
 import { Guide, Hint } from './guide';
 import { NeedExcel } from './need-excel';
-import { ExcelService } from '../core/excel.service';
+import { SheetService } from '../core/sheet.service';
 
 @Component({
   selector: 'app-sale',
   imports: [FormsModule, RouterLink, Icon, Guide, Hint, NeedExcel],
   template: `
-    @if (excel.status() !== 'linked') {
+    @if (!sheet.loaded() && sheet.status() !== 'offline') {
       <app-need-excel />
     } @else {
     <div class="page">
@@ -165,7 +165,7 @@ export class SalePage implements OnInit {
   readonly cot = input<string>('');
 
   protected store = inject(Store);
-  protected excel = inject(ExcelService);
+  protected sheet = inject(SheetService);
   private toast = inject(Toast);
   private router = inject(Router);
   protected methods = PAY_METHODS;

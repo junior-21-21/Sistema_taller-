@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Icon, catIcon } from './icon';
 import { Hint } from './guide';
 import { NeedExcel } from './need-excel';
-import { ExcelService } from '../core/excel.service';
+import { SheetService } from '../core/sheet.service';
 import { Router, RouterLink } from '@angular/router';
 import { Store, Toast } from '../core/store.service';
 import { AREA, CatalogItem, ESTADOS, Quote, QuoteItem, UNITS } from '../core/models';
@@ -23,7 +23,7 @@ export class QuotePage implements OnInit {
   readonly num = input<string>();
 
   protected store = inject(Store);
-  protected excel = inject(ExcelService);
+  protected sheet = inject(SheetService);
   private toast = inject(Toast);
   protected armed = signal(false);
   private router = inject(Router);
@@ -252,7 +252,7 @@ export class QuotePage implements OnInit {
       return;
     }
     try { localStorage.removeItem(DRAFT); } catch { /* nada */ }
-    this.toast.show(`Cotización ${this.q.num} borrada del Excel.`);
+    this.toast.show(`Cotización ${this.q.num} borrada de la hoja.`);
     this.router.navigate(['/cotizaciones']);
   }
 

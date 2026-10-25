@@ -1,24 +1,35 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ExcelService } from '../core/excel.service';
-import { ExcelPanel } from './excel-panel';
+import { SheetService } from '../core/sheet.service';
 import { Icon } from './icon';
 
-/** Se muestra en vez de la pantalla cuando el Excel no está conectado: todo se guarda en el Excel. */
+/** Se muestra en vez de la pantalla mientras no se leyó la hoja de Google. */
 @Component({
   selector: 'app-need-excel',
-  imports: [RouterLink, ExcelPanel, Icon],
+  imports: [RouterLink, Icon],
   template: `
     <div class="page">
       <section class="card steel ne">
         <app-icon name="file" [size]="34" />
         <div>
-          <h2>{{ excel.status() === 'needs-permission' ? 'Vuelve a conectar tu Excel' : 'Primero conecta tu Excel' }}</h2>
-          <p>Todo lo que hagas se guarda en tu Excel. Conéctalo para seguir: es un solo toque.</p>
+          @if (sheet.status() === 'loading') {
+            <h2>Conectando con la hoja del taller…</h2>
+            <p>Un momento.</p>
+          } @else if (sheet.status() === 'none') {
+            <h2>Falta conectar la hoja del taller</h2>
+            <p>El sistema todavía no tiene la dirección de la hoja de Google.</p>
+          } @else {
+            <h2>Sin conexión con la hoja del taller</h2>
+            <p>Revisa tu internet y vuelve a intentar.</p>
+          }
         </div>
       </section>
-      <section class="card"><app-excel-panel /></section>
-      <a class="btn ghost" routerLink="/">Volver al inicio</a>
+      <div class="row">
+        @if (sheet.status() === 'offline') {
+          <button class="btn primary" type="button" (click)="sheet.load(false)">Reintentar</button>
+        }
+        <a class="btn ghost" routerLink="/">Volver al inicio</a>
+      </div>
     </div>
   `,
   styles: `
@@ -29,5 +40,5 @@ import { Icon } from './icon';
   `,
 })
 export class NeedExcel {
-  protected excel = inject(ExcelService);
+  protected sheet = inject(SheetService);
 }

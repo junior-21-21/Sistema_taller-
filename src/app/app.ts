@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
-import { ExcelService } from './core/excel.service';
+import { SheetService } from './core/sheet.service';
 import { Store, Toast } from './core/store.service';
 import { Icon } from './pages/icon';
 import { Tour } from './pages/guide';
@@ -17,7 +17,7 @@ const OWN_BAR = /^\/(cotizar|venta|hoja|boleta)\b/;
   styleUrl: './app.css',
 })
 export class App {
-  protected excel = inject(ExcelService);
+  protected sheet = inject(SheetService);
   protected store = inject(Store);
   protected toast = inject(Toast);
   private router = inject(Router);

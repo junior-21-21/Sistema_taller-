@@ -7,19 +7,15 @@
       }
     </nav>
     <div class="xl">
-      @switch (excel.status()) {
-        @case ('linked') {
-          <span class="dot ok"></span>
-          <span class="xt">{{ excel.saving() ? 'Guardando…' : excel.source() === 'drive' ? 'Guardado en Drive' : 'Guardado en Excel' }}</span>
-        }
-        @case ('needs-permission') {
+      @switch (sheet.status()) {
+        @case ('ok') { <span class="dot ok"></span><span class="xt">Guardado en la hoja</span> }
+        @case ('saving') { <span class="dot ok"></span><span class="xt">Guardando…</span> }
+        @case ('loading') { <span class="dot"></span><span class="xt">Conectando…</span> }
+        @case ('offline') {
           <span class="dot warn"></span>
-          <button type="button" (click)="excel.reconnect()">{{ excel.source() === 'drive' ? 'Reconectar Drive' : 'Reconectar Excel' }}</button>
+          <button type="button" (click)="sheet.flush(); sheet.load(false)">Sin conexión · Reintentar</button>
         }
-        @default {
-          <span class="dot" [class.warn]="store.dirty()"></span>
-          <a routerLink="/ajustes" fragment="excel">Conectar Excel</a>
-        }
+        @default { <span class="dot warn"></span><span class="xt">Falta la hoja</span> }
       }
       <a class="mob-ic" routerLink="/ajustes" aria-label="Precios y taller"><app-icon name="gear" /></a>
       <a class="mob-ic" routerLink="/ayuda" aria-label="Ayuda"><app-icon name="help" /></a>

@@ -17,7 +17,7 @@ type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
       <div class="ph">
         <div>
           <h1>Cotizaciones</h1>
-          <p class="muted">Todas las cotizaciones guardadas en tu Excel. Busca por nombre, DNI, celular, número o trabajo.</p>
+          <p class="muted">Todas las cotizaciones guardadas en la hoja del taller. Busca por nombre, DNI, celular, número o trabajo.</p>
         </div>
         <a class="btn primary" routerLink="/cotizar"><app-icon name="plus" /> Nueva cotización</a>
       </div>
@@ -194,6 +194,6 @@ export class QuotesPage implements OnInit {
       this.toast.show(`No se puede borrar ${num}: tiene cobros. Anula primero sus notas de venta en Ventas.`, 6000);
       return;
     }
-    this.toast.show(`Cotización ${num} borrada del Excel.`);
+    this.toast.show(`Cotización ${num} borrada de la hoja.`);
   }
 }

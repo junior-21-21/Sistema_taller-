@@ -104,6 +104,6 @@ export class ReceiptPage implements OnDestroy {
     }
     this.store.voidSale(s.num, !s.void);
     this.armed.set(false);
-    this.toast.show(s.void ? 'Nota de venta restaurada.' : 'Nota de venta anulada. Sigue en el Excel marcada como anulada.');
+    this.toast.show(s.void ? 'Nota de venta restaurada.' : 'Nota de venta anulada. Sigue en la hoja marcada como anulada.');
   }
 }
