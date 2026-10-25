@@ -138,3 +138,5 @@ label.f.bad > input:focus, input.bad:focus { box-shadow: 0 0 0 4px rgba(198, 40,
 .fe { color: var(--bad); font-size: 12.5px; font-weight: 600; line-height: 1.25; }
 .fe::before { content: '⚠ '; }
 .fok { color: var(--ok); font-size: 12.5px; font-weight: 600; }
+.btn.danger { color: var(--bad); border-color: #e9b4b0; background: var(--panel); }
+.btn.danger:hover { background: var(--bad-soft); border-color: var(--bad); }

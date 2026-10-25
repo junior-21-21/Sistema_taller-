@@ -65,3 +65,14 @@ Los datos **no** se suben a GitHub: cada persona guarda su propio Excel en su co
 - `src/app/core/excel.service.ts`: lee y escribe el Excel.
 - `src/app/core/calc.ts`: cálculos, montos en letras, lectura del mensaje y el texto de WhatsApp.
 - `src/app/pages/`: las pantallas (inicio, cotizaciones, cotizar, hoja y contrato, ventas, boleta, clientes, ayuda, precios y taller).
+
+## Guardar el Excel en Google Drive
+
+En **Precios y taller → Google Drive** toca **Conectar con Google Drive**, inicia sesión y elige tu `runrun-datos.xlsx` (o crea uno nuevo). Cada cambio se guarda en ese archivo de Drive, y funciona igual en la computadora y en el celular. Si usas los dos equipos, antes de guardar la app junta los cambios del otro: de cada cotización y venta se queda la versión más nueva.
+
+Necesita un **ID de cliente OAuth** de Google Cloud (se crea una sola vez):
+
+1. En console.cloud.google.com crea un proyecto y habilita **Google Drive API**.
+2. Configura la **pantalla de consentimiento** como Externo y agrega tu correo en **Usuarios de prueba**.
+3. En **Credenciales** crea un **ID de cliente de OAuth** de tipo *Aplicación web*, con estos orígenes autorizados: `https://junior-21-21.github.io` y `http://localhost:4200`.
+4. Pega el ID en `src/app/core/drive.ts` (`GOOGLE_CLIENT_ID`), o escríbelo en la app la primera vez.

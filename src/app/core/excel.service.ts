@@ -3,9 +3,12 @@ import type { Workbook, Worksheet, CellValue } from 'exceljs';
 import { Store, Toast } from './store.service';
 import { CatalogItem, ESTADOS, Estado, Quote, Sale, Shop } from './models';
 import { lineTotal, qty, saleTotals, totals } from './calc';
+import { Drive, DriveError, DriveFile, clientId } from './drive';
 
 const FILE_NAME = 'runrun-datos.xlsx';
 const XLSX_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+const DRIVE_KEY = 'rr.drive';
+interface DriveLink { id: string; name: string; synced: string }
 const PICKER_TYPES = [{ description: 'Archivo de Excel', accept: { [XLSX_TYPE]: ['.xlsx'] } }];
 const MONEY = '"S/" #,##0.00';
 const ORANGE = 'FFE8650F';
@@ -87,9 +90,25 @@ export class ExcelService {
   readonly fileName = signal<string | null>(null);
   readonly status = signal<'none' | 'linked' | 'needs-permission'>('none');
   readonly saving = signal(false);
+  /** Dónde está el Excel: un archivo de esta computadora o Google Drive. */
+  readonly source = signal<'file' | 'drive' | null>(null);
+
+  // ---- Google Drive
+  private drive = new Drive();
+  private driveLink: DriveLink | null = null;
+  /** Lista de Excel de tu Drive para elegir (null = lista cerrada). */
+  readonly driveFiles = signal<DriveFile[] | null>(null);
+  readonly driveBusy = signal(false);
+  readonly hasClientId = signal(!!clientId());
 
   constructor() {
     this.restore();
+    // Al volver a la pestaña se traen los cambios hechos en otro equipo.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && this.source() === 'drive' && this.status() === 'linked' && this.drive.hasToken) {
+        this.driveSync(false).catch(() => undefined);
+      }
+    });
     // Cada cambio se escribe en el Excel enlazado.
     effect(() => {
       if (this.store.changes() === 0) return;
@@ -98,10 +117,27 @@ export class ExcelService {
   }
 
   private async restore() {
+    try {
+      this.driveLink = JSON.parse(localStorage.getItem(DRIVE_KEY) || 'null');
+    } catch {
+      this.driveLink = null;
+    }
+    if (this.driveLink) {
+      this.source.set('drive');
+      this.fileName.set(this.driveLink.name);
+      this.status.set('needs-permission');
+      if (this.drive.hasToken) {
+        // Recarga dentro de la misma hora: se sigue sin pedir permiso otra vez.
+        this.status.set('linked');
+        this.driveSync(false).catch((e) => this.driveFail(e));
+      }
+      return;
+    }
     if (!this.canLink) return;
     const h = await idbGet<Handle>('excel').catch(() => undefined);
     if (!h) return;
     this.handle = h;
+    this.source.set('file');
     this.fileName.set(h.name);
     const p = await h.queryPermission({ mode: 'readwrite' }).catch(() => 'prompt' as PermissionState);
     this.status.set(p === 'granted' ? 'linked' : 'needs-permission');
@@ -116,6 +152,7 @@ export class ExcelService {
 
   /** Vuelve a dar permiso al archivo después de cerrar el navegador. */
   async reconnect() {
+    if (this.source() === 'drive') return this.driveReconnect();
     if (!this.handle) return;
     const p = await this.handle.requestPermission({ mode: 'readwrite' });
     if (p !== 'granted') return;
@@ -146,6 +183,8 @@ export class ExcelService {
   }
 
   private async link(h: Handle, granted = true) {
+    this.forgetDrive();
+    this.source.set('file');
     this.handle = h;
     this.fileName.set(h.name);
     this.status.set(granted ? 'linked' : 'needs-permission');
@@ -162,6 +201,7 @@ export class ExcelService {
   }
 
   async saveNow(): Promise<boolean> {
+    if (this.source() === 'drive') return this.driveSave();
     if (!this.handle || this.status() !== 'linked') return false;
     this.saving.set(true);
     try {
@@ -180,6 +220,127 @@ export class ExcelService {
           : 'No se pudo guardar en el Excel. Tus datos siguen guardados en este navegador.',
         6000,
       );
+      return false;
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  // ------------------------------------------------------------------ Google Drive
+  private setDriveLink(f: DriveFile) {
+    this.driveLink = { id: f.id, name: f.name, synced: f.modifiedTime };
+    try { localStorage.setItem(DRIVE_KEY, JSON.stringify(this.driveLink)); } catch { /* nada */ }
+    this.handle = null;
+    idbSet('excel', null).catch(() => undefined);
+    this.source.set('drive');
+    this.fileName.set(f.name);
+    this.status.set('linked');
+  }
+
+  private forgetDrive() {
+    this.driveLink = null;
+    try { localStorage.removeItem(DRIVE_KEY); } catch { /* nada */ }
+  }
+
+  private driveFail(e: unknown) {
+    const err = e as DriveError;
+    if (err.status === 401) this.status.set('needs-permission');
+    this.toast.show(err.status === 401 ? 'Tu sesión de Google venció. Toca "Reconectar Drive".' : err.message || 'No se pudo conectar con Google Drive.', 6000);
+  }
+
+  /** Paso 1: iniciar sesión con Google y mostrar tus Excel de Drive. */
+  async driveStart() {
+    this.hasClientId.set(!!clientId());
+    this.driveBusy.set(true);
+    try {
+      await this.drive.login();
+      this.driveFiles.set(await this.drive.list());
+    } catch (e) {
+      this.driveFail(e);
+    } finally {
+      this.driveBusy.set(false);
+    }
+  }
+
+  /** Paso 2: usar ese Excel de Drive. Se cargan sus datos en la app. */
+  async driveOpen(f: DriveFile) {
+    this.driveBusy.set(true);
+    try {
+      await this.importBuffer(await this.drive.download(f.id), true);
+      this.setDriveLink(f);
+      this.driveFiles.set(null);
+    } catch (e) {
+      if (e instanceof DriveError) this.driveFail(e);
+      else this.toast.show('No se pudo leer ese archivo. ¿Es un Excel de Run Run?');
+    } finally {
+      this.driveBusy.set(false);
+    }
+  }
+
+  /** O crear un Excel nuevo en Drive con lo que ya tienes en la app. */
+  async driveCreate() {
+    this.driveBusy.set(true);
+    try {
+      this.setDriveLink(await this.drive.create(FILE_NAME, await this.build()));
+      this.store.dirty.set(false);
+      this.driveFiles.set(null);
+      this.toast.show(`Listo: se creó ${FILE_NAME} en tu Google Drive.`);
+    } catch (e) {
+      this.driveFail(e);
+    } finally {
+      this.driveBusy.set(false);
+    }
+  }
+
+  async driveReconnect() {
+    this.driveBusy.set(true);
+    try {
+      await this.drive.login(true);
+      this.status.set('linked');
+      await this.driveSync(true);
+    } catch (e) {
+      this.driveFail(e);
+    } finally {
+      this.driveBusy.set(false);
+    }
+  }
+
+  driveDisconnect() {
+    this.forgetDrive();
+    this.source.set(null);
+    this.fileName.set(null);
+    this.status.set('none');
+    this.toast.show('Se desconectó Google Drive. Tus datos siguen en este navegador.');
+  }
+
+  /** Trae los cambios de Drive (de otro equipo) y sube los de aquí. */
+  private async driveSync(announce: boolean) {
+    const link = this.driveLink;
+    if (!link) return;
+    const info = await this.drive.info(link.id);
+    if (info.modifiedTime !== link.synced) {
+      await this.importBuffer(await this.drive.download(link.id), false, this.store.dirty());
+      this.setDriveLink(info);
+      if (announce) this.toast.show('Datos al día con Google Drive.');
+    }
+    if (this.store.dirty()) await this.driveSave();
+  }
+
+  private async driveSave(): Promise<boolean> {
+    const link = this.driveLink;
+    if (!link || this.status() !== 'linked') return false;
+    this.saving.set(true);
+    try {
+      // Si otro equipo guardó mientras tanto, primero se juntan sus cambios con los de aquí.
+      const info = await this.drive.info(link.id);
+      if (info.modifiedTime !== link.synced) {
+        await this.importBuffer(await this.drive.download(link.id), false, true);
+      }
+      this.setDriveLink(await this.drive.update(link.id, await this.build()));
+      this.store.dirty.set(false);
+      return true;
+    } catch (e) {
+      this.driveFail(e);
       return false;
     } finally {
       this.saving.set(false);
@@ -362,7 +523,8 @@ export class ExcelService {
   }
 
   // ------------------------------------------------------------------ leer
-  private async importBuffer(buf: ArrayBuffer, announce: boolean) {
+  /** merge = juntar con lo que hay en la app (se queda la versión más nueva de cada cotización y venta). */
+  private async importBuffer(buf: ArrayBuffer, announce: boolean, merge = false) {
     const ExcelJS = await this.lib();
     const wb: Workbook = new ExcelJS.Workbook();
     await wb.xlsx.load(buf);
@@ -416,7 +578,22 @@ export class ExcelService {
     if (t['pie de la boleta'] !== undefined) shop.footer = t['pie de la boleta'];
     shop.payInfo = t['yape / plin / cuenta'] ?? '';
 
-    this.store.replaceAll({ catalog, quotes, sales, shop: Object.keys(t).length ? shop : undefined });
+    if (merge) {
+      const newest = <T extends { num: string; updatedAt: string }>(mine: T[], theirs: T[]) => {
+        const m = new Map(theirs.map((x) => [x.num, x]));
+        for (const x of mine) {
+          const o = m.get(x.num);
+          if (!o || (x.updatedAt || '') > (o.updatedAt || '')) m.set(x.num, x);
+        }
+        return [...m.values()];
+      };
+      // Los precios y datos del taller de este equipo se mantienen.
+      this.store.replaceAll({ quotes: newest(this.store.quotes(), quotes), sales: newest(this.store.sales(), sales) });
+      this.store.dirty.set(true);
+      return;
+    }
+    const hasPrices = !!wb.getWorksheet('Precios');
+    this.store.replaceAll({ catalog: hasPrices ? catalog : undefined, quotes, sales, shop: Object.keys(t).length ? shop : undefined });
     if (announce) this.toast.show(`Excel cargado: ${quotes.length} cotizaciones, ${sales.length} ventas y ${catalog.length} precios.`);
   }
 }

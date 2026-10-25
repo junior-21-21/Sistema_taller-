@@ -1,3 +1,6 @@
+@if (excel.status() !== 'linked') {
+  <app-need-excel />
+} @else {
 <div class="page" (input)="touch()" (change)="touch()">
   <div class="head">
     <div>
@@ -84,7 +87,11 @@
               <span class="plus" aria-hidden="true">+</span>
             </button>
           } @empty {
-            <div class="empty">No hay trabajos con ese nombre.</div>
+            @if (store.catalog().length) {
+              <div class="empty">No hay trabajos con ese nombre.</div>
+            } @else {
+              <div class="empty">Tu Excel todavía no tiene precios. Agrégalos en <a routerLink="/ajustes">Precios y taller</a> o usa <b>Otro trabajo</b>.</div>
+            }
           }
           <button type="button" class="tile other" (click)="addCustom()">
             <span class="cic"><app-icon name="edit" [size]="22" /></span>
@@ -213,6 +220,10 @@
       <div class="row">
         <button type="button" class="btn" (click)="restart()">+ Otra cotización</button>
         <a class="btn ghost" routerLink="/cotizaciones">Ver todas las cotizaciones</a>
+        <span class="spacer"></span>
+        @if (store.get(q.num)) {
+          <button type="button" class="btn danger" (click)="del()"><app-icon name="trash" [size]="18" /> {{ armed() ? '¿Seguro? Toca otra vez' : 'Borrar esta cotización' }}</button>
+        }
       </div>
     </section>
   }
@@ -229,3 +240,4 @@
     </div>
   </div>
 </div>
+}

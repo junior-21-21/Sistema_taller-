@@ -189,8 +189,11 @@ export class QuotesPage implements OnInit {
       setTimeout(() => this.armed() === num && this.armed.set(''), 3500);
       return;
     }
-    this.store.deleteQuote(num);
     this.armed.set('');
-    this.toast.show(`Cotización ${num} borrada.`);
+    if (!this.store.deleteQuote(num)) {
+      this.toast.show(`No se puede borrar ${num}: tiene cobros. Anula primero sus notas de venta en Ventas.`, 6000);
+      return;
+    }
+    this.toast.show(`Cotización ${num} borrada del Excel.`);
   }
 }

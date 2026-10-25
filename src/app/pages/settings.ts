@@ -68,6 +68,12 @@ import { Guide } from './guide';
           <button type="button" class="btn" (click)="addRow()">+ Agregar trabajo</button>
         </div>
         <p class="muted small">Precio = material + mano de obra. También puedes cambiarlos en la hoja "Precios" del Excel y volver a abrirlo.</p>
+        @if (samples()) {
+          <div class="sample">⚠ Tu lista tiene <b>{{ samples() }} precios de ejemplo</b> (sin cambiar). Pon tus precios reales o quítalos con el botón de abajo.</div>
+        }
+        @if (!catalog.length) {
+          <div class="empty">Todavía no tienes trabajos. Toca <b>+ Agregar trabajo</b> y pon tus precios reales.</div>
+        }
         <div class="tbl">
           <table>
             <thead><tr><th>Categoría</th><th>Trabajo</th><th>Qué incluye</th><th>Unidad</th><th class="n">Material</th><th class="n">Mano de obra</th><th class="n">Precio</th><th></th></tr></thead>
@@ -88,7 +94,9 @@ import { Guide } from './guide';
           </table>
         </div>
         <div class="row">
-          <button type="button" class="btn ghost" (click)="resetPrices()">{{ confirmReset() ? '¿Seguro? Toca otra vez' : 'Volver a los precios de ejemplo' }}</button>
+          @if (samples() ) {
+            <button type="button" class="btn danger" (click)="removeSamples()">{{ confirmReset() ? '¿Seguro? Toca otra vez' : 'Quitar los ' + samples() + ' precios de ejemplo' }}</button>
+          }
         </div>
       </section>
 
@@ -113,6 +121,7 @@ import { Guide } from './guide';
     td input, td select { padding: 7px 8px; font-size: 14px; border-color: transparent; background: transparent; }
     td input:hover, td select:hover { border-color: var(--line); }
     td input.num { width: 100px; text-align: right; }
+    .sample { background: var(--warn-soft); color: var(--warn); border: 1px solid #f0c48a; border-radius: 10px; padding: 10px 14px; font-weight: 600; }
     td input.bad { border-color: var(--bad); background: var(--bad-soft); }
     .n { text-align: right; padding-right: 10px; }
     .x { border: none; background: none; color: var(--muted); font: 600 13px var(--f-body); cursor: pointer; text-decoration: underline; }
@@ -153,15 +162,22 @@ export class SettingsPage {
     this.changed.set(true);
   }
 
-  resetPrices() {
+  /** Un precio es de ejemplo si sigue igual al que traía la plantilla. */
+  private isSample = (c: CatalogItem) =>
+    DEFAULT_CATALOG.some((d) => d.code === c.code && d.name === c.name && d.material === +c.material && d.labor === +c.labor);
+  samples() {
+    return this.catalog.filter(this.isSample).length;
+  }
+
+  removeSamples() {
     if (!this.confirmReset()) {
       this.confirmReset.set(true);
       setTimeout(() => this.confirmReset.set(false), 4000);
       return;
     }
-    this.catalog = structuredClone(DEFAULT_CATALOG);
+    this.catalog = this.catalog.filter((c) => !this.isSample(c));
     this.confirmReset.set(false);
-    this.changed.set(true);
+    this.save();
   }
 
   discard() {

@@ -2,6 +2,8 @@ import { Component, OnInit, computed, inject, input, signal } from '@angular/cor
 import { FormsModule } from '@angular/forms';
 import { Icon, catIcon } from './icon';
 import { Hint } from './guide';
+import { NeedExcel } from './need-excel';
+import { ExcelService } from '../core/excel.service';
 import { Router, RouterLink } from '@angular/router';
 import { Store, Toast } from '../core/store.service';
 import { AREA, CatalogItem, ESTADOS, Quote, QuoteItem, UNITS } from '../core/models';
@@ -12,7 +14,7 @@ const DRAFT = 'rr.draft';
 
 @Component({
   selector: 'app-quote',
-  imports: [FormsModule, RouterLink, Icon, Hint],
+  imports: [FormsModule, RouterLink, Icon, Hint, NeedExcel],
   templateUrl: './quote.html',
   styleUrl: './quote.css',
 })
@@ -21,7 +23,9 @@ export class QuotePage implements OnInit {
   readonly num = input<string>();
 
   protected store = inject(Store);
+  protected excel = inject(ExcelService);
   private toast = inject(Toast);
+  protected armed = signal(false);
   private router = inject(Router);
 
   protected q!: Quote;
@@ -233,6 +237,23 @@ export class QuotePage implements OnInit {
     this.err.set('');
     this.saved.set(false);
     this.router.navigate(['/cotizar']);
+  }
+
+  /** Borrar con dos toques. No se puede si ya tiene cobros. */
+  del() {
+    if (!this.armed()) {
+      this.armed.set(true);
+      setTimeout(() => this.armed.set(false), 3500);
+      return;
+    }
+    this.armed.set(false);
+    if (!this.store.deleteQuote(this.q.num)) {
+      this.toast.show('No se puede borrar: tiene cobros. Anula primero sus notas de venta en Ventas.', 6000);
+      return;
+    }
+    try { localStorage.removeItem(DRAFT); } catch { /* nada */ }
+    this.toast.show(`Cotización ${this.q.num} borrada del Excel.`);
+    this.router.navigate(['/cotizaciones']);
   }
 
   isArea(it: QuoteItem) {

@@ -7,11 +7,16 @@ import { fmt, saleTotals } from '../core/calc';
 import { clientErrors, focusFirstError, hasErrors, saleItemErrors, vRange } from '../core/validate';
 import { Icon } from './icon';
 import { Guide, Hint } from './guide';
+import { NeedExcel } from './need-excel';
+import { ExcelService } from '../core/excel.service';
 
 @Component({
   selector: 'app-sale',
-  imports: [FormsModule, RouterLink, Icon, Guide, Hint],
+  imports: [FormsModule, RouterLink, Icon, Guide, Hint, NeedExcel],
   template: `
+    @if (excel.status() !== 'linked') {
+      <app-need-excel />
+    } @else {
     <div class="page">
       <div class="ph">
         <div>
@@ -124,6 +129,7 @@ import { Guide, Hint } from './guide';
         </div>
       </div>
     </div>
+    }
   `,
   styles: `
     .num { font-size: 13px; color: var(--fire-dark); }
@@ -159,6 +165,7 @@ export class SalePage implements OnInit {
   readonly cot = input<string>('');
 
   protected store = inject(Store);
+  protected excel = inject(ExcelService);
   private toast = inject(Toast);
   private router = inject(Router);
   protected methods = PAY_METHODS;

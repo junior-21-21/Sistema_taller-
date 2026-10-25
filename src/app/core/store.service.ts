@@ -1,5 +1,5 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
-import { DEFAULT_CATALOG, DEFAULT_SHOP } from './default-data';
+import { DEFAULT_SHOP } from './default-data';
 import { CatalogItem, Client, Estado, Quote, Sale, Shop } from './models';
 import { clientKey, nowTime, saleTotals, suggestDays, todayIso, totals } from './calc';
 
@@ -34,7 +34,7 @@ export interface ClientSummary {
  *  ExcelService lo escribe en el archivo .xlsx. */
 @Injectable({ providedIn: 'root' })
 export class Store {
-  readonly catalog = signal<CatalogItem[]>(load('rr.catalog') ?? DEFAULT_CATALOG);
+  readonly catalog = signal<CatalogItem[]>(load('rr.catalog') ?? []);
   readonly quotes = signal<Quote[]>(load('rr.quotes') ?? []);
   readonly sales = signal<Sale[]>(load('rr.sales') ?? []);
   readonly shop = signal<Shop>({ ...DEFAULT_SHOP, ...(load<Partial<Shop>>('rr.shop') ?? {}) });
@@ -158,9 +158,17 @@ export class Store {
     this.touch();
   }
 
-  deleteQuote(num: string) {
+  /** Notas de venta (no anuladas) que cobran esta cotización. */
+  salesOf(num: string) {
+    return this.sales().filter((s) => s.quoteNum === num && !s.void);
+  }
+
+  /** Borra la cotización. No se puede si tiene cobros: primero se anulan sus notas de venta. */
+  deleteQuote(num: string): boolean {
+    if (this.salesOf(num).length) return false;
     this.quotes.update((list) => list.filter((q) => q.num !== num));
     this.touch();
+    return true;
   }
 
   // ---------------------------------------------------------------- ventas
@@ -234,7 +242,7 @@ export class Store {
 
   /** Reemplaza todo con lo leído del Excel. */
   replaceAll(data: { catalog?: CatalogItem[]; quotes?: Quote[]; sales?: Sale[]; shop?: Partial<Shop> }) {
-    if (data.catalog?.length) this.catalog.set(data.catalog);
+    if (data.catalog) this.catalog.set(data.catalog);
     if (data.quotes) this.quotes.set(data.quotes);
     if (data.sales) this.sales.set(data.sales);
     if (data.shop) this.shop.set({ ...DEFAULT_SHOP, ...data.shop });

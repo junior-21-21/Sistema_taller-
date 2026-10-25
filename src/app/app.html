@@ -10,11 +10,11 @@
       @switch (excel.status()) {
         @case ('linked') {
           <span class="dot ok"></span>
-          <span class="xt">{{ excel.saving() ? 'Guardando…' : 'Guardado en Excel' }}</span>
+          <span class="xt">{{ excel.saving() ? 'Guardando…' : excel.source() === 'drive' ? 'Guardado en Drive' : 'Guardado en Excel' }}</span>
         }
         @case ('needs-permission') {
           <span class="dot warn"></span>
-          <button type="button" (click)="excel.reconnect()">Reconectar Excel</button>
+          <button type="button" (click)="excel.reconnect()">{{ excel.source() === 'drive' ? 'Reconectar Drive' : 'Reconectar Excel' }}</button>
         }
         @default {
           <span class="dot" [class.warn]="store.dirty()"></span>

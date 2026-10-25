@@ -62,7 +62,7 @@ import { Toast } from '../core/store.service';
       <section class="card">
         <h2>Preguntas frecuentes</h2>
         <details><summary>¿Dónde se guarda todo?</summary>
-          <p>En el archivo <b>runrun-datos.xlsx</b>. Tiene hojas para Cotizaciones, Detalle, Ventas, Ventas detalle, Precios y Taller. La app también guarda una copia en el navegador por si cierras la pestaña.</p></details>
+          <p>En el archivo <b>runrun-datos.xlsx</b>, en tu <b>Google Drive</b> o en tu computadora (lo eliges en <i>Precios y taller</i>). Tiene hojas para Cotizaciones, Detalle, Ventas, Ventas detalle, Precios y Taller. La app también guarda una copia en el navegador por si cierras la pestaña.</p></details>
         <details><summary>¿Puedo abrir el Excel mientras uso la app?</summary>
           <p>Sí para mirar, pero <b>ciérralo antes de guardar</b> en la app. Si está abierto, Windows no deja escribir y la app te avisa.</p></details>
         <details><summary>¿Cómo cambio mis precios?</summary>
@@ -72,7 +72,9 @@ import { Toast } from '../core/store.service';
         <details><summary>Me equivoqué en una venta</summary>
           <p>Abre la nota de venta y toca <i>Anular</i> (dos veces para confirmar). Queda marcada como anulada en el Excel y no suma en tus totales. Luego emite una nueva.</p></details>
         <details><summary>¿Funciona en el celular?</summary>
-          <p>Sí. En el celular usa el menú de abajo. Ahí no se puede escribir directo en el Excel: usa <i>Descargar copia</i> y <i>Cargar Excel</i> en Precios y taller.</p></details>
+          <p>Sí. En el celular usa el menú de abajo. Conecta el mismo Excel con <i>Conectar con Google Drive</i> en Precios y taller y verás lo mismo que en la computadora. Al volver a la app, toca <i>Reconectar Drive</i> si te lo pide.</p></details>
+        <details><summary>Usé el celular y la computadora a la vez, ¿se pierde algo?</summary>
+          <p>No. Antes de guardar, la app trae lo que se guardó desde el otro equipo y junta los cambios: de cada cotización y venta se queda la versión más nueva.</p></details>
         <details><summary>¿Cómo imprimo el ticket?</summary>
           <p>En la nota de venta elige <i>Ticket 80 mm</i> y toca <i>Imprimir o PDF</i>. Funciona con impresoras térmicas de 80 mm. Para impresora normal elige <i>Hoja A4</i>.</p></details>
       </section>
