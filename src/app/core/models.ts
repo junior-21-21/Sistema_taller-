@@ -76,6 +76,8 @@ export interface Quote {
   penalty: number;
   notes: string;
   estado: Estado;
+  /** Descuento especial en soles que se da al aceptar el trabajo (antes del IGV). */
+  special?: number;
   updatedAt: string;
 }
 

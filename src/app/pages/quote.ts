@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Icon, catIcon } from './icon';
 import { Hint } from './guide';
 import { DetailEditor } from './detail-editor';
+import { CloseDeal } from './close-deal';
 import { detailLines, emptyDetail, fixDetail } from '../core/detail';
 import { NeedExcel } from './need-excel';
 import { SheetService } from '../core/sheet.service';
@@ -16,7 +17,7 @@ const DRAFT = 'rr.draft';
 
 @Component({
   selector: 'app-quote',
-  imports: [FormsModule, RouterLink, Icon, Hint, NeedExcel, DetailEditor],
+  imports: [FormsModule, RouterLink, Icon, Hint, NeedExcel, DetailEditor, CloseDeal],
   templateUrl: './quote.html',
   styleUrl: './quote.css',
 })
@@ -254,6 +255,21 @@ export class QuotePage implements OnInit {
     try { localStorage.removeItem(DRAFT); } catch { /* nada */ }
     this.toast.show(`Cotización ${this.q.num} borrada de la hoja.`);
     this.router.navigate(['/cotizaciones']);
+  }
+
+  // ---- descuento especial al aceptar
+  protected deal = signal(false);
+
+  openDeal() {
+    this.save();
+    this.deal.set(true);
+  }
+
+  /** La ventana guarda en la lista: se trae la versión guardada para no pisarla. */
+  closeDeal() {
+    this.deal.set(false);
+    const saved = this.store.get(this.q.num);
+    if (saved) this.q = structuredClone(saved);
   }
 
   isArea(it: QuoteItem) {

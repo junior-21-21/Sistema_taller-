@@ -12,6 +12,10 @@ export const lineTotal = (it: QuoteItem) => round2(qty(it) * (it.price || 0));
 export interface Totals {
   sub: number;
   dsc: number;
+  /** Descuento especial al aceptar. */
+  esp: number;
+  /** Total que se cotizó, sin el descuento especial. */
+  quoted: number;
   igv: number;
   tot: number;
   advM: number;
@@ -21,10 +25,12 @@ export interface Totals {
 export function totals(q: Quote): Totals {
   const sub = round2(q.items.reduce((a, it) => a + lineTotal(it), 0));
   const dsc = round2((sub * (q.discount || 0)) / 100);
-  const igv = q.igv ? round2((sub - dsc) * 0.18) : 0;
-  const tot = round2(sub - dsc + igv);
+  const esp = round2(Math.min(Math.max(+(q.special || 0), 0), sub - dsc));
+  const igv = q.igv ? round2((sub - dsc - esp) * 0.18) : 0;
+  const tot = round2(sub - dsc - esp + igv);
+  const quoted = esp ? round2((sub - dsc) * (q.igv ? 1.18 : 1)) : tot;
   const advM = round2((tot * (q.advance || 0)) / 100);
-  return { sub, dsc, igv, tot, advM, balM: round2(tot - advM) };
+  return { sub, dsc, esp, quoted, igv, tot, advM, balM: round2(tot - advM) };
 }
 
 /** Plazo sugerido: más días mientras más grande el trabajo. */
@@ -117,6 +123,7 @@ export function waText(q: Quote, shop: Shop): string {
     '',
     `Subtotal: ${fmt(t.sub)}`,
     ...(t.dsc ? [`Descuento ${q.discount}%: −${fmt(t.dsc)}`] : []),
+    ...(t.esp ? [`Descuento especial: −${fmt(t.esp)}`] : []),
     ...(t.igv ? [`IGV 18%: ${fmt(t.igv)}`] : []),
     `*TOTAL: ${fmt(t.tot)}*`,
     '',

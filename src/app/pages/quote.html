@@ -184,6 +184,7 @@
         <h2>Resumen</h2>
         <div class="sl"><span>Subtotal</span><span class="money">{{ fmt(t.sub) }}</span></div>
         @if (t.dsc) { <div class="sl ok"><span>Descuento {{ q.discount }}%</span><span class="money">−{{ fmt(t.dsc) }}</span></div> }
+        @if (t.esp) { <div class="sl ok"><span>Descuento especial al aceptar</span><span class="money">−{{ fmt(t.esp) }}</span></div> }
         @if (t.igv) { <div class="sl"><span>IGV 18%</span><span class="money">{{ fmt(t.igv) }}</span></div> }
         <div class="sl big"><span>Total</span><span class="money">{{ fmt(t.tot) }}</span></div>
         <div class="pay">
@@ -204,7 +205,10 @@
           <p class="muted">{{ q.num }} · {{ q.client.name }} · {{ q.items.length }} trabajo{{ q.items.length === 1 ? '' : 's' }}</p>
         </div>
         <span class="spacer"></span>
-        <b class="money total">{{ fmt(t.tot) }}</b>
+        <div class="tot-wrap">
+          @if (t.esp) { <s class="muted money">{{ fmt(t.quoted) }}</s> }
+          <b class="money total">{{ fmt(t.tot) }}</b>
+        </div>
       </div>
       @if (!saved()) {
         <button type="button" class="btn primary big" (click)="save()">Guardar cambios</button>
@@ -214,6 +218,7 @@
         <a class="act" [routerLink]="['/hoja', q.num, 'cotizacion']" (click)="save()"><b>Ver hoja / PDF</b><span>Con tu logo, para imprimir o guardar en PDF</span></a>
         <a class="act" [routerLink]="['/hoja', q.num, 'contrato']" (click)="save()"><b>Hacer contrato</b><span>Cuando el cliente acepte</span></a>
         <a class="act" routerLink="/venta" [queryParams]="{ cot: q.num }" (click)="save()"><b>Cobrar adelanto</b><span>Da la nota de venta y marca como aceptada</span></a>
+        <button type="button" class="act deal" (click)="openDeal()"><b>{{ store.get(q.num)?.special ? 'Cambiar descuento especial' : 'Aceptar con descuento' }}</b><span>Si al aceptar le bajas el precio al cliente</span></button>
       </div>
       <label class="f estado">Estado
         <select [(ngModel)]="q.estado" (change)="save()">@for (e of estados; track e) { <option [value]="e">{{ e }}</option> }</select>
@@ -241,4 +246,5 @@
     </div>
   </div>
 </div>
+  @if (deal()) { <app-close-deal [num]="q.num" (closed)="closeDeal()" /> }
 }

@@ -6,12 +6,13 @@ import { ESTADOS, Estado, Quote } from '../core/models';
 import { fmt, fmtDate, norm, totals, waLink } from '../core/calc';
 import { Icon } from './icon';
 import { Guide, Hint } from './guide';
+import { CloseDeal } from './close-deal';
 
 type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
 
 @Component({
   selector: 'app-quotes',
-  imports: [FormsModule, RouterLink, Icon, Guide, Hint],
+  imports: [FormsModule, RouterLink, Icon, Guide, Hint, CloseDeal],
   template: `
     <div class="page">
       <div class="ph">
@@ -69,7 +70,9 @@ type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
                 <span class="small works">{{ works(item) }}</span>
               </div>
               <div class="amt">
+                @if (item.special) { <s class="small money muted">{{ fmt(quoted(item)) }}</s> }
                 <b class="money">{{ fmt(tot(item)) }}</b>
+                @if (item.special) { <span class="small esp">Con descuento especial</span> }
                 @if (item.estado === 'Aceptada') {
                   <span class="small money" [class.money-in]="due(item) <= 0" [class.money-due]="due(item) > 0">
                     {{ due(item) <= 0 ? 'Pagado completo' : 'Falta cobrar ' + fmt(due(item)) }}
@@ -87,6 +90,10 @@ type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
               @if (item.estado !== 'Rechazada' && due(item) > 0) {
                 <a class="iconbtn" routerLink="/venta" [queryParams]="{ cot: item.num }"><app-icon name="cash" [size]="16" /> Cobrar</a>
               }
+ @if (item.estado !== 'Rechazada') {
+                <button type="button" class="iconbtn deal" (click)="deal.set(item.num)"><app-icon name="cash" [size]="16" />
+                  {{ item.special ? 'Cambiar descuento' : item.estado === 'Pendiente' ? 'Aceptar con descuento' : 'Dar descuento' }}</button>
+              }
               <a class="iconbtn wa" [href]="wa(item)" target="_blank" rel="noopener"><app-icon name="wa" [size]="16" /> WhatsApp</a>
               <button type="button" class="iconbtn" (click)="dup(item.num)"><app-icon name="copy" [size]="16" /> Duplicar</button>
               <button type="button" class="iconbtn danger" (click)="del(item.num)"><app-icon name="trash" [size]="16" /> {{ armed() === item.num ? '¿Seguro? Toca otra vez' : 'Borrar' }}</button>
@@ -99,10 +106,13 @@ type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
           </div>
         }
       </div>
+      @if (deal()) { <app-close-deal [num]="deal()" (closed)="deal.set('')" /> }
     </div>
   `,
   styles: `
     .list { display: grid; gap: 12px; }
+    .esp { color: var(--ok); font-weight: 700; }
+    .iconbtn.deal { border-color: #f6c59a; background: var(--soft); color: var(--fire-dark); }
     .qc { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 12px; }
     .top { display: flex; justify-content: space-between; gap: 16px; }
     .who { display: grid; gap: 1px; min-width: 0; }
@@ -136,6 +146,9 @@ export class QuotesPage implements OnInit {
   protected estado = signal<Estado | ''>('');
   protected sort = signal<Sort>('recientes');
   protected armed = signal('');
+  /** Cotización con la ventana de descuento abierta. */
+  protected deal = signal('');
+  quoted = (q: Quote) => totals(q).quoted;
 
   ngOnInit() {
     const e = this.estadoParam() as Estado;

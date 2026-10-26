@@ -70,6 +70,7 @@
         <div class="tt">
           <div><span>Subtotal</span><span class="money">{{ fmt(t()!.sub) }}</span></div>
           @if (t()!.dsc) { <div><span>Descuento {{ q.discount }}%</span><span class="money">−{{ fmt(t()!.dsc) }}</span></div> }
+          @if (t()!.esp) { <div class="esp"><span>Descuento especial al aceptar</span><span class="money">−{{ fmt(t()!.esp) }}</span></div> }
           @if (t()!.igv) { <div><span>IGV 18%</span><span class="money">{{ fmt(t()!.igv) }}</span></div> }
           <div class="g"><span>TOTAL</span><span class="money">{{ fmt(t()!.tot) }}</span></div>
           <div class="sub">{{ q.igv ? 'Incluye IGV' : 'Precios no incluyen IGV' }}</div>
@@ -115,7 +116,7 @@
         </div>
         <div>
           <h4>{{ clause()['precio'] }}: PRECIO</h4>
-          <p>El precio total es de <b>{{ fmt(t()!.tot) }}</b> ({{ inWords(t()!.tot) }}){{ q.igv ? ', que incluye IGV' : ', sin IGV' }}@if (t()!.dsc) {, con un descuento de {{ q.discount }}% ya aplicado}.
+          <p>El precio total es de <b>{{ fmt(t()!.tot) }}</b> ({{ inWords(t()!.tot) }}){{ q.igv ? ', que incluye IGV' : ', sin IGV' }}@if (t()!.dsc) {, con un descuento de {{ q.discount }}% ya aplicado}@if (t()!.esp) {, y un descuento especial de {{ fmt(t()!.esp) }} otorgado al aceptar el trabajo}.
             Incluye materiales, mano de obra e instalación según lo detallado.</p>
         </div>
         <div>
