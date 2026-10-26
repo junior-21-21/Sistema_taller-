@@ -107,7 +107,7 @@ export class Guide {
 
 const SLIDES = [
   { icon: 'helmet', title: 'Bienvenido a tu taller digital', text: 'Aquí haces cotizaciones, contratos y notas de venta de Run Run, y todo queda guardado en la hoja de Google del taller. Te muestro cómo funciona en 4 pasos.' },
-  { icon: 'quote', title: '1. El cliente pide precio', text: 'Toca el botón naranja "+". Pega su mensaje de WhatsApp, elige los trabajos (portón, reja, techo…) y pon las medidas. El precio se calcula solo.' },
+  { icon: 'quote', title: '1. El cliente pide precio', text: 'Toca el botón naranja "+". Escribe los datos del cliente, elige los trabajos (portón, reja, techo…) y pon las medidas. El precio se calcula solo.' },
   { icon: 'wa', title: '2. Envíale la cotización', text: 'Con un toque le llega por WhatsApp, o sacas una hoja con tu logo para imprimir o guardar en PDF.' },
   { icon: 'cash', title: '3. Acepta y paga', text: 'En Cotizaciones toca "Cobrar". Sale la nota de venta del adelanto, y después la del saldo cuando entregas. Si hace falta, imprime el contrato.' },
   { icon: 'file', title: '4. Todo se guarda solo', text: 'Cada cambio va a la hoja de Google del taller, y cualquiera que abra este enlace ve lo mismo. Si te pierdes, toca "Ayuda" o los botones "?".' },

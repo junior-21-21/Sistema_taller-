@@ -9,7 +9,7 @@ import { SheetService } from '../core/sheet.service';
 import { Router, RouterLink } from '@angular/router';
 import { Store, Toast } from '../core/store.service';
 import { AREA, CatalogItem, ESTADOS, Quote, QuoteItem, UNITS } from '../core/models';
-import { fmt, fmtQty, lineTotal, parseMessage, qty, suggestDays, totals, waLink } from '../core/calc';
+import { fmt, fmtQty, lineTotal, qty, suggestDays, totals, waLink } from '../core/calc';
 import { clientErrors, focusFirstError, hasErrors, itemErrors, payErrors } from '../core/validate';
 
 const DRAFT = 'rr.draft';
@@ -35,7 +35,6 @@ export class QuotePage implements OnInit {
   protected maxStep = signal(1);
   protected saved = signal(false);
   protected isNew = true;
-  protected msg = '';
   protected err = signal('');
   /** Último paso en el que se intentó avanzar: desde ahí se marcan en rojo los campos vacíos. */
   protected tried = signal(0);
@@ -45,7 +44,7 @@ export class QuotePage implements OnInit {
 
   protected readonly steps = ['Cliente', 'Trabajos', 'Pago', 'Enviar'];
   protected readonly tips = [
-    '¿Para quién es? Pega el mensaje de WhatsApp del cliente o escribe su nombre y celular.',
+    '¿Para quién es? Escribe el nombre del cliente y, si los tienes, su DNI o RUC, celular y el lugar de la obra.',
     'Toca los trabajos que pidió y pon las medidas en metros. El precio se calcula solo.',
     'Elige el descuento, el adelanto y el plazo. A la derecha ves cuánto paga y cuándo.',
     '¡Listo! Mándala por WhatsApp, saca la hoja en PDF o cobra el adelanto.',
@@ -157,19 +156,6 @@ export class QuotePage implements OnInit {
     return false;
   }
 
-  // ---- paso 1
-  readMessage() {
-    const found = parseMessage(this.msg);
-    const names: string[] = [];
-    const c = this.q.client;
-    if (found.name && !c.name) { c.name = found.name; names.push('nombre'); }
-    if (found.doc && !c.doc) { c.doc = found.doc; names.push(found.doc.length === 11 ? 'RUC' : 'DNI'); }
-    if (found.tel && !c.tel) { c.tel = found.tel; names.push('teléfono'); }
-    if (found.place && !c.place) { c.place = found.place; names.push('lugar'); }
-    this.toast.show(names.length ? `Encontré: ${names.join(', ')}. Revisa y completa lo que falte.` : 'No encontré datos claros. Llénalos a mano.');
-    this.touch();
-  }
-
   // ---- paso 2
   add(c: CatalogItem) {
     this.q.items.push({ code: c.code, name: c.name, inc: c.inc, unit: c.unit, price: c.material + c.labor, w: null, h: null, q: 1, detail: structuredClone(fixDetail(c.detail)) });
@@ -245,7 +231,6 @@ export class QuotePage implements OnInit {
     this.q = this.store.newQuote();
     this.isNew = true;
     this.daysAuto = true;
-    this.msg = '';
     this.step.set(1);
     this.maxStep.set(1);
     this.tried.set(0);

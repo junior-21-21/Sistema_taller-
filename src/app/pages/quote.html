@@ -33,14 +33,6 @@
   @if (step() === 1) {
     <section class="card">
       <h2>¿Para quién es?</h2>
-      <div class="paste">
-        <label class="f" for="msg">Atajo: pega aquí el mensaje de WhatsApp del cliente</label>
-        <textarea id="msg" [(ngModel)]="msg" placeholder="Ej: Hola, soy Rosa Quispe, DNI 45892104, cel 966 123 456. Quiero un portón corredizo de 3 x 2.4 m en Jr. Libertad 123, Huamanga"></textarea>
-        <div class="row">
-          <button type="button" class="btn dark" (click)="readMessage()" [disabled]="!msg.trim()">Sacar datos del mensaje</button>
-          <span class="muted small">Llena nombre, DNI o RUC, celular y lugar si los encuentra.</span>
-        </div>
-      </div>
       <div class="grid">
         <label class="f" [class.bad]="show(1, ce.name)">
           <span>Nombre del cliente <span class="req">*</span></span>

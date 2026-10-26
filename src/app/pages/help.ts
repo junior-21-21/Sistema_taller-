@@ -33,7 +33,7 @@ import { Toast } from '../core/store.service';
           <a routerLink="/cotizar">
             <span class="n">2</span><app-icon name="quote" [size]="26" />
             <b>El cliente pide precio: haz la cotización</b>
-            <span>Toca el botón naranja <b>+</b>. Pega su mensaje de WhatsApp, elige los trabajos, pon las medidas y toca <i>Siguiente</i> hasta terminar.</span>
+            <span>Toca el botón naranja <b>+</b>. Escribe los datos del cliente, elige los trabajos, pon las medidas y toca <i>Siguiente</i> hasta terminar.</span>
           </a>
         </li>
         <li>
