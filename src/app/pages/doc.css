@@ -12,6 +12,9 @@
 }
 .hd { display: flex; justify-content: space-between; gap: 20px; align-items: center; background: #1b2126; color: #fff; margin: -14mm -15mm 0; padding: 7mm 15mm; }
 .hd img { height: 22mm; width: auto; }
+.hd .tels { display: flex; flex-direction: column; align-items: center; gap: 1px; font-family: var(--f-num); line-height: 1.25; }
+.hd .tels span { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #ffb070; }
+.hd .tels b { font-size: 17px; color: #fff; letter-spacing: .03em; white-space: nowrap; }
 .hd .doc { text-align: right; font-family: var(--f-num); font-size: 12px; color: #cfd6dc; }
 .hd .doc h3 { font-family: var(--f-display); font-size: 30px; color: #ffb070; letter-spacing: .05em; }
 .band { height: 5px; background: linear-gradient(90deg, #e8650f, #f59e0b); margin: -16px -15mm 0; }

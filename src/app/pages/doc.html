@@ -37,6 +37,13 @@
     <article class="a4">
       <header class="hd">
         <img src="logo-runrun.webp" alt="Run Run Estructuras Metálicas">
+        @if (tels()) {
+          <div class="tels">
+            <span>Celular / WhatsApp</span>
+            @if (shop().tel) { <b>{{ shop().tel }}</b> }
+            @if (shop().tel2) { <b>{{ shop().tel2 }}</b> }
+          </div>
+        }
         <div class="doc">
           <h3>{{ isContract() ? 'CONTRATO' : 'COTIZACIÓN' }}</h3>
           <div>{{ isContract() ? conNum() : q.num }}</div>
