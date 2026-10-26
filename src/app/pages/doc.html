@@ -12,6 +12,25 @@
       <button type="button" class="btn primary" (click)="print()">Imprimir o guardar PDF</button>
     </div>
     <p class="hint">Para PDF: en la ventana de imprimir elige <b>Guardar como PDF</b> como impresora.</p>
+    @if (isContract()) {
+      @let tt = t()!;
+      <div class="advp">
+        <span class="lbl">Adelanto del contrato:</span>
+        <div class="chips">
+          @for (p of [30, 40, 50, 60, 70, 100]; track p) {
+            <button type="button" class="chip" [class.on]="!q.advanceAmt && q.advance === p" (click)="setPct(p)">{{ p }}%</button>
+          }
+          <label class="amt" [class.on]="!!q.advanceAmt"><span>S/</span>
+            <input type="number" min="0" step="any" inputmode="decimal" placeholder="Otro monto" aria-label="Adelanto en soles" [value]="q.advanceAmt ?? ''" (change)="setAmt($any($event.target).value)"></label>
+        </div>
+        <div class="res">
+          <span>Adelanto <b>{{ pct(tt.advM, tt.tot) }}%</b> = <b class="money">{{ fmt(tt.advM) }}</b></span>
+          <span>Falta <b>{{ pct(tt.balM, tt.tot) }}%</b> = <b class="money">{{ fmt(tt.balM) }}</b></span>
+          @if (paid() > 0) { <span class="muted">Ya pagó {{ fmt(paid()) }} · le falta {{ fmt(left()) }}</span> }
+        </div>
+        @if (amtErr()) { <span class="fe">{{ amtErr() }}</span> }
+      </div>
+    }
   </div>
 
   <div class="paper">
@@ -99,78 +118,152 @@
           <div>Conforme: {{ q.client.name || 'Cliente' }}</div>
         </div>
       } @else {
+        @let tt = t()!;
         <p class="ctitle">CONTRATO DE FABRICACIÓN E INSTALACIÓN DE ESTRUCTURAS METÁLICAS</p>
         <p class="just">
-          Conste por el presente documento el contrato que celebran, de una parte, <b>{{ shop().name }}</b>@if (shop().ruc) {, con RUC <b>{{ shop().ruc }}</b>},
-          con domicilio en {{ shop().address }}, representado por <b>{{ shop().rep || blank }}</b>, identificado con DNI <b>{{ shop().repDni || blank }}</b>,
-          a quien se denominará <b>EL CONTRATISTA</b>; y de la otra parte,
+          Conste por el presente documento el contrato de fabricación e instalación que celebran, de una parte, <b>{{ shop().name }}</b>@if (shop().ruc) {, con RUC <b>{{ shop().ruc }}</b>},
+          con domicilio en {{ shop().address }}@if (shop().tel) {, celular {{ shop().tel }}}, debidamente representado por <b>{{ shop().rep || blank }}</b>, identificado con DNI <b>{{ shop().repDni || blank }}</b>,
+          a quien en adelante se denominará <b>EL CONTRATISTA</b>; y de la otra parte,
           @if (co()) {
-            <b>{{ q.client.name || blank }}</b>, con RUC <b>{{ q.client.doc || blank }}</b>, representada por <b>{{ q.client.contact || blank }}</b>,
+            <b>{{ q.client.name || blank }}</b>, con RUC <b>{{ q.client.doc || blank }}</b>, debidamente representada por <b>{{ q.client.contact || blank }}</b>,
           } @else {
             <b>{{ q.client.name || blank }}</b>, identificado con DNI <b>{{ q.client.doc || blank }}</b>,
           }
-          con domicilio en {{ q.client.place || blank }}, a quien se denominará <b>EL CLIENTE</b>; en los términos siguientes:
+          con domicilio en {{ q.client.place || blank }}@if (q.client.tel) {, celular {{ q.client.tel }}}@if (q.client.email) {, correo {{ q.client.email }}},
+          a quien en adelante se denominará <b>EL CLIENTE</b>; en los términos y condiciones siguientes:
         </p>
+
         <div>
-          <h4>{{ clause()['objeto'] }}: OBJETO</h4>
-          <p>EL CONTRATISTA se obliga a fabricar e instalar los siguientes trabajos, según la cotización {{ q.num }}, que forma parte de este contrato:</p>
-          <ul>
-            @for (it of q.items; track $index) {
-              <li>{{ it.name }}: {{ fmtQty(qty(it)) }} {{ it.unit }}@if (it.unit === AREA) { ({{ it.q }} pza de {{ it.w }} × {{ it.h }} m)}, {{ fmt(lineTotal(it)) }}.@if (detailLines(it.detail).length) { Especificaciones: {{ detailLines(it.detail).join('; ') }}.}</li>
-            }
-          </ul>
-          @if (q.desc) { <p>Detalle: {{ trimDot(q.desc) }}.</p> }
+          <h4>{{ clause()['objeto'] }}: OBJETO DEL CONTRATO</h4>
+          <p class="just">Por el presente contrato, EL CONTRATISTA se obliga a fabricar e instalar, a favor de EL CLIENTE, los trabajos que se detallan a continuación,
+            de acuerdo con la cotización <b>{{ q.num }}</b> del {{ fmtDate(q.date) }}, la cual forma parte integrante de este contrato@if (q.client.place) {. Lugar de la obra: <b>{{ q.client.place }}</b>}.</p>
+          <table class="ctab">
+            <thead><tr><th>#</th><th>Trabajo</th><th class="n">Cantidad</th><th class="n">Importe</th></tr></thead>
+            <tbody>
+              @for (it of q.items; track $index; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}</td>
+                  <td><b>{{ it.name }}</b>@if (it.unit === AREA) {<span class="sub"> · {{ it.q }} pza de {{ it.w }} × {{ it.h }} m</span>}
+                    @if (detailLines(it.detail).length) { <ul class="spec">@for (l of detailLines(it.detail); track $index) { <li>{{ l }}</li> }</ul> }
+                    @else if (it.inc) { <div class="sub small">{{ it.inc }}</div> }
+                  </td>
+                  <td class="n">{{ fmtQty(qty(it)) }} {{ it.unit }}</td>
+                  <td class="n">{{ fmt(lineTotal(it)) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          @if (q.desc) { <p>Detalle adicional: {{ trimDot(q.desc) }}.</p> }
         </div>
+
         <div>
           <h4>{{ clause()['precio'] }}: PRECIO</h4>
-          <p>El precio total es de <b>{{ fmt(t()!.tot) }}</b> ({{ inWords(t()!.tot) }}){{ q.igv ? ', que incluye IGV' : ', sin IGV' }}@if (t()!.dsc) {, con un descuento de {{ q.discount }}% ya aplicado}@if (t()!.esp) {, y un descuento especial de {{ fmt(t()!.esp) }} otorgado al aceptar el trabajo}.
-            Incluye materiales, mano de obra e instalación según lo detallado.</p>
+          <p class="just">El precio total pactado es de <b>{{ fmt(tt.tot) }}</b> ({{ inWords(tt.tot) }}){{ q.igv ? ', incluido el IGV' : ', sin IGV' }}.
+            Incluye los materiales, la mano de obra@if (anyInstall()) {, la instalación} y el acabado descritos en la cláusula anterior. Cualquier trabajo no descrito se considera adicional.</p>
+          <div class="mini-t">
+            <div><span>Subtotal</span><b class="n">{{ fmt(tt.sub) }}</b></div>
+            @if (tt.dsc) { <div><span>Descuento {{ q.discount }}%</span><b class="n">−{{ fmt(tt.dsc) }}</b></div> }
+            @if (tt.esp) { <div><span>Descuento especial</span><b class="n">−{{ fmt(tt.esp) }}</b></div> }
+            @if (tt.igv) { <div><span>IGV 18%</span><b class="n">{{ fmt(tt.igv) }}</b></div> }
+            <div class="g"><span>Total</span><b class="n">{{ fmt(tt.tot) }}</b></div>
+          </div>
         </div>
+
         <div>
-          <h4>{{ clause()['pago'] }}: FORMA DE PAGO</h4>
-          <p>EL CLIENTE pagará un adelanto de @if (!q.advanceAmt) {{{ q.advance }}% (<b>{{ fmt(t()!.advM) }}</b>)} @else {<b>{{ fmt(t()!.advM) }}</b>} a la firma de este contrato, y el saldo
-            @if (!q.advanceAmt) {de {{ 100 - q.advance }}% (<b>{{ fmt(t()!.balM) }}</b>)} @else {de <b>{{ fmt(t()!.balM) }}</b>} a la entrega conforme de los trabajos. Sin el pago del adelanto no se inicia la fabricación.</p>
+          <h4>{{ clause()['pago'] }}: FORMA Y OPORTUNIDAD DE PAGO</h4>
+          <p class="just">EL CLIENTE pagará el precio de la siguiente manera:</p>
+          <table class="ctab pays">
+            <thead><tr><th>Pago</th><th>Momento</th><th class="n">%</th><th class="n">Monto</th></tr></thead>
+            <tbody>
+              <tr><td><b>Adelanto</b></td><td>A la firma del presente contrato</td><td class="n">{{ pct(tt.advM, tt.tot) }}%</td><td class="n">{{ fmt(tt.advM) }}</td></tr>
+              <tr><td><b>Saldo</b></td><td>A la entrega conforme de los trabajos</td><td class="n">{{ pct(tt.balM, tt.tot) }}%</td><td class="n">{{ fmt(tt.balM) }}</td></tr>
+              <tr class="tot"><td colspan="2"><b>Total</b></td><td class="n">100%</td><td class="n"><b>{{ fmt(tt.tot) }}</b></td></tr>
+            </tbody>
+          </table>
+          @if (paid() > 0) {
+            <p class="paid">A la fecha EL CLIENTE ha pagado <b>{{ fmt(paid()) }}</b>; queda por pagar <b>{{ fmt(left()) }}</b> ({{ inWords(left()) }}).</p>
+          }
+          <p class="just">Los pagos se pueden hacer en efectivo, Yape, Plin o transferencia@if (shop().payInfo) { ({{ shop().payInfo }})}. Por cada pago EL CONTRATISTA entregará una nota de venta.
+            Sin el pago del adelanto no se inicia la fabricación. Los trabajos instalados quedan en propiedad de EL CONTRATISTA hasta la cancelación total del precio.</p>
         </div>
+
         <div>
-          <h4>{{ clause()['plazo'] }}: PLAZO</h4>
-          <p>El plazo de entrega es de <b>{{ q.days }} días hábiles</b>, contados desde el pago del adelanto y la confirmación de medidas. El plazo se amplía por
-            causas ajenas a EL CONTRATISTA, como falta de acceso a la obra, cambios pedidos por EL CLIENTE, falta de energía eléctrica o lluvias en trabajos a la intemperie.</p>
+          <h4>{{ clause()['plazo'] }}: PLAZO DE EJECUCIÓN</h4>
+          <p class="just">El plazo de entrega es de <b>{{ q.days }} días hábiles</b>, contados desde el día siguiente del pago del adelanto y la confirmación de medidas en obra.
+            El plazo se amplía, sin penalidad, por causas ajenas a EL CONTRATISTA: falta de acceso a la obra, falta de energía eléctrica, cambios pedidos por EL CLIENTE, retraso en los pagos
+            o lluvias en trabajos a la intemperie.</p>
         </div>
+
         <div>
           <h4>{{ clause()['contratista'] }}: OBLIGACIONES DEL CONTRATISTA</h4>
-          <p>Usar los materiales indicados en la cotización, ejecutar el trabajo con personal calificado y con las medidas de seguridad necesarias, y dejar limpia la zona de trabajo al terminar.</p>
+          <ul class="ol">
+            <li>Usar los materiales, medidas, espesores y acabados indicados en este contrato.</li>
+            <li>Ejecutar el trabajo con personal calificado, herramientas propias y las medidas de seguridad necesarias.</li>
+            <li>Cumplir el plazo pactado y avisar a EL CLIENTE de cualquier hecho que pueda retrasarlo.</li>
+            <li>Dejar limpia la zona de trabajo al terminar y retirar los desperdicios propios del trabajo.</li>
+          </ul>
         </div>
+
         <div>
           <h4>{{ clause()['cliente'] }}: OBLIGACIONES DEL CLIENTE</h4>
-          <p>Dar acceso a la obra, un punto de energía eléctrica para la soldadura, pagar en las fechas acordadas, y revisar y dar su conformidad dentro de los 2 días siguientes a la entrega.</p>
+          <ul class="ol">
+            <li>Pagar el precio en los montos y fechas indicados en la cláusula {{ clause()['pago'].toLowerCase() }}.</li>
+            <li>Dar acceso a la obra en horario de trabajo y un punto de energía eléctrica para la soldadura.</li>
+            <li>Tener listos los vanos, muros o bases donde se instalará el trabajo, salvo que se haya pactado lo contrario.</li>
+            <li>Revisar el trabajo y dar su conformidad en la entrega.</li>
+          </ul>
         </div>
+
         <div>
-          <h4>{{ clause()['cambios'] }}: CAMBIOS Y ADICIONALES</h4>
-          <p>Todo cambio de medidas, diseño o material se cotiza por separado y se aprueba por escrito antes de ejecutarse. Un mensaje de WhatsApp de EL CLIENTE vale como aprobación.</p>
+          <h4>{{ clause()['entrega'] }}: ENTREGA Y CONFORMIDAD</h4>
+          <p class="just">Terminado el trabajo, las partes lo revisarán juntas. EL CLIENTE tiene <b>2 días calendario</b> para hacer observaciones por escrito (vale un mensaje de WhatsApp);
+            EL CONTRATISTA las levantará sin costo si corresponden a lo pactado. Pasado ese plazo sin observaciones, el trabajo se considera recibido conforme.</p>
         </div>
+
+        <div>
+          <h4>{{ clause()['cambios'] }}: CAMBIOS Y TRABAJOS ADICIONALES</h4>
+          <p class="just">Todo cambio de medidas, diseño, material o acabado se cotiza por separado y se aprueba antes de ejecutarse, con su precio y su efecto en el plazo.
+            Un mensaje de WhatsApp de EL CLIENTE aceptando el adicional vale como aprobación.</p>
+        </div>
+
         <div>
           <h4>{{ clause()['garantia'] }}: GARANTÍA</h4>
-          <p>EL CONTRATISTA garantiza la soldadura y la fabricación por <b>{{ q.warranty }} meses</b> desde la entrega. La garantía no cubre mal uso, golpes, modificaciones hechas por terceros ni el desgaste normal de la pintura.</p>
+          <p class="just">EL CONTRATISTA garantiza la soldadura, la fabricación y la instalación por <b>{{ q.warranty }} meses</b> desde la entrega. La garantía no cubre el mal uso, golpes,
+            modificaciones hechas por terceros, la humedad o salitre por falta de mantenimiento, ni el desgaste normal de la pintura.</p>
         </div>
+
         @if (q.penalty) {
           <div>
-            <h4>{{ clause()['multa'] }}: PENALIDAD</h4>
-            <p>Si EL CONTRATISTA se retrasa por causas que le son imputables, pagará una penalidad de {{ q.penalty }}% del precio total por cada día de retraso, hasta un máximo de 10% del precio total.</p>
+            <h4>{{ clause()['multa'] }}: PENALIDAD POR RETRASO</h4>
+            <p class="just">Si EL CONTRATISTA se retrasa por causas que le son imputables, pagará una penalidad de {{ q.penalty }}% del precio total por cada día de retraso, hasta un máximo de 10% del precio total.</p>
           </div>
         }
+
         <div>
-          <h4>{{ clause()['desiste'] }}: DESISTIMIENTO</h4>
-          <p>Si EL CLIENTE desiste después de iniciada la fabricación, el adelanto se aplica al material comprado y al trabajo ya hecho. Si EL CONTRATISTA no cumple, devolverá la parte del pago que corresponda al trabajo no ejecutado.</p>
+          <h4>{{ clause()['fuerza'] }}: CASO FORTUITO O FUERZA MAYOR</h4>
+          <p class="just">Ninguna de las partes responde por el incumplimiento causado por hechos imprevisibles e irresistibles (desastres naturales, paros, cortes prolongados de energía).
+            En ese caso el plazo se suspende mientras dure el hecho.</p>
         </div>
+
         <div>
-          <h4>{{ clause()['controversias'] }}: CONTROVERSIAS</h4>
-          <p>Las partes resolverán cualquier diferencia de manera directa y de buena fe. De no lograrlo, se someten a los jueces de Huamanga, Ayacucho.</p>
+          <h4>{{ clause()['desiste'] }}: RESOLUCIÓN Y DESISTIMIENTO</h4>
+          <p class="just">Si EL CLIENTE desiste después de iniciada la fabricación, el adelanto se aplica al material comprado y al trabajo ya hecho, que se le entregarán en el estado en que se encuentren.
+            Si EL CONTRATISTA no cumple con el trabajo, devolverá la parte del pago que corresponda al trabajo no ejecutado. Cualquiera de las partes puede resolver el contrato si la otra no cumple
+            sus obligaciones dentro de los 5 días siguientes a ser requerida por escrito.</p>
         </div>
-        @if (q.notes) { <div><h4>Notas</h4><p>{{ q.notes }}</p></div> }
-        <p>Firmado en Huamanga, el {{ fmtDate(q.date) }}, en dos ejemplares de igual valor.</p>
+
+        <div>
+          <h4>{{ clause()['domicilio'] }}: COMUNICACIONES Y CONTROVERSIAS</h4>
+          <p class="just">Las partes aceptan como válidas las comunicaciones por WhatsApp a los celulares indicados en este contrato. Cualquier diferencia se resolverá de manera directa y de buena fe;
+            de no lograrlo, las partes se someten a los jueces y tribunales de Huamanga, Ayacucho.</p>
+        </div>
+
+        @if (q.notes) { <div><h4>{{ clause()['notas'] }}: CONDICIONES ADICIONALES</h4><p class="just">{{ q.notes }}</p></div> }
+
+        <p class="just">Estando de acuerdo con todas las cláusulas, las partes firman el presente contrato en dos ejemplares de igual valor, en Huamanga, el {{ fmtDate(q.date) }}.</p>
         <div class="sign">
-          <div>EL CONTRATISTA<br>{{ shop().rep || shop().name }}<br>DNI {{ shop().repDni || blank }}</div>
-          <div>EL CLIENTE<br>{{ q.client.name || blank }}<br>@if (co()) {RUC {{ q.client.doc || blank }}@if (q.client.contact) {<br>{{ q.client.contact }}}} @else {DNI {{ q.client.doc || blank }}}</div>
+          <div>EL CONTRATISTA<br><b>{{ shop().rep || shop().name }}</b><br>DNI {{ shop().repDni || blank }}</div>
+          <div>EL CLIENTE<br><b>{{ co() ? (q.client.contact || blank) : (q.client.name || blank) }}</b><br>@if (co()) {p. {{ q.client.name }} · RUC {{ q.client.doc || blank }}} @else {DNI {{ q.client.doc || blank }}}</div>
         </div>
       }
 

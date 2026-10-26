@@ -1,11 +1,14 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Store } from '../core/store.service';
 import { AREA, isCompany } from '../core/models';
 import { detailLines } from '../core/detail';
 import { addDays, fmt, fmtDate, fmtQty, inWords, lineTotal, qty, totals, waLink } from '../core/calc';
 
-const CLAUSES = ['PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA', 'QUINTA', 'SEXTA', 'SÉTIMA', 'OCTAVA', 'NOVENA', 'DÉCIMA', 'UNDÉCIMA', 'DUODÉCIMA'];
+const CLAUSES = [
+  'PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA', 'QUINTA', 'SEXTA', 'SÉTIMA', 'OCTAVA', 'NOVENA', 'DÉCIMA',
+  'UNDÉCIMA', 'DUODÉCIMA', 'DECIMOTERCERA', 'DECIMOCUARTA', 'DECIMOQUINTA', 'DECIMOSEXTA',
+];
 
 @Component({
   selector: 'app-doc',
@@ -38,11 +41,44 @@ export class DocPage {
 
   /** Numeración de cláusulas: la de multa solo aparece si hay multa. */
   protected clause = computed(() => {
-    const names = ['objeto', 'precio', 'pago', 'plazo', 'contratista', 'cliente', 'cambios', 'garantia'];
+    const names = ['objeto', 'precio', 'pago', 'plazo', 'contratista', 'cliente', 'entrega', 'cambios', 'garantia'];
     if (this.q()?.penalty) names.push('multa');
-    names.push('desiste', 'controversias');
+    names.push('fuerza', 'desiste', 'domicilio');
+    if (this.q()?.notes) names.push('notas');
     return Object.fromEntries(names.map((n, i) => [n, CLAUSES[i]])) as Record<string, string>;
   });
+
+  /** Lo cobrado con notas de venta y lo que falta. */
+  protected paid = computed(() => Math.round((this.store.paidByQuote()[this.num()] || 0) * 100) / 100);
+  protected left = computed(() => Math.max(0, Math.round(((this.t()?.tot ?? 0) - this.paid()) * 100) / 100));
+  protected anyInstall = computed(() => !!this.q()?.items.some((it) => !it.detail || it.detail.instalacion));
+  protected amtErr = signal('');
+
+  protected pct(a: number, b: number) {
+    return b > 0 ? Math.round((a / b) * 1000) / 10 : 0;
+  }
+
+  /** Cambia el adelanto desde la hoja del contrato (se guarda en la cotización). */
+  setPct(p: number) {
+    const q = this.q();
+    if (!q) return;
+    this.amtErr.set('');
+    this.store.saveQuote({ ...q, advance: p, advanceAmt: undefined });
+  }
+
+  setAmt(v: string) {
+    const q = this.q();
+    if (!q) return;
+    const n = Math.round(+v * 100) / 100;
+    if (!v || !(n > 0)) {
+      this.amtErr.set('');
+      if (q.advanceAmt) this.store.saveQuote({ ...q, advanceAmt: undefined });
+      return;
+    }
+    if (n > this.t()!.tot) return this.amtErr.set(`No puede ser más que el total (${fmt(this.t()!.tot)}).`);
+    this.amtErr.set('');
+    this.store.saveQuote({ ...q, advanceAmt: n });
+  }
 
   protected wa = computed(() => (this.q() ? waLink(this.q()!, this.shop()) : '#'));
 
