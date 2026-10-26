@@ -80,8 +80,8 @@
         <div>
           <h4>Forma de pago</h4>
           <div class="pay">
-            <div><b>{{ q.advance }}% al aceptar</b><br><span class="money">{{ fmt(t()!.advM) }}</span></div>
-            <div><b>{{ 100 - q.advance }}% al entregar</b><br><span class="money">{{ fmt(t()!.balM) }}</span></div>
+            <div><b>{{ q.advanceAmt ? 'Adelanto' : q.advance + '% al aceptar' }}</b><br><span class="money">{{ fmt(t()!.advM) }}</span></div>
+            <div><b>{{ q.advanceAmt ? 'Al entregar' : 100 - q.advance + '% al entregar' }}</b><br><span class="money">{{ fmt(t()!.balM) }}</span></div>
           </div>
         </div>
         <div>
@@ -128,8 +128,8 @@
         </div>
         <div>
           <h4>{{ clause()['pago'] }}: FORMA DE PAGO</h4>
-          <p>EL CLIENTE pagará un adelanto de {{ q.advance }}% (<b>{{ fmt(t()!.advM) }}</b>) a la firma de este contrato, y el saldo de {{ 100 - q.advance }}%
-            (<b>{{ fmt(t()!.balM) }}</b>) a la entrega conforme de los trabajos. Sin el pago del adelanto no se inicia la fabricación.</p>
+          <p>EL CLIENTE pagará un adelanto de @if (!q.advanceAmt) {{{ q.advance }}% (<b>{{ fmt(t()!.advM) }}</b>)} @else {<b>{{ fmt(t()!.advM) }}</b>} a la firma de este contrato, y el saldo
+            @if (!q.advanceAmt) {de {{ 100 - q.advance }}% (<b>{{ fmt(t()!.balM) }}</b>)} @else {de <b>{{ fmt(t()!.balM) }}</b>} a la entrega conforme de los trabajos. Sin el pago del adelanto no se inicia la fabricación.</p>
         </div>
         <div>
           <h4>{{ clause()['plazo'] }}: PLAZO</h4>

@@ -98,6 +98,8 @@ export interface Quote {
   estado: Estado;
   /** Descuento especial en soles que se da al aceptar el trabajo (antes del IGV). */
   special?: number;
+  /** Adelanto en soles cuando no es un porcentaje. Si tiene valor, manda sobre advance. */
+  advanceAmt?: number;
   updatedAt: string;
 }
 
@@ -123,7 +125,22 @@ export interface Shop {
 
 export const PAY_METHODS = ['Efectivo', 'Yape', 'Plin', 'Transferencia', 'Tarjeta'] as const;
 export type PayMethod = (typeof PAY_METHODS)[number];
-export type Concept = 'Venta' | 'Adelanto' | 'Saldo';
+export type Concept = 'Venta' | 'Adelanto' | 'A cuenta' | 'Saldo';
+
+/** Gasto del taller, de un trabajo (cotización) o general. */
+export interface Expense {
+  id: string;
+  date: string;
+  /** '' = gasto general del taller. */
+  quoteNum: string;
+  cat: string;
+  desc: string;
+  amount: number;
+  pay: PayMethod;
+  updatedAt: string;
+}
+
+export const EXPENSE_CATS = ['Materiales', 'Pintura', 'Soldadura y discos', 'Mano de obra', 'Transporte', 'Alquiler de equipo', 'Luz y local', 'Otros'];
 
 export interface SaleItem {
   desc: string;

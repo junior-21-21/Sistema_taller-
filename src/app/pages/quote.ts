@@ -10,7 +10,7 @@ import { SheetService } from '../core/sheet.service';
 import { Router, RouterLink } from '@angular/router';
 import { Store, Toast } from '../core/store.service';
 import { AREA, CatalogItem, ESTADOS, Quote, QuoteItem, UNITS, isCompany } from '../core/models';
-import { fmt, fmtQty, lineTotal, qty, suggestDays, totals, waLink } from '../core/calc';
+import { advLabel, balLabel, fmt, fmtQty, lineTotal, qty, suggestDays, totals, waLink } from '../core/calc';
 import { clientErrors, focusFirstError, hasErrors, itemErrors, payErrors } from '../core/validate';
 
 const DRAFT = 'rr.draft';
@@ -137,6 +137,7 @@ export class QuotePage implements OnInit {
     if (upTo >= 1 && hasErrors(this.ce)) return { step: 1, msg: 'Revisa los datos del cliente marcados en rojo.' };
     if (upTo >= 2 && !this.q.items.length) return { step: 2, msg: 'Agrega al menos un trabajo.' };
     if (upTo >= 2 && hasErrors(this.ie)) return { step: 2, msg: 'Faltan medidas, cantidades o precios. Están marcados en rojo.' };
+    if (upTo >= 3 && this.advErr()) return { step: 3, msg: 'Revisa el adelanto: es más que el total.' };
     if (upTo >= 3 && hasErrors(this.pe)) return { step: 3, msg: 'Revisa las condiciones de pago marcadas en rojo.' };
     return null;
   }
@@ -281,8 +282,19 @@ export class QuotePage implements OnInit {
 
   setAdvance(a: number) {
     this.q.advance = a;
+    this.q.advanceAmt = undefined;
     this.touch();
   }
+
+  /** Adelanto en soles (cuando el cliente da una cantidad que no es un porcentaje). */
+  setAdvanceAmt(v: number | null) {
+    this.q.advanceAmt = v === null || (v as unknown) === '' || +v <= 0 ? undefined : +v;
+    this.touch();
+  }
+
+  protected advErr = () => (this.q.advanceAmt && this.q.advanceAmt > totals({ ...this.q, advanceAmt: undefined }).tot ? `No puede ser más que el total (${fmt(this.t.tot)}).` : '');
+  protected advLabel = advLabel;
+  protected balLabel = balLabel;
 
   daysEdited() {
     this.daysAuto = false;

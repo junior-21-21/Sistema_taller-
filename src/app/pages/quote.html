@@ -195,9 +195,14 @@
           <span class="f-l">Adelanto al aceptar <app-hint>Lo que el cliente paga para que empieces a fabricar. Lo demás lo paga al entregar.</app-hint></span>
           <div class="chips">
             @for (a of [30, 50, 70, 100]; track a) {
-              <button type="button" class="chip" [class.on]="q.advance === a" (click)="setAdvance(a)">{{ a }}%</button>
+              <button type="button" class="chip" [class.on]="!q.advanceAmt && q.advance === a" (click)="setAdvance(a)">{{ a }}%</button>
             }
+            <label class="money-in" [class.on]="!!q.advanceAmt" [class.bad]="!!advErr()"><span>S/</span>
+              <input type="number" min="0" step="any" inputmode="decimal" placeholder="Otro monto" aria-label="Adelanto en soles"
+                     [ngModel]="q.advanceAmt" (ngModelChange)="setAdvanceAmt($event)"></label>
           </div>
+          @if (advErr(); as m) { <span class="fe">{{ m }}</span> }
+          @else if (q.advanceAmt) { <span class="muted small">El cliente da {{ fmt(t.advM) }} al aceptar y {{ fmt(t.balM) }} al entregar. Si paga en partes, cada pago se registra en Ventas.</span> }
         </div>
         <div class="grid">
           <label class="f" [class.bad]="show(3, pe.days, q.days)">Entrega en (días hábiles) *<input type="number" min="1" [(ngModel)]="q.days" (input)="daysEdited()">
@@ -220,8 +225,8 @@
         @if (t.igv) { <div class="sl"><span>IGV 18%</span><span class="money">{{ fmt(t.igv) }}</span></div> }
         <div class="sl big"><span>Total</span><span class="money">{{ fmt(t.tot) }}</span></div>
         <div class="pay">
-          <div><span>Adelanto {{ q.advance }}%</span><b class="money">{{ fmt(t.advM) }}</b></div>
-          <div><span>Al entregar {{ 100 - q.advance }}%</span><b class="money">{{ fmt(t.balM) }}</b></div>
+          <div><span>{{ advLabel(q) }}</span><b class="money">{{ fmt(t.advM) }}</b></div>
+          <div><span>{{ balLabel(q) }}</span><b class="money">{{ fmt(t.balM) }}</b></div>
         </div>
       </section>
     </div>

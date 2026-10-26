@@ -42,7 +42,7 @@ import { Icon } from './icon';
           <div class="now">
             <div><span>Nuevo precio</span><b class="money">{{ fmt(preview().tot) }}</b></div>
             <div><span>Ahorro del cliente</span><b class="money ok">−{{ fmt(round2(base().quoted - preview().tot)) }}</b></div>
-            <div><span>Adelanto {{ q.advance }}%</span><b class="money">{{ fmt(preview().advM) }}</b></div>
+            <div><span>{{ q.advanceAmt ? 'Adelanto' : 'Adelanto ' + q.advance + '%' }}</span><b class="money">{{ fmt(preview().advM) }}</b></div>
           </div>
         </div>
         <div class="mf">

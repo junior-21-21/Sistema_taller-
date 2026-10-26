@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Store, StoreOp, Toast } from './store.service';
-import { CatalogItem, ESTADOS, Estado, Quote, Sale, Shop } from './models';
+import { CatalogItem, ESTADOS, Estado, Expense, Quote, Sale, Shop } from './models';
 import { lineTotal, qty, saleTotals, totals } from './calc';
 import { detailLines, fixDetail } from './detail';
 
@@ -47,6 +47,8 @@ export class SheetService {
   /** Enlace para abrir la hoja de Google. */
   readonly sheetUrl = signal('');
   readonly loaded = signal(false);
+  /** La hoja ya tiene la pestaña Gastos (el código de Apps Script está al día). */
+  readonly hasGastos = signal(false);
 
   private queue: Op[] = [];
   private flushing = false;
@@ -73,7 +75,7 @@ export class SheetService {
 
   /** Trae los cambios que hicieron otras personas (solo si aquí no hay nada por guardar). */
   async refresh() {
-    if (!this.queue.length && !this.flushing) await this.load(true);
+    if (!this.sendable().length && !this.flushing) await this.load(true);
   }
 
   async load(quiet: boolean) {
@@ -83,11 +85,13 @@ export class SheetService {
       const data = (await r.json()) as { ok: boolean; sheets: Record<string, Cell[][]>; url: string; error?: string };
       if (!data.ok) throw new Error(data.error);
       // Si mientras tanto alguien guardó aquí, no se pisa lo nuevo.
-      if (this.queue.length) return;
+      if (this.sendable().length) return;
+      this.hasGastos.set(!!data.sheets['Gastos']);
       this.apply(data.sheets);
       this.sheetUrl.set(data.url);
       this.loaded.set(true);
       this.status.set('ok');
+      if (this.sendable().length) this.flush();
     } catch {
       if (!quiet) {
         this.status.set('offline');
@@ -156,7 +160,23 @@ export class SheetService {
     if (t['pie de la boleta'] !== undefined) shop.footer = t['pie de la boleta'];
     shop.payInfo = t['yape / plin / cuenta'] ?? '';
 
-    this.store.replaceAll({ catalog, quotes, sales, shop: Object.keys(t).length ? shop : undefined });
+    // Con un código de hoja antiguo no hay pestaña Gastos: se quedan los de este equipo hasta que se actualice.
+    let expenses: Expense[] | undefined;
+    if (sheets['Gastos']) {
+      expenses = [];
+      for (const r of rows(sheets['Gastos'])) {
+        try {
+          expenses.push(JSON.parse(str(r['datos (no editar)'])) as Expense);
+        } catch {
+          /* fila escrita a mano */
+        }
+      }
+      // Los que aún esperan para subirse no se pierden.
+      const waiting = new Set(this.queue.filter((o) => o.sheet === 'Gastos').map((o) => ('key' in o ? o.key : '')));
+      expenses = [...expenses.filter((e) => !waiting.has(e.id)), ...this.store.expenses().filter((e) => waiting.has(e.id))];
+    }
+
+    this.store.replaceAll({ catalog, quotes, sales, expenses, shop: Object.keys(t).length ? shop : undefined });
   }
 
   // ------------------------------------------------------------------ guardar
@@ -206,6 +226,17 @@ export class SheetService {
           type: 'replace', sheet: 'Precios',
           rows: this.store.catalog().map((x) => [x.code, x.cat, x.name, x.inc, x.unit, x.material, x.labor, x.material + x.labor, x.detail ? JSON.stringify(x.detail) : '']),
         };
+      case 'expense': {
+        const e = this.store.expenses().find((x) => x.id === c.id);
+        if (!e) return null;
+        const q = e.quoteNum ? this.store.get(e.quoteNum) : undefined;
+        return {
+          type: 'upsert', sheet: 'Gastos', key: e.id,
+          row: [e.id, e.date, e.quoteNum || 'General', q?.client.name ?? '', e.cat, e.desc, e.amount, e.pay, JSON.stringify(e)],
+        };
+      }
+      case 'delExpense':
+        return { type: 'remove', sheet: 'Gastos', key: c.id };
       case 'shop': {
         const s = this.store.shop();
         const kv: [string, string | number][] = [
@@ -228,12 +259,17 @@ export class SheetService {
     }
   }
 
+  /** Lo que se puede mandar ya (los gastos esperan si la hoja aún no tiene la pestaña Gastos). */
+  private sendable() {
+    return this.queue.filter((o) => o.sheet !== 'Gastos' || this.hasGastos());
+  }
+
   async flush() {
-    if (this.flushing || !this.queue.length) return;
+    if (this.flushing || !this.sendable().length) return;
     this.flushing = true;
     clearTimeout(this.retry);
     this.status.set('saving');
-    const batch = [...this.queue];
+    const batch = this.sendable();
     try {
       // text/plain evita el permiso previo del navegador (CORS) que Apps Script no responde.
       const r = await fetch(SHEET_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ops: batch }) });
@@ -242,8 +278,8 @@ export class SheetService {
       // Se quitan solo los que se mandaron (pudieron entrar otros mientras tanto).
       this.queue = this.queue.filter((o) => !batch.includes(o));
       this.persist();
-      if (!this.queue.length) {
-        this.store.dirty.set(false);
+      if (!this.sendable().length) {
+        this.store.dirty.set(!!this.queue.length);
         this.status.set('ok');
       }
     } catch {
@@ -252,6 +288,6 @@ export class SheetService {
     } finally {
       this.flushing = false;
     }
-    if (this.queue.length && this.status() !== 'offline') this.flush();
+    if (this.sendable().length && this.status() !== 'offline') this.flush();
   }
 }

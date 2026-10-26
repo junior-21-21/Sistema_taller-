@@ -1,6 +1,6 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
 import { DEFAULT_SHOP } from './default-data';
-import { CatalogItem, Client, Estado, Quote, Sale, Shop } from './models';
+import { CatalogItem, Client, Estado, Expense, Quote, Sale, Shop } from './models';
 import { clientKey, nowTime, saleTotals, suggestDays, todayIso, totals } from './calc';
 
 function load<T>(key: string): T | null {
@@ -32,6 +32,7 @@ export interface ClientSummary {
 
 export type StoreOp =
   | { t: 'quote' | 'delQuote' | 'sale'; num: string }
+  | { t: 'expense' | 'delExpense'; id: string }
   | { t: 'catalog' | 'shop' };
 
 /** Estado de la app. Se guarda en el navegador como copia de trabajo y el
@@ -41,6 +42,7 @@ export class Store {
   readonly catalog = signal<CatalogItem[]>(load('rr.catalog') ?? []);
   readonly quotes = signal<Quote[]>(load('rr.quotes') ?? []);
   readonly sales = signal<Sale[]>(load('rr.sales') ?? []);
+  readonly expenses = signal<Expense[]>(load('rr.expenses') ?? []);
   readonly shop = signal<Shop>({ ...DEFAULT_SHOP, ...(load<Partial<Shop>>('rr.shop') ?? {}) });
   /** Hay cambios que todavía no están en el Excel. */
   readonly dirty = signal<boolean>(load('rr.dirty') ?? false);
@@ -98,6 +100,7 @@ export class Store {
     effect(() => persist('rr.catalog', this.catalog()));
     effect(() => persist('rr.quotes', this.quotes()));
     effect(() => persist('rr.sales', this.sales()));
+    effect(() => persist('rr.expenses', this.expenses()));
     effect(() => persist('rr.shop', this.shop()));
     effect(() => persist('rr.dirty', this.dirty()));
   }
@@ -252,10 +255,35 @@ export class Store {
   }
 
   /** Reemplaza todo con lo leído del Excel. */
-  replaceAll(data: { catalog?: CatalogItem[]; quotes?: Quote[]; sales?: Sale[]; shop?: Partial<Shop> }) {
+  // ---------------------------------------------------------------- gastos
+  saveExpense(e: Expense) {
+    const copy: Expense = { ...e, amount: Math.round((+e.amount || 0) * 100) / 100, updatedAt: new Date().toISOString() };
+    copy.id ||= 'G-' + Date.now().toString(36).toUpperCase();
+    this.expenses.update((list) => {
+      const i = list.findIndex((x) => x.id === copy.id);
+      return i < 0 ? [...list, copy] : list.map((x, j) => (j === i ? copy : x));
+    });
+    this.touch({ t: 'expense', id: copy.id });
+    return copy;
+  }
+
+  deleteExpense(id: string) {
+    this.expenses.update((list) => list.filter((x) => x.id !== id));
+    this.touch({ t: 'delExpense', id });
+  }
+
+  /** Gastos por cotización ('' = generales). */
+  readonly spentByQuote = computed(() => {
+    const m: Record<string, number> = {};
+    for (const e of this.expenses()) m[e.quoteNum] = Math.round(((m[e.quoteNum] || 0) + e.amount) * 100) / 100;
+    return m;
+  });
+
+  replaceAll(data: { catalog?: CatalogItem[]; quotes?: Quote[]; sales?: Sale[]; expenses?: Expense[]; shop?: Partial<Shop> }) {
     if (data.catalog) this.catalog.set(data.catalog);
     if (data.quotes) this.quotes.set(data.quotes);
     if (data.sales) this.sales.set(data.sales);
+    if (data.expenses) this.expenses.set(data.expenses);
     if (data.shop) this.shop.set({ ...DEFAULT_SHOP, ...data.shop });
     this.dirty.set(false);
   }

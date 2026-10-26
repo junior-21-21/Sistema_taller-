@@ -90,7 +90,8 @@ type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
               @if (item.estado !== 'Rechazada' && due(item) > 0) {
                 <a class="iconbtn" routerLink="/venta" [queryParams]="{ cot: item.num }"><app-icon name="cash" [size]="16" /> Cobrar</a>
               }
- @if (item.estado !== 'Rechazada') {
+              @if (item.estado !== 'Rechazada') {
+                <a class="iconbtn" routerLink="/caja" [queryParams]="{ cot: item.num }"><app-icon name="bars" [size]="16" /> Gastos</a>
                 <button type="button" class="iconbtn deal" (click)="deal.set(item.num)"><app-icon name="cash" [size]="16" />
                   {{ item.special ? 'Cambiar descuento' : item.estado === 'Pendiente' ? 'Aceptar con descuento' : 'Dar descuento' }}</button>
               }

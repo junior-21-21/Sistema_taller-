@@ -29,7 +29,7 @@ export function totals(q: Quote): Totals {
   const igv = q.igv ? round2((sub - dsc - esp) * 0.18) : 0;
   const tot = round2(sub - dsc - esp + igv);
   const quoted = esp ? round2((sub - dsc) * (q.igv ? 1.18 : 1)) : tot;
-  const advM = round2((tot * (q.advance || 0)) / 100);
+  const advM = +(q.advanceAmt || 0) > 0 ? round2(Math.min(+q.advanceAmt!, tot)) : round2((tot * (q.advance || 0)) / 100);
   return { sub, dsc, esp, quoted, igv, tot, advM, balM: round2(tot - advM) };
 }
 
@@ -127,7 +127,7 @@ export function waText(q: Quote, shop: Shop): string {
     ...(t.igv ? [`IGV 18%: ${fmt(t.igv)}`] : []),
     `*TOTAL: ${fmt(t.tot)}*`,
     '',
-    `Adelanto ${q.advance}%: ${fmt(t.advM)}`,
+    `${advLabel(q)}: ${fmt(t.advM)}`,
     `Entrega: ${q.days} días hábiles`,
     `Garantía: ${q.warranty} meses`,
     `Válida hasta: ${addDays(q.date, q.validity)}`,
@@ -170,3 +170,12 @@ export const clientKey = (c: Client) => (c.doc || '').trim() || (c.name || '').t
 
 /** Busca sin importar mayúsculas ni tildes. */
 export const norm = (s: string) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+/** "Adelanto 50%" o solo "Adelanto" cuando es un monto en soles. */
+export function advLabel(q: Quote): string {
+  return +(q.advanceAmt || 0) > 0 ? 'Adelanto' : `Adelanto ${q.advance}%`;
+}
+
+export function balLabel(q: Quote): string {
+  return +(q.advanceAmt || 0) > 0 ? 'Al entregar' : `Al entregar ${100 - q.advance}%`;
+}

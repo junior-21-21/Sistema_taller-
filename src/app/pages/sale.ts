@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Store, Toast } from '../core/store.service';
 import { PAY_METHODS, Sale, UNITS } from '../core/models';
-import { fmt, saleTotals } from '../core/calc';
+import { fmt, saleTotals, totals } from '../core/calc';
 import { clientErrors, focusFirstError, hasErrors, saleItemErrors, vRange } from '../core/validate';
 import { Icon } from './icon';
 import { Guide, Hint } from './guide';
@@ -40,6 +40,34 @@ import { SheetService } from '../core/sheet.service';
       </app-guide>
 
       @if (err()) { <div class="err" role="alert">{{ err() }}</div> }
+
+      @if (job(); as j) {
+        <section class="card job">
+          <h2>¿Qué paga ahora?</h2>
+          <div class="jt">
+            <div><span>Total del trabajo</span><b class="money">{{ fmt(j.tot) }}</b></div>
+            <div><span>Ya pagó</span><b class="money ok">{{ fmt(j.paid) }}</b></div>
+            <div><span>Falta</span><b class="money">{{ fmt(j.left) }}</b></div>
+          </div>
+          @if (j.left <= 0) {
+            <p class="muted">Este trabajo ya está pagado completo.</p>
+          } @else {
+            <div class="chips">
+              @if (!j.paid) {
+                <button type="button" class="chip" [class.on]="s.concept === 'Adelanto'" (click)="payPart('Adelanto', j.adv)">Adelanto · {{ fmt(j.adv) }}</button>
+              }
+              <button type="button" class="chip" [class.on]="s.concept === 'A cuenta'" (click)="payPart('A cuenta', partIn() || 0)">A cuenta (otro monto)</button>
+              <button type="button" class="chip" [class.on]="s.concept === 'Saldo'" (click)="payPart('Saldo', j.left)">Todo lo que falta · {{ fmt(j.left) }}</button>
+            </div>
+            @if (s.concept === 'A cuenta') {
+              <label class="f part" [class.bad]="!!partErr()"><span>¿Cuánto paga ahora? (S/)</span>
+                <input id="part" type="number" min="0" step="any" inputmode="decimal" [ngModel]="partIn()" (ngModelChange)="partIn.set($event); payPart('A cuenta', +$event || 0)" placeholder="Ej: 500">
+                @if (partErr(); as m) { <span class="fe">{{ m }}</span> } @else if (partIn()) { <span class="muted small">Después de este pago faltará {{ fmt(j.left - (+partIn()! || 0)) }}.</span> }
+              </label>
+            }
+          }
+        </section>
+      }
 
       <div class="two">
         <div class="col">
@@ -134,6 +162,14 @@ import { SheetService } from '../core/sheet.service';
   styles: `
     .num { font-size: 13px; color: var(--fire-dark); }
     .err { background: var(--warn-soft); color: var(--warn); border: 1px solid #f0c48a; border-radius: 10px; padding: 12px 14px; font-weight: 600; }
+    .job { margin-bottom: 20px; display: grid; gap: 12px; }
+    .job h2 { margin: 0; }
+    .jt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .jt div { display: grid; background: var(--bg); border-radius: 10px; padding: 10px 12px; }
+    .jt span { font-size: 12.5px; color: var(--muted); }
+    .jt b { font-size: 18px; }
+    .jt .ok { color: var(--ok); }
+    .part { max-width: 260px; }
     .two { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: start; }
     .col { display: grid; gap: 20px; min-width: 0; }
     @media (max-width: 900px) { .two { grid-template-columns: 1fr; } }
@@ -200,6 +236,34 @@ export class SalePage implements OnInit {
     return msg && (this.tried() || (value !== undefined && value !== null && String(value).trim() !== '')) ? msg : '';
   }
 
+  // ---- cobro de una cotización (adelanto, a cuenta o saldo)
+  protected partIn = signal<number | null>(null);
+  protected job = () => {
+    const q = this.s.quoteNum ? this.store.get(this.s.quoteNum) : undefined;
+    if (!q) return null;
+    const t = totals(q);
+    const paid = Math.round((this.store.paidByQuote()[q.num] || 0) * 100) / 100;
+    return { tot: t.tot, adv: t.advM, paid, left: Math.round((t.tot - paid) * 100) / 100 };
+  };
+  protected partErr = () => {
+    const j = this.job();
+    const v = +(this.partIn() ?? 0);
+    if (!j || !this.partIn()) return '';
+    if (v <= 0) return 'Pon un monto mayor a 0.';
+    if (v > j.left + 0.004) return `Es más de lo que falta (${fmt(j.left)}).`;
+    return '';
+  };
+
+  payPart(concept: 'Adelanto' | 'A cuenta' | 'Saldo', amount: number) {
+    this.s.concept = concept;
+    const it = this.s.items[0] ?? (this.s.items[0] = { desc: '', unit: 'servicio', qty: 1, price: 0 });
+    it.qty = 1;
+    it.price = Math.round(amount * 100) / 100;
+    const label = concept === 'A cuenta' ? 'Pago a cuenta' : concept;
+    it.desc = `${label} de la cotización ${this.s.quoteNum}`;
+    if (concept === 'A cuenta' && !this.partIn()) setTimeout(() => document.getElementById('part')?.focus());
+  }
+
   ngOnInit() {
     const c = this.cot();
     if (!c) return;
@@ -237,6 +301,7 @@ export class SalePage implements OnInit {
       focusFirstError();
       if (!document.querySelector('.bad')) window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+    if (this.s.concept === 'A cuenta' && (this.partErr() || !this.partIn())) return fail(this.partErr() || 'Escribe cuánto paga ahora.');
     if (hasErrors(this.ce)) return fail('Revisa los datos del cliente marcados en rojo.');
     if (!this.s.items.length) return fail('Agrega al menos una línea con lo que cobras.');
     if (hasErrors(this.ie)) return fail('Cada línea necesita descripción, cantidad y precio. Están marcadas en rojo.');
