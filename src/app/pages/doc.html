@@ -72,7 +72,7 @@
         <div class="tt">
           <div><span>Subtotal</span><span class="money">{{ fmt(t()!.sub) }}</span></div>
           @if (t()!.dsc) { <div><span>Descuento {{ q.discount }}%</span><span class="money">−{{ fmt(t()!.dsc) }}</span></div> }
-          @if (t()!.esp) { <div class="esp"><span>Descuento especial al aceptar</span><span class="money">−{{ fmt(t()!.esp) }}</span></div> }
+          @if (t()!.esp) { <div class="esp"><span>Descuento especial</span><span class="money">−{{ fmt(t()!.esp) }}</span></div> }
           @if (t()!.igv) { <div><span>IGV 18%</span><span class="money">{{ fmt(t()!.igv) }}</span></div> }
           <div class="g"><span>TOTAL</span><span class="money">{{ fmt(t()!.tot) }}</span></div>
           <div class="sub">{{ q.igv ? 'Incluye IGV' : 'Precios no incluyen IGV' }}</div>

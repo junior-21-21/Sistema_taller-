@@ -225,8 +225,57 @@ export class QuotePage implements OnInit {
   }
 
   // ---- paso 3
+  // ---- redondear el precio final (se guarda como descuento especial)
+  /** Totales sin el descuento especial. */
+  protected base = () => totals({ ...this.q, special: 0 });
+  protected finalIn = signal<number | null>(null);
+  protected finalErr = signal('');
+
+  /** Números cerrados por debajo del total: a la decena, a 50 y a 100. */
+  rounds(): number[] {
+    const tot = this.base().tot;
+    const out = new Set<number>();
+    for (const step of [10, 50, 100]) {
+      const r = Math.floor(tot / step) * step;
+      if (r > 0 && r < tot && tot - r <= tot * 0.1) out.add(r);
+    }
+    return [...out].sort((a, b) => b - a);
+  }
+
+  /** Deja el total exactamente en "precio" bajando la diferencia como descuento especial. */
+  setFinal(precio: number) {
+    precio = +precio;
+    const b = this.base();
+    if (!precio || precio <= 0) return this.finalErr.set('');
+    if (precio >= b.tot) return this.finalErr.set(`Tiene que ser menor que ${fmt(b.tot)}.`);
+    if (precio < b.tot * 0.5) return this.finalErr.set('Es menos de la mitad del precio. Revisa el número.');
+    this.finalErr.set('');
+    const pre = b.sub - b.dsc;
+    const target = this.q.igv ? precio / 1.18 : precio;
+    // Con IGV, se busca el centavo exacto para que el total quede justo en el número elegido.
+    const first = Math.round((pre - target) * 100) / 100;
+    this.q.special = [0, 0.01, -0.01, 0.02, -0.02].map((d) => Math.round((first + d) * 100) / 100)
+      .find((e) => totals({ ...this.q, special: e }).tot === precio) ?? first;
+    this.finalIn.set(null);
+    this.touch();
+  }
+
+  /** Si cambia el descuento o el IGV, el número redondo ya no cuadra: se quita para elegirlo otra vez. */
+  resetRound() {
+    if (!this.q.special) return;
+    this.q.special = undefined;
+    this.toast.show('Cambió el precio: vuelve a elegir el redondeo.');
+  }
+
+  clearFinal() {
+    this.q.special = undefined;
+    this.finalErr.set('');
+    this.touch();
+  }
+
   setDiscount(d: number) {
     this.q.discount = Math.min(d, this.store.shop().maxDiscount);
+    this.resetRound();
     this.touch();
   }
 

@@ -117,3 +117,5 @@
 .kbtn.on app-icon { color: var(--fire); }
 .grid .wide { grid-column: span 2; }
 @media (max-width: 560px) { .grid .wide { grid-column: auto; } }
+.mid { width: 160px; padding: 7px 10px; }
+.chip small { font-size: 11.5px; margin-left: 4px; }
