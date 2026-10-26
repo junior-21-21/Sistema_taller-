@@ -11,6 +11,8 @@ export interface Mat {
 /** Especificación técnica de un trabajo: materiales, chapa, pintura y lo que incluye. */
 export interface Detail {
   mats: Mat[];
+  /** Cuántos pliegues u hojas tiene (puertas plegables, portones, ventanas). 0 = no aplica. */
+  pliegues: number;
   /** '' = no incluye chapa. */
   chapa: string;
   accesorios: string[];

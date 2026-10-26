@@ -37,6 +37,18 @@ import { Icon } from './icon';
       </section>
 
       <section>
+        <h4><app-icon name="door" [size]="16" /> Pliegues u hojas</h4>
+        <div class="chips">
+          <button type="button" class="chip" [class.on]="!d.pliegues" (click)="d.pliegues = 0; changed.emit()">No aplica</button>
+          @for (n of pliegues; track n) {
+            <button type="button" class="chip" [class.on]="+d.pliegues === n" (click)="d.pliegues = n; changed.emit()">{{ n }}</button>
+          }
+          <input class="mini" type="number" min="0" max="40" step="1" inputmode="numeric" [(ngModel)]="d.pliegues" (ngModelChange)="changed.emit()" aria-label="Otro número de pliegues">
+        </div>
+        <p class="muted small">Ej: puerta plegable de 4 pliegues, portón de 2 hojas.</p>
+      </section>
+
+      <section>
         <h4><app-icon name="door" [size]="16" /> ¿Incluye chapa?</h4>
         <div class="chips">
           <button type="button" class="chip" [class.on]="!d.chapa" (click)="d.chapa = ''; changed.emit()">No incluye</button>
@@ -93,6 +105,8 @@ import { Icon } from './icon';
     .rm:hover { color: var(--bad); border-color: var(--bad); }
     .quick { display: flex; gap: 6px; flex-wrap: wrap; }
     .quick .chip, .chips .chip { padding: 6px 11px; font-size: 13px; }
+    .mini { width: 80px; padding: 6px 10px; font-size: 14px; }
+    section > p { margin: 0; }
     .tg { display: flex; gap: 18px; flex-wrap: wrap; }
     .check { display: flex; gap: 8px; align-items: center; font-weight: 600; }
     .check input { width: 20px; height: 20px; accent-color: var(--fire); }
@@ -109,6 +123,7 @@ export class DetailEditor {
   protected pinturas = PINTURAS;
   protected materiales = MATERIALES;
   protected medidas = MEDIDAS;
+  protected pliegues = [1, 2, 3, 4, 5, 6, 8];
   protected quick = ['Tubo cuadrado', 'Tubo rectangular', 'Plancha LAF', 'Ángulo', 'Fierro liso'];
 
   addMat(name: string) {

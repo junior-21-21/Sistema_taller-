@@ -15,12 +15,12 @@ export const MEDIDAS = [
 ];
 
 export function emptyDetail(): Detail {
-  return { mats: [], chapa: '', accesorios: [], pintura: 'Anticorrosivo + esmalte', color: '', instalacion: true, transporte: false, notas: '' };
+  return { mats: [], pliegues: 0, chapa: '', accesorios: [], pintura: 'Anticorrosivo + esmalte', color: '', instalacion: true, transporte: false, notas: '' };
 }
 
 /** ¿Tiene algo escrito? */
 export function hasDetail(d: Detail | undefined): d is Detail {
-  return !!d && (d.mats.some((m) => m.name.trim()) || !!d.chapa || d.accesorios.length > 0 || !!d.color || !!d.notas || !!d.pintura);
+  return !!d && (d.mats.some((m) => m.name.trim()) || +d.pliegues > 0 || !!d.chapa || d.accesorios.length > 0 || !!d.color || !!d.notas || !!d.pintura);
 }
 
 /** Líneas cortas para la hoja de cotización, el contrato y WhatsApp. */
@@ -31,6 +31,7 @@ export function detailLines(d: Detail | undefined): string[] {
     if (!m.name.trim()) continue;
     out.push([m.name.trim(), m.spec.trim(), m.qty.trim() ? `(${m.qty.trim()})` : ''].filter(Boolean).join(' '));
   }
+  if (+d.pliegues > 0) out.push(`${d.pliegues} ${+d.pliegues === 1 ? 'hoja' : 'pliegues'}`);
   out.push(d.chapa ? `Chapa: ${d.chapa}` : 'No incluye chapa');
   if (d.accesorios.length) out.push(`Accesorios: ${d.accesorios.join(', ')}`);
   if (d.pintura) out.push(`Acabado: ${d.pintura}${d.color ? `, color ${d.color}` : ''}`);
@@ -49,5 +50,6 @@ export function fixDetail(d: Partial<Detail> | undefined): Detail | undefined {
     ...e, ...d,
     mats: (d.mats || []).map((m) => ({ name: m?.name || '', spec: m?.spec || '', qty: m?.qty || '' })),
     accesorios: d.accesorios || [],
+    pliegues: +(d.pliegues ?? 0) || 0,
   };
 }
