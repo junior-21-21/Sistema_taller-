@@ -135,6 +135,15 @@
               <span class="muted small">{{ fmtQty(qty(it)) }} {{ it.unit }}</span>
               <b class="money">{{ fmt(lineTotal(it)) }}</b>
             </div>
+            <button type="button" class="dt" [class.on]="open() === i" (click)="toggleDetail(i)">
+              <app-icon name="bars" [size]="16" />
+              <span>{{ open() === i ? 'Cerrar detalle' : 'Materiales, espesores y chapa' }}</span>
+              <span class="car" aria-hidden="true">{{ open() === i ? '▲' : '▼' }}</span>
+              @if (open() !== i && it.detail) { <span class="dsum">{{ detailLines(it.detail).slice(0, 2).join(' · ') }}{{ detailLines(it.detail).length > 2 ? ' · …' : '' }}</span> }
+            </button>
+            @if (open() === i && it.detail) {
+              <app-detail-editor [detail]="it.detail" (changed)="touch()" />
+            }
           </div>
         } @empty {
           <div class="empty">Toca un trabajo de la lista para agregarlo.</div>

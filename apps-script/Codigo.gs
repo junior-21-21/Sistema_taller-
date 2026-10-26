@@ -11,7 +11,7 @@ var HEADERS = {
   'Detalle': ['Número', 'Cliente', 'Código', 'Trabajo', 'Unidad', 'Ancho (m)', 'Alto (m)', 'Piezas / cantidad', 'Cantidad total', 'Precio unitario', 'Importe', 'Estado'],
   'Ventas': ['Número', 'Fecha', 'Hora', 'Cliente', 'DNI / RUC', 'Concepto', 'Cotización', 'Forma de pago', 'Descuento', 'Total', 'Anulada', 'Datos (no editar)'],
   'Ventas detalle': ['Número', 'Fecha', 'Descripción', 'Unidad', 'Cantidad', 'Precio unitario', 'Importe'],
-  'Precios': ['Código', 'Categoría', 'Trabajo', 'Qué incluye', 'Unidad', 'Material', 'Mano de obra', 'Precio total'],
+  'Precios': ['Código', 'Categoría', 'Trabajo', 'Qué incluye', 'Unidad', 'Material', 'Mano de obra', 'Precio total', 'Detalle (no editar)'],
   'Taller': ['Dato', 'Valor']
 };
 

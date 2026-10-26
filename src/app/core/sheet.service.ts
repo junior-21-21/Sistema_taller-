@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Store, StoreOp, Toast } from './store.service';
 import { CatalogItem, ESTADOS, Estado, Quote, Sale, Shop } from './models';
 import { lineTotal, qty, saleTotals, totals } from './calc';
+import { detailLines, fixDetail } from './detail';
 
 /**
  * Dirección de la hoja de Google del taller (Apps Script publicado como aplicación web).
@@ -31,7 +32,8 @@ function rows(sheet: Cell[][] | undefined): Record<string, Cell>[] {
   return sheet
     .slice(1)
     .filter((r) => r.some((c) => str(c)))
-    .map((r) => Object.fromEntries(head.map((h, i) => [h, r[i] ?? ''])));
+    // Columnas sin título quedan con la llave '' (por ejemplo, datos agregados en hojas antiguas).
+    .map((r) => Object.fromEntries(r.map((v, i) => [head[i] ?? '', v ?? '']).filter(([h, v], i) => h || i >= head.length || str(v))));
 }
 
 @Injectable({ providedIn: 'root' })
@@ -95,11 +97,21 @@ export class SheetService {
   }
 
   private apply(sheets: Record<string, Cell[][]>) {
+    // La columna I guarda los materiales del servicio (en hojas antiguas puede no tener título).
     const catalog: CatalogItem[] = rows(sheets['Precios'])
-      .map((r) => ({
-        code: str(r['código']), cat: str(r['categoría']) || 'Otros', name: str(r['trabajo']), inc: str(r['qué incluye']),
-        unit: str(r['unidad']) || 'unidad', material: num(r['material']), labor: num(r['mano de obra']),
-      }))
+      .map((r) => {
+        const c: CatalogItem = {
+          code: str(r['código']), cat: str(r['categoría']) || 'Otros', name: str(r['trabajo']), inc: str(r['qué incluye']),
+          unit: str(r['unidad']) || 'unidad', material: num(r['material']), labor: num(r['mano de obra']),
+        };
+        const raw = str(r['detalle (no editar)'] || r['']);
+        try {
+          if (raw) c.detail = fixDetail(JSON.parse(raw));
+        } catch {
+          /* texto escrito a mano: se ignora */
+        }
+        return c;
+      })
       .filter((c) => c.name);
     catalog.forEach((c, i) => (c.code ||= `X-${String(i + 1).padStart(2, '0')}`));
 
@@ -172,7 +184,7 @@ export class SheetService {
             q.advance, q.days, q.estado, q.notes, JSON.stringify(q)],
           detailSheet: 'Detalle',
           detail: q.items.map((it) => [q.num, q.client.name, it.code, it.name, it.unit, it.w ?? '', it.h ?? '', it.q,
-            Math.round(qty(it) * 100) / 100, it.price, lineTotal(it), q.estado]),
+            Math.round(qty(it) * 100) / 100, it.price, lineTotal(it), q.estado, detailLines(it.detail).join('; ')]),
         };
       }
       case 'delQuote':
@@ -192,7 +204,7 @@ export class SheetService {
       case 'catalog':
         return {
           type: 'replace', sheet: 'Precios',
-          rows: this.store.catalog().map((x) => [x.code, x.cat, x.name, x.inc, x.unit, x.material, x.labor, x.material + x.labor]),
+          rows: this.store.catalog().map((x) => [x.code, x.cat, x.name, x.inc, x.unit, x.material, x.labor, x.material + x.labor, x.detail ? JSON.stringify(x.detail) : '']),
         };
       case 'shop': {
         const s = this.store.shop();

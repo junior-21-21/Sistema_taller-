@@ -1,19 +1,21 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Store, Toast } from '../core/store.service';
-import { CatalogItem, UNITS } from '../core/models';
+import { CatalogItem, Detail, UNITS } from '../core/models';
+import { detailLines, emptyDetail, fixDetail, hasDetail } from '../core/detail';
+import { DetailEditor } from './detail-editor';
 import { DEFAULT_CATALOG } from '../core/default-data';
 import { fmt, norm } from '../core/calc';
 import { focusFirstError } from '../core/validate';
 import { Icon, catIcon } from './icon';
 
-type Form = { code: string; cat: string; name: string; inc: string; unit: string; material: number | null; labor: number | null };
+type Form = { code: string; cat: string; name: string; inc: string; unit: string; material: number | null; labor: number | null; detail?: Detail };
 const EMPTY: Form = { code: '', cat: '', name: '', inc: '', unit: 'm²', material: null, labor: null };
 
 /** Lista de precios: tarjetas por categoría, con formulario para agregar, editar y borrar. Cada cambio se guarda solo. */
 @Component({
   selector: 'app-prices',
-  imports: [FormsModule, Icon],
+  imports: [FormsModule, Icon, DetailEditor],
   // Los cambios aquí se guardan solos: no deben activar "Tienes cambios sin guardar" de la página.
   host: { '(input)': '$event.stopPropagation()', '(change)': '$event.stopPropagation()' },
   template: `
@@ -58,6 +60,9 @@ const EMPTY: Form = { code: '', cat: '', name: '', inc: '', unit: 'm²', materia
                   @if (isSample(c)) { <span class="tag">Ejemplo</span> }
                 </div>
                 @if (c.inc) { <p class="inc">{{ c.inc }}</p> }
+                @if (c.detail && detailLines(c.detail).length) {
+                  <p class="spec" [title]="detailLines(c.detail).join('\n')"><app-icon name="bars" [size]="14" /> {{ specSummary(c) }}</p>
+                }
                 <div class="pr">
                   <span class="big money">{{ fmt(c.material + c.labor) }}</span><span class="u">/ {{ c.unit }}</span>
                 </div>
@@ -113,6 +118,14 @@ const EMPTY: Form = { code: '', cat: '', name: '', inc: '', unit: 'm²', materia
           <label class="f"><span>Qué incluye <span class="muted">(sale en la cotización)</span></span>
             <textarea [(ngModel)]="f.inc" rows="2" placeholder="Ej: Marco de tubo 2x2, plancha LAF 1/40, pintura anticorrosiva"></textarea>
           </label>
+          <button type="button" class="dt" [class.on]="showDet()" (click)="toggleDet()">
+            <app-icon name="bars" [size]="16" /> Materiales, espesores y chapa que usa <span class="muted">(opcional)</span>
+            <span class="car">{{ showDet() ? '▲' : '▼' }}</span>
+          </button>
+          @if (showDet() && f.detail) {
+            <p class="muted small hint">Se copian solos a cada cotización con este servicio; ahí los puedes cambiar.</p>
+            <app-detail-editor [detail]="f.detail" />
+          }
           <div class="f">
             <span class="f-l">Se cobra por <span class="req">*</span></span>
             <div class="chips">
@@ -192,6 +205,14 @@ const EMPTY: Form = { code: '', cat: '', name: '', inc: '', unit: 'm²', materia
     .total b { font: 800 28px var(--f-display); color: var(--fire-dark); }
     .total small { font: 600 14px var(--f-body); color: var(--muted); }
     .total.zero b { color: var(--muted); }
+    .spec { margin: 0; display: flex; gap: 5px; align-items: center; font-size: 12px; font-weight: 600; color: var(--steel-3); background: var(--bg); border-radius: 8px; padding: 5px 8px; }
+    .spec app-icon { color: var(--fire); }
+    .dt { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: 1.5px dashed var(--line); background: var(--bg); color: var(--ink);
+      border-radius: 10px; padding: 10px 12px; font: 600 14px var(--f-body); cursor: pointer; }
+    .dt:hover, .dt.on { border-color: var(--fire); background: var(--soft); }
+    .dt app-icon { color: var(--fire); }
+    .dt .car { margin-left: auto; font-size: 11px; color: var(--muted); }
+    .hint { margin: -6px 0 0; }
     .mf { display: flex; gap: 10px; justify-content: flex-end; padding: 12px 16px; border-top: 1px solid var(--line); background: var(--bg); }
     @media (max-width: 560px) { .modal { top: auto; bottom: 0; transform: translateX(-50%); border-radius: 16px 16px 0 0; width: 100%; } .mf .btn { flex: 1; } }
   `,
@@ -210,6 +231,19 @@ export class Prices {
   protected tried = signal(false);
   protected armed = signal('');
   protected armedAll = signal(false);
+  protected showDet = signal(false);
+  protected detailLines = detailLines;
+
+  specSummary(c: CatalogItem) {
+    const n = c.detail!.mats.filter((m) => m.name.trim()).length;
+    return [n ? `${n} material${n === 1 ? '' : 'es'}` : '', c.detail!.chapa ? 'con chapa' : 'sin chapa', c.detail!.pintura].filter(Boolean).join(' · ');
+  }
+
+  toggleDet() {
+    const f = this.form();
+    if (f && !f.detail) f.detail = emptyDetail();
+    this.showDet.update((v) => !v);
+  }
 
   protected groups = computed(() => {
     const words = norm(this.q()).split(/\s+/).filter(Boolean);
@@ -232,13 +266,15 @@ export class Prices {
 
   openNew() {
     this.form.set({ ...EMPTY, cat: this.cat() || '' });
+    this.showDet.set(false);
     this.editing.set(false);
     this.tried.set(false);
     setTimeout(() => document.getElementById('sv-name')?.focus());
   }
 
   openEdit(c: CatalogItem) {
-    this.form.set({ ...c });
+    this.form.set({ ...structuredClone(c), detail: structuredClone(fixDetail(c.detail)) });
+    this.showDet.set(false);
     this.editing.set(true);
     this.tried.set(false);
   }
@@ -258,6 +294,7 @@ export class Prices {
     const item: CatalogItem = {
       code: f.code || this.nextCode(), cat: f.cat.trim(), name: f.name.trim(), inc: f.inc.trim(), unit: f.unit,
       material: +f.material!, labor: +f.labor!,
+      ...(f.detail && hasDetail(f.detail) ? { detail: { ...f.detail, mats: f.detail.mats.filter((m) => m.name.trim()) } } : {}),
     };
     const list = this.store.catalog();
     this.store.setCatalog(this.editing() ? list.map((c) => (c.code === item.code ? item : c)) : [...list, item]);

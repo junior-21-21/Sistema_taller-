@@ -2,6 +2,8 @@ import { Component, OnInit, computed, inject, input, signal } from '@angular/cor
 import { FormsModule } from '@angular/forms';
 import { Icon, catIcon } from './icon';
 import { Hint } from './guide';
+import { DetailEditor } from './detail-editor';
+import { detailLines, emptyDetail, fixDetail } from '../core/detail';
 import { NeedExcel } from './need-excel';
 import { SheetService } from '../core/sheet.service';
 import { Router, RouterLink } from '@angular/router';
@@ -14,7 +16,7 @@ const DRAFT = 'rr.draft';
 
 @Component({
   selector: 'app-quote',
-  imports: [FormsModule, RouterLink, Icon, Hint, NeedExcel],
+  imports: [FormsModule, RouterLink, Icon, Hint, NeedExcel, DetailEditor],
   templateUrl: './quote.html',
   styleUrl: './quote.css',
 })
@@ -170,7 +172,7 @@ export class QuotePage implements OnInit {
 
   // ---- paso 2
   add(c: CatalogItem) {
-    this.q.items.push({ code: c.code, name: c.name, inc: c.inc, unit: c.unit, price: c.material + c.labor, w: null, h: null, q: 1 });
+    this.q.items.push({ code: c.code, name: c.name, inc: c.inc, unit: c.unit, price: c.material + c.labor, w: null, h: null, q: 1, detail: structuredClone(fixDetail(c.detail)) });
     this.err.set('');
     this.touch();
     this.toast.show(`Agregado: ${c.name}. Pon las medidas.`, 2500);
@@ -185,7 +187,20 @@ export class QuotePage implements OnInit {
     this.touch();
   }
 
+  // ---- detalle técnico de cada trabajo
+  /** Índice del trabajo con el detalle abierto (-1 = ninguno). */
+  protected open = signal(-1);
+  protected detailLines = detailLines;
+
+  toggleDetail(i: number) {
+    const it = this.q.items[i];
+    if (this.open() !== i) it.detail ??= emptyDetail();
+    this.open.set(this.open() === i ? -1 : i);
+    this.touch();
+  }
+
   remove(i: number) {
+    if (this.open() === i) this.open.set(-1);
     this.q.items.splice(i, 1);
     this.touch();
   }

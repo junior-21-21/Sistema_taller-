@@ -2,6 +2,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Store } from '../core/store.service';
 import { AREA } from '../core/models';
+import { detailLines } from '../core/detail';
 import { addDays, fmt, fmtDate, fmtQty, inWords, lineTotal, qty, totals, waLink } from '../core/calc';
 
 const CLAUSES = ['PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA', 'QUINTA', 'SEXTA', 'SÉTIMA', 'OCTAVA', 'NOVENA', 'DÉCIMA', 'UNDÉCIMA', 'DUODÉCIMA'];
@@ -29,6 +30,7 @@ export class DocPage {
   protected qty = qty;
   protected lineTotal = lineTotal;
   protected inWords = inWords;
+  protected detailLines = detailLines;
   protected addDays = addDays;
   protected AREA = AREA;
   protected blank = '______________';

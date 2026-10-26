@@ -1,6 +1,26 @@
 export const AREA = 'm²';
 export const UNITS = ['m²', 'ml', 'unidad', 'peldaño', 'hora', 'global', 'kg'];
 
+/** Un material del trabajo, con su medida o espesor. */
+export interface Mat {
+  name: string;
+  spec: string;
+  qty: string;
+}
+
+/** Especificación técnica de un trabajo: materiales, chapa, pintura y lo que incluye. */
+export interface Detail {
+  mats: Mat[];
+  /** '' = no incluye chapa. */
+  chapa: string;
+  accesorios: string[];
+  pintura: string;
+  color: string;
+  instalacion: boolean;
+  transporte: boolean;
+  notas: string;
+}
+
 /** Un trabajo de la lista de precios. */
 export interface CatalogItem {
   code: string;
@@ -10,6 +30,8 @@ export interface CatalogItem {
   unit: string;
   material: number;
   labor: number;
+  /** Materiales y accesorios que se usan normalmente (se copian al cotizar). */
+  detail?: Detail;
 }
 
 /** Una línea de la cotización. Guarda una copia del nombre y precio para que
@@ -23,6 +45,7 @@ export interface QuoteItem {
   w: number | null;
   h: number | null;
   q: number;
+  detail?: Detail;
 }
 
 export type Estado = 'Pendiente' | 'Aceptada' | 'Rechazada';

@@ -56,6 +56,9 @@
                   <b>{{ it.name }}</b>
                   @if (it.inc) { <br><span class="sub">{{ it.inc }}</span> }
                   @if (it.unit === AREA) { <br><span class="sub">{{ it.q }} pza × {{ it.w }} × {{ it.h }} m</span> }
+                  @if (detailLines(it.detail).length) {
+                    <ul class="spec">@for (l of detailLines(it.detail); track $index) { <li>{{ l }}</li> }</ul>
+                  }
                 </td>
                 <td class="n">{{ fmtQty(qty(it)) }} {{ it.unit }}</td>
                 <td class="n">{{ fmt(it.price) }}</td>
@@ -105,7 +108,7 @@
           <p>EL CONTRATISTA se obliga a fabricar e instalar los siguientes trabajos, según la cotización {{ q.num }}, que forma parte de este contrato:</p>
           <ul>
             @for (it of q.items; track $index) {
-              <li>{{ it.name }}: {{ fmtQty(qty(it)) }} {{ it.unit }}@if (it.unit === AREA) { ({{ it.q }} pza de {{ it.w }} × {{ it.h }} m)}, {{ fmt(lineTotal(it)) }}.</li>
+              <li>{{ it.name }}: {{ fmtQty(qty(it)) }} {{ it.unit }}@if (it.unit === AREA) { ({{ it.q }} pza de {{ it.w }} × {{ it.h }} m)}, {{ fmt(lineTotal(it)) }}.@if (detailLines(it.detail).length) { Especificaciones: {{ detailLines(it.detail).join('; ') }}.}</li>
             }
           </ul>
           @if (q.desc) { <p>Detalle: {{ trimDot(q.desc) }}.</p> }

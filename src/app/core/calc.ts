@@ -1,3 +1,4 @@
+import { detailLines } from './detail';
 import { AREA, Client, Quote, QuoteItem, Sale, Shop } from './models';
 
 export const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -101,7 +102,12 @@ export function waPhone(tel: string): string {
 
 export function waText(q: Quote, shop: Shop): string {
   const t = totals(q);
-  const lines = q.items.map((it) => `• ${it.name}: ${fmtQty(qty(it))} ${it.unit} → ${fmt(lineTotal(it))}`).join('\n');
+  const lines = q.items
+    .map((it) => {
+      const spec = detailLines(it.detail).map((l) => `   - ${l}`);
+      return [`• ${it.name}: ${fmtQty(qty(it))} ${it.unit} → ${fmt(lineTotal(it))}`, ...spec].join('\n');
+    })
+    .join('\n');
   return [
     `*${shop.name}*`,
     `Cotización ${q.num}`,

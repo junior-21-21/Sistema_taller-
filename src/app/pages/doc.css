@@ -44,3 +44,7 @@ ul { margin: 0; padding-left: 18px; }
   .hd, .band { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   th, .pay div { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+.spec { margin: 4px 0 0; padding-left: 16px; font-size: 11.5px; color: #4a535b; columns: 2; column-gap: 18px; }
+.spec li { break-inside: avoid; line-height: 1.35; }
+@media (max-width: 560px) { .spec { columns: 1; } }
