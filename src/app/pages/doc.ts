@@ -1,7 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Store } from '../core/store.service';
-import { AREA } from '../core/models';
+import { AREA, isCompany } from '../core/models';
 import { detailLines } from '../core/detail';
 import { addDays, fmt, fmtDate, fmtQty, inWords, lineTotal, qty, totals, waLink } from '../core/calc';
 
@@ -19,6 +19,7 @@ export class DocPage {
 
   protected store = inject(Store);
   protected q = computed(() => this.store.get(this.num()));
+  protected co = computed(() => { const q = this.q(); return !!q && isCompany(q.client); });
   protected t = computed(() => (this.q() ? totals(this.q()!) : null));
   protected shop = this.store.shop;
   protected isContract = computed(() => this.tipo() === 'contrato');

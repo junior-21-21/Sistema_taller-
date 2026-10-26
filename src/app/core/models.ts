@@ -16,8 +16,17 @@ export interface Detail {
   /** '' = no incluye chapa. */
   chapa: string;
   accesorios: string[];
+  /** Acabado final (esmalte sintético, gloss, epóxico…). */
   pintura: string;
+  /** Manos del acabado. 0 = no se indica. */
+  manos: number;
+  /** Base anticorrosiva: '' (sin base), '1 mano' o '2 manos'. */
+  base: string;
   color: string;
+  /** Tipo de soldadura. '' = no se indica. */
+  soldadura: string;
+  /** Diseño o estilo (barrotes, rombos, ornamental…). */
+  diseno: string;
   instalacion: boolean;
   transporte: boolean;
   notas: string;
@@ -54,10 +63,21 @@ export type Estado = 'Pendiente' | 'Aceptada' | 'Rechazada';
 export const ESTADOS: Estado[] = ['Pendiente', 'Aceptada', 'Rechazada'];
 
 export interface Client {
+  /** Persona o empresa. Sin dato = persona (o empresa si el documento es un RUC 20…). */
+  kind?: 'persona' | 'empresa';
+  /** Nombre y apellidos, o razón social. */
   name: string;
   doc: string;
   tel: string;
+  /** Dirección de la obra. */
   place: string;
+  /** Solo empresas: quién hace el trato. */
+  contact?: string;
+  email?: string;
+}
+
+export function isCompany(c: Client): boolean {
+  return c.kind ? c.kind === 'empresa' : /^20\d{9}$/.test(String(c.doc || '').replace(/\D/g, ''));
 }
 
 export interface Quote {

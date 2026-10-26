@@ -105,3 +105,15 @@
 .act.deal { text-align: left; font: inherit; cursor: pointer; border-color: #f6c59a; background: var(--soft); }
 .act.deal:hover { border-color: var(--fire); }
 .tot-wrap { display: grid; justify-items: end; line-height: 1.1; }
+
+/* Paso 1: persona o empresa */
+.kind { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; max-width: 460px; }
+.kbtn { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 2px solid var(--line); border-radius: 12px; background: var(--panel);
+  cursor: pointer; text-align: left; color: var(--ink); font: inherit; }
+.kbtn span { display: grid; }
+.kbtn small { color: var(--muted); font-size: 12px; }
+.kbtn app-icon { color: var(--muted); }
+.kbtn.on { border-color: var(--fire); background: var(--soft); }
+.kbtn.on app-icon { color: var(--fire); }
+.grid .wide { grid-column: span 2; }
+@media (max-width: 560px) { .grid .wide { grid-column: auto; } }

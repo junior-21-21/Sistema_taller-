@@ -1,4 +1,4 @@
-import { AREA, Client, Quote, QuoteItem, SaleItem, Shop } from './models';
+import { AREA, Client, isCompany, Quote, QuoteItem, SaleItem, Shop } from './models';
 
 /** Reglas de los campos. Cada función devuelve el mensaje de error, o '' si está bien. */
 
@@ -57,8 +57,20 @@ export function vPositive(v: unknown, what = 'un número mayor a 0'): string {
   return isNaN(n) || n <= 0 ? `Pon ${what}.` : '';
 }
 
+export function vEmail(s: string | undefined): string {
+  const t = (s || '').trim();
+  if (!t) return '';
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(t) ? '' : 'Revisa el correo, por ejemplo nombre@gmail.com.';
+}
+
 export function clientErrors(c: Client, nameRequired = true) {
-  return { name: nameRequired ? vName(c.name) : '', doc: vDoc(c.doc), tel: vTel(c.tel) };
+  const company = isCompany(c);
+  return {
+    name: nameRequired ? vName(c.name, company ? 'la razón social o el nombre de la empresa' : 'el nombre del cliente') : '',
+    doc: company ? vRuc(c.doc) : vDoc(c.doc),
+    tel: vTel(c.tel),
+    email: vEmail(c.email),
+  };
 }
 
 export function itemErrors(it: QuoteItem) {

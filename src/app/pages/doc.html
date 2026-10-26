@@ -31,9 +31,11 @@
           <div>
             <h4>Cliente</h4>
             <p><b>{{ q.client.name || '—' }}</b></p>
-            <p>DNI/RUC: {{ q.client.doc || '—' }}</p>
-            <p>Celular: {{ q.client.tel || '—' }}</p>
-            <p>Obra: {{ q.client.place || '—' }}</p>
+            @if (q.client.doc) { <p>{{ co() ? 'RUC' : 'DNI' }}: {{ q.client.doc }}</p> }
+            @if (co() && q.client.contact) { <p>Contacto: {{ q.client.contact }}</p> }
+            @if (q.client.tel) { <p>Celular: {{ q.client.tel }}</p> }
+            @if (q.client.email) { <p>Correo: {{ q.client.email }}</p> }
+            @if (q.client.place) { <p>Obra: {{ q.client.place }}</p> }
           </div>
           <div>
             <h4>Taller</h4>
@@ -101,8 +103,13 @@
         <p class="just">
           Conste por el presente documento el contrato que celebran, de una parte, <b>{{ shop().name }}</b>@if (shop().ruc) {, con RUC <b>{{ shop().ruc }}</b>},
           con domicilio en {{ shop().address }}, representado por <b>{{ shop().rep || blank }}</b>, identificado con DNI <b>{{ shop().repDni || blank }}</b>,
-          a quien se denominará <b>EL CONTRATISTA</b>; y de la otra parte, <b>{{ q.client.name || blank }}</b>, identificado con DNI/RUC
-          <b>{{ q.client.doc || blank }}</b>, con domicilio en {{ q.client.place || blank }}, a quien se denominará <b>EL CLIENTE</b>; en los términos siguientes:
+          a quien se denominará <b>EL CONTRATISTA</b>; y de la otra parte,
+          @if (co()) {
+            <b>{{ q.client.name || blank }}</b>, con RUC <b>{{ q.client.doc || blank }}</b>, representada por <b>{{ q.client.contact || blank }}</b>,
+          } @else {
+            <b>{{ q.client.name || blank }}</b>, identificado con DNI <b>{{ q.client.doc || blank }}</b>,
+          }
+          con domicilio en {{ q.client.place || blank }}, a quien se denominará <b>EL CLIENTE</b>; en los términos siguientes:
         </p>
         <div>
           <h4>{{ clause()['objeto'] }}: OBJETO</h4>
@@ -163,7 +170,7 @@
         <p>Firmado en Huamanga, el {{ fmtDate(q.date) }}, en dos ejemplares de igual valor.</p>
         <div class="sign">
           <div>EL CONTRATISTA<br>{{ shop().rep || shop().name }}<br>DNI {{ shop().repDni || blank }}</div>
-          <div>EL CLIENTE<br>{{ q.client.name || blank }}<br>DNI/RUC {{ q.client.doc || blank }}</div>
+          <div>EL CLIENTE<br>{{ q.client.name || blank }}<br>@if (co()) {RUC {{ q.client.doc || blank }}@if (q.client.contact) {<br>{{ q.client.contact }}}} @else {DNI {{ q.client.doc || blank }}}</div>
         </div>
       }
 

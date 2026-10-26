@@ -4,12 +4,12 @@ import { Icon, catIcon } from './icon';
 import { Hint } from './guide';
 import { DetailEditor } from './detail-editor';
 import { CloseDeal } from './close-deal';
-import { detailLines, emptyDetail, fixDetail } from '../core/detail';
+import { detailLines, emptyDetail, fixDetail, hasDetail } from '../core/detail';
 import { NeedExcel } from './need-excel';
 import { SheetService } from '../core/sheet.service';
 import { Router, RouterLink } from '@angular/router';
 import { Store, Toast } from '../core/store.service';
-import { AREA, CatalogItem, ESTADOS, Quote, QuoteItem, UNITS } from '../core/models';
+import { AREA, CatalogItem, ESTADOS, Quote, QuoteItem, UNITS, isCompany } from '../core/models';
 import { fmt, fmtQty, lineTotal, qty, suggestDays, totals, waLink } from '../core/calc';
 import { clientErrors, focusFirstError, hasErrors, itemErrors, payErrors } from '../core/validate';
 
@@ -45,7 +45,7 @@ export class QuotePage implements OnInit {
 
   protected readonly steps = ['Cliente', 'Trabajos', 'Pago', 'Enviar'];
   protected readonly tips = [
-    '¿Para quién es? Escribe el nombre del cliente y, si los tienes, su DNI o RUC, celular y el lugar de la obra.',
+    '¿Para quién es? Elige persona o empresa y escribe sus datos. Si ya es cliente, elige su nombre y se llenan solos.',
     'Toca los trabajos que pidió y pon las medidas en metros. El precio se calcula solo.',
     'Elige el descuento, el adelanto y el plazo. A la derecha ves cuánto paga y cuándo.',
     '¡Listo! Mándala por WhatsApp, saca la hoja en PDF o cobra el adelanto.',
@@ -96,6 +96,29 @@ export class QuotePage implements OnInit {
   }
 
   // ---- validación
+  // ---- cliente
+  protected company = () => isCompany(this.q.client);
+  protected known = signal(false);
+
+  setKind(k: 'persona' | 'empresa') {
+    this.q.client.kind = k;
+    this.touch();
+  }
+
+  /** Si el nombre es de un cliente que ya existe, llena sus datos. */
+  pick(name: string) {
+    const c = this.store.clients().find((x) => x.client.name.trim().toLowerCase() === (name || '').trim().toLowerCase())?.client;
+    this.known.set(!!c);
+    if (!c) return;
+    const me = this.q.client;
+    me.kind ||= c.kind;
+    me.doc ||= c.doc;
+    me.tel ||= c.tel;
+    me.place ||= c.place;
+    me.contact ||= c.contact;
+    me.email ||= c.email;
+  }
+
   get ce() {
     return clientErrors(this.q.client);
   }
@@ -181,9 +204,14 @@ export class QuotePage implements OnInit {
 
   toggleDetail(i: number) {
     const it = this.q.items[i];
-    if (this.open() !== i) it.detail ??= emptyDetail();
+    if (this.open() !== i) it.detail = fixDetail(it.detail) ?? emptyDetail();
     this.open.set(this.open() === i ? -1 : i);
     this.touch();
+  }
+
+  /** Los demás trabajos con detalle, para copiarlo. */
+  others(i: number) {
+    return this.q.items.flatMap((x, j) => (j !== i && hasDetail(x.detail) ? [{ name: x.name, detail: x.detail }] : []));
   }
 
   remove(i: number) {

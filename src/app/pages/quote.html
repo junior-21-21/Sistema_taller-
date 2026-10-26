@@ -33,26 +33,45 @@
   @if (step() === 1) {
     <section class="card">
       <h2>¿Para quién es?</h2>
+      @let co = company();
+      <div class="kind" role="radiogroup" aria-label="Tipo de cliente">
+        <button type="button" class="kbtn" role="radio" [class.on]="!co" [attr.aria-checked]="!co" (click)="setKind('persona')">
+          <app-icon name="user" [size]="20" /><span><b>Persona</b><small>Con DNI</small></span></button>
+        <button type="button" class="kbtn" role="radio" [class.on]="co" [attr.aria-checked]="co" (click)="setKind('empresa')">
+          <app-icon name="building" [size]="20" /><span><b>Empresa</b><small>Con RUC</small></span></button>
+      </div>
       <div class="grid">
-        <label class="f" [class.bad]="show(1, ce.name)">
-          <span>Nombre del cliente <span class="req">*</span></span>
-          <input id="c-name" [(ngModel)]="q.client.name" autocomplete="off" placeholder="Nombre y apellido" required [attr.aria-invalid]="!!show(1, ce.name)">
+        <label class="f wide" [class.bad]="show(1, ce.name)">
+          <span>{{ co ? 'Razón social o nombre de la empresa' : 'Nombre y apellidos' }} <span class="req">*</span></span>
+          <input id="c-name" [(ngModel)]="q.client.name" (ngModelChange)="pick($event)" list="c-known" autocomplete="off"
+                 [placeholder]="co ? 'Ej: Constructora Los Andes S.A.C.' : 'Ej: José Quispe Huamán'" required [attr.aria-invalid]="!!show(1, ce.name)">
           @if (show(1, ce.name); as m) { <span class="fe">{{ m }}</span> }
+          @if (known(); as k) { <span class="fok">Cliente conocido: se llenaron sus datos.</span> }
         </label>
+        <datalist id="c-known">@for (c of store.clients(); track c.key) { <option [value]="c.client.name">{{ c.client.doc || c.client.tel }}</option> }</datalist>
         <label class="f" [class.bad]="show(1, ce.doc, q.client.doc)">
-          <span>DNI o RUC <span class="muted">(opcional)</span></span>
-          <input id="c-doc" [(ngModel)]="q.client.doc" inputmode="numeric" autocomplete="off" maxlength="11" placeholder="8 o 11 números">
+          <span>{{ co ? 'RUC' : 'DNI' }} <span class="muted">(opcional)</span></span>
+          <input id="c-doc" [(ngModel)]="q.client.doc" inputmode="numeric" autocomplete="off" [attr.maxlength]="co ? 11 : 11" [placeholder]="co ? '11 números (20…)' : '8 números'">
           @if (show(1, ce.doc, q.client.doc); as m) { <span class="fe">{{ m }}</span> }
         </label>
+        @if (co) {
+          <label class="f"><span>Persona de contacto <span class="muted">(opcional)</span></span>
+            <input id="c-contact" [(ngModel)]="q.client.contact" autocomplete="off" placeholder="Ej: Ing. Carlos Pérez"></label>
+        }
         <label class="f" [class.bad]="show(1, ce.tel, q.client.tel)">
           <span>Celular / WhatsApp <span class="muted">(opcional)</span></span>
           <input id="c-tel" [(ngModel)]="q.client.tel" inputmode="tel" autocomplete="off" placeholder="9XX XXX XXX">
           @if (show(1, ce.tel, q.client.tel); as m) { <span class="fe">{{ m }}</span> }
         </label>
-        <label class="f">Lugar de la obra<input id="c-place" [(ngModel)]="q.client.place" placeholder="Jr., Av., barrio o distrito"></label>
+        <label class="f" [class.bad]="show(1, ce.email, q.client.email)">
+          <span>Correo <span class="muted">(opcional)</span></span>
+          <input id="c-email" type="email" [(ngModel)]="q.client.email" inputmode="email" autocomplete="off" placeholder="nombre@gmail.com">
+          @if (show(1, ce.email, q.client.email); as m) { <span class="fe">{{ m }}</span> }
+        </label>
+        <label class="f wide"><span>Dirección de la obra <span class="muted">(opcional)</span></span>
+          <input id="c-place" [(ngModel)]="q.client.place" placeholder="Jr., Av., barrio o distrito"></label>
       </div>
-      <p class="muted small">Los campos con <span class="req">*</span> son obligatorios. Si pones DNI o celular, revisamos que tengan los números correctos.</p>
-      <label class="f">¿Qué necesita? (sale en la hoja)<textarea id="c-desc" [(ngModel)]="q.desc" placeholder="Ej: Fabricación e instalación de portón corredizo para cochera"></textarea></label>
+      <p class="muted small">Solo el {{ co ? 'nombre de la empresa' : 'nombre' }} es obligatorio (<span class="req">*</span>). Si pones {{ co ? 'RUC' : 'DNI' }}, celular o correo, revisamos que estén bien escritos. Lo que se va a hacer lo eliges en el paso 2.</p>
     </section>
   }
 
@@ -129,12 +148,12 @@
             </div>
             <button type="button" class="dt" [class.on]="open() === i" (click)="toggleDetail(i)">
               <app-icon name="bars" [size]="16" />
-              <span>{{ open() === i ? 'Cerrar detalle' : 'Materiales, espesores y chapa' }}</span>
+              <span>{{ open() === i ? 'Cerrar detalle' : 'Materiales, acabado y chapa' }}</span>
               <span class="car" aria-hidden="true">{{ open() === i ? '▲' : '▼' }}</span>
               @if (open() !== i && it.detail) { <span class="dsum">{{ detailLines(it.detail).slice(0, 2).join(' · ') }}{{ detailLines(it.detail).length > 2 ? ' · …' : '' }}</span> }
             </button>
             @if (open() === i && it.detail) {
-              <app-detail-editor [detail]="it.detail" (changed)="touch()" />
+              <app-detail-editor [detail]="it.detail" [copyFrom]="others(i)" (changed)="touch()" />
             }
           </div>
         } @empty {

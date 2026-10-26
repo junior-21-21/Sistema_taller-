@@ -75,7 +75,10 @@ export class Store {
       if (date >= e.last) {
         e.last = date;
         // Se queda con los datos más recientes y completos.
-        e.client = { name: c.name || e.client.name, doc: c.doc || e.client.doc, tel: c.tel || e.client.tel, place: c.place || e.client.place };
+        e.client = {
+          kind: c.kind || e.client.kind, name: c.name || e.client.name, doc: c.doc || e.client.doc, tel: c.tel || e.client.tel,
+          place: c.place || e.client.place, contact: c.contact || e.client.contact, email: c.email || e.client.email,
+        };
       }
       return e;
     };
