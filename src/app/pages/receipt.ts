@@ -2,7 +2,7 @@ import { Component, OnDestroy, computed, effect, inject, input, signal } from '@
 import { RouterLink } from '@angular/router';
 import { Store, Toast } from '../core/store.service';
 import { Sale } from '../core/models';
-import { fmt, fmtDate, inWords, saleTotals, waPhone } from '../core/calc';
+import { fmt, fmtDate, inWords, saleTotals, shopTels, waPhone } from '../core/calc';
 import { Icon } from './icon';
 
 type Format = 'ticket' | 'a4';
@@ -19,6 +19,7 @@ export class ReceiptPage implements OnDestroy {
   protected store = inject(Store);
   private toast = inject(Toast);
   protected shop = this.store.shop;
+  protected tels = computed(() => shopTels(this.shop()));
   protected s = computed(() => this.store.getSale(this.num()));
   protected t = computed(() => (this.s() ? saleTotals(this.s()!, this.shop().igv) : null));
   protected format = signal<Format>(this.savedFormat());

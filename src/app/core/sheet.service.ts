@@ -3,6 +3,7 @@ import { Store, StoreOp, Toast } from './store.service';
 import { CatalogItem, ESTADOS, Estado, Expense, Quote, Sale, Shop } from './models';
 import { lineTotal, qty, saleTotals, totals } from './calc';
 import { detailLines, fixDetail } from './detail';
+import { DEFAULT_SHOP } from './default-data';
 
 /**
  * Dirección de la hoja de Google del taller (Apps Script publicado como aplicación web).
@@ -148,6 +149,12 @@ export class SheetService {
     if (t['nombre']) shop.name = t['nombre'];
     shop.ruc = t['ruc'] ?? '';
     shop.tel = t['teléfono'] ?? '';
+    if ('teléfono 2' in t) shop.tel2 = t['teléfono 2'];
+    else {
+      // Hoja anterior al segundo celular: se ponen los dos números del taller.
+      shop.tel = DEFAULT_SHOP.tel;
+      shop.tel2 = DEFAULT_SHOP.tel2;
+    }
     if (t['dirección']) shop.address = t['dirección'];
     shop.rep = t['representante'] ?? '';
     shop.repDni = t['dni del representante'] ?? '';
@@ -240,7 +247,7 @@ export class SheetService {
       case 'shop': {
         const s = this.store.shop();
         const kv: [string, string | number][] = [
-          ['Nombre', s.name], ['RUC', s.ruc], ['Teléfono', s.tel], ['Dirección', s.address],
+          ['Nombre', s.name], ['RUC', s.ruc], ['Teléfono', s.tel], ['Teléfono 2', s.tel2], ['Dirección', s.address],
           ['Representante', s.rep], ['DNI del representante', s.repDni], ['Adelanto %', s.advance],
           ['Validez (días)', s.validity], ['Garantía (meses)', s.warranty], ['Descuento máximo %', s.maxDiscount],
           ['Incluir IGV', s.igv ? 'Sí' : 'No'], ['Serie de notas de venta', s.serie], ['Pie de la boleta', s.footer],

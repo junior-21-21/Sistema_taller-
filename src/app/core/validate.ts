@@ -108,6 +108,7 @@ export function shopErrors(s: Shop) {
     name: vName(s.name, 'el nombre del taller'),
     ruc: vRuc(s.ruc),
     tel: vTel(s.tel),
+    tel2: vTel(s.tel2),
     repDni: vDni(s.repDni),
     serie: /^[A-Z0-9]{1,6}$/i.test((s.serie || '').trim()) ? '' : 'Usa letras y números sin espacios, por ejemplo NV01.',
     advance: vRange(s.advance, 0, 100, '%'),

@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Store } from '../core/store.service';
 import { AREA, isCompany } from '../core/models';
 import { detailLines } from '../core/detail';
-import { addDays, fmt, fmtDate, fmtQty, inWords, lineTotal, qty, totals, waLink } from '../core/calc';
+import { addDays, fmt, fmtDate, fmtQty, inWords, lineTotal, qty, shopTels, totals, waLink } from '../core/calc';
 
 const CLAUSES = [
   'PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA', 'QUINTA', 'SEXTA', 'SÉTIMA', 'OCTAVA', 'NOVENA', 'DÉCIMA',
@@ -25,6 +25,7 @@ export class DocPage {
   protected co = computed(() => { const q = this.q(); return !!q && isCompany(q.client); });
   protected t = computed(() => (this.q() ? totals(this.q()!) : null));
   protected shop = this.store.shop;
+  protected tels = computed(() => shopTels(this.shop()));
   protected isContract = computed(() => this.tipo() === 'contrato');
   protected conNum = computed(() => this.num().replace('COT', 'CON'));
 

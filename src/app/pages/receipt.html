@@ -25,7 +25,7 @@
           <b>{{ shop().name }}</b>
           @if (shop().ruc) { <span>RUC {{ shop().ruc }}</span> }
           <span>{{ shop().address }}</span>
-          @if (shop().tel) { <span>Cel. {{ shop().tel }}</span> }
+          @if (tels()) { <span>Cel. {{ tels() }}</span> }
         </div>
         <div class="box">
           <span>NOTA DE VENTA</span>

@@ -43,7 +43,8 @@ export const DEFAULT_CATALOG: CatalogItem[] = ROWS.map(([code, cat, name, inc, u
 export const DEFAULT_SHOP: Shop = {
   name: 'Run Run – Estructuras Metálicas',
   ruc: '',
-  tel: '',
+  tel: '994 988 519',
+  tel2: '930 929 558',
   address: 'Huamanga, Ayacucho',
   rep: '',
   repDni: '',

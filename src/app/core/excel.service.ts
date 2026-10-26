@@ -173,7 +173,7 @@ export class ExcelService {
       { header: 'Valor', key: 'v', width: 36 },
     ];
     const shopRows: [string, string | number][] = [
-      ['Nombre', s.name], ['RUC', s.ruc], ['Teléfono', s.tel], ['Dirección', s.address],
+      ['Nombre', s.name], ['RUC', s.ruc], ['Teléfono', s.tel], ['Teléfono 2', s.tel2], ['Dirección', s.address],
       ['Representante', s.rep], ['DNI del representante', s.repDni], ['Adelanto %', s.advance],
       ['Validez (días)', s.validity], ['Garantía (meses)', s.warranty], ['Descuento máximo %', s.maxDiscount],
       ['Incluir IGV', s.igv ? 'Sí' : 'No'], ['Serie de notas de venta', s.serie], ['Pie de la boleta', s.footer],

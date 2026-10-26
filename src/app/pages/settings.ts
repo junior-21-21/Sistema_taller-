@@ -34,6 +34,8 @@ import { Prices } from './prices';
             @if (show(se.ruc, shop.ruc); as m) { <span class="fe">{{ m }}</span> }</label>
           <label class="f" [class.bad]="show(se.tel, shop.tel)"><span>Celular <span class="muted">(opcional)</span></span><input [(ngModel)]="shop.tel" inputmode="tel" placeholder="9XX XXX XXX">
             @if (show(se.tel, shop.tel); as m) { <span class="fe">{{ m }}</span> }</label>
+          <label class="f" [class.bad]="show(se.tel2, shop.tel2)"><span>Otro celular <span class="muted">(opcional)</span></span><input [(ngModel)]="shop.tel2" inputmode="tel" placeholder="9XX XXX XXX">
+            @if (show(se.tel2, shop.tel2); as m) { <span class="fe">{{ m }}</span> }</label>
           <label class="f">Dirección<input [(ngModel)]="shop.address"></label>
           <label class="f">Quién firma los contratos<input [(ngModel)]="shop.rep" placeholder="Nombre del dueño"></label>
           <label class="f" [class.bad]="show(se.repDni, shop.repDni)"><span>DNI de quien firma <span class="muted">(opcional)</span></span><input [(ngModel)]="shop.repDni" inputmode="numeric" maxlength="8" placeholder="8 números">

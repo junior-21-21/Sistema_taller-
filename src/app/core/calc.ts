@@ -106,6 +106,11 @@ export function waPhone(tel: string): string {
   return t;
 }
 
+/** Celulares del taller juntos, ej. "994 988 519 / 930 929 558". */
+export function shopTels(s: Shop): string {
+  return [s.tel, s.tel2].map((x) => (x || '').trim()).filter(Boolean).join(' / ');
+}
+
 export function waText(q: Quote, shop: Shop): string {
   const t = totals(q);
   const lines = q.items
@@ -131,6 +136,7 @@ export function waText(q: Quote, shop: Shop): string {
     `Entrega: ${q.days} días hábiles`,
     `Garantía: ${q.warranty} meses`,
     `Válida hasta: ${addDays(q.date, q.validity)}`,
+    ...(shopTels(shop) ? ['', `Consultas: ${shopTels(shop)}`] : []),
   ].join('\n');
 }
 

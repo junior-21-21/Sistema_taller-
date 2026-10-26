@@ -107,6 +107,8 @@ export interface Shop {
   name: string;
   ruc: string;
   tel: string;
+  /** Segundo celular del taller. */
+  tel2: string;
   address: string;
   rep: string;
   repDni: string;
