@@ -4,7 +4,7 @@ import { Store, Toast } from '../core/store.service';
 import { CatalogItem, Detail, UNITS } from '../core/models';
 import { detailLines, emptyDetail, fixDetail, hasDetail } from '../core/detail';
 import { DetailEditor } from './detail-editor';
-import { DEFAULT_CATALOG } from '../core/default-data';
+import { DEFAULT_CATALOG, SUGERIDOS } from '../core/default-data';
 import { fmt, norm } from '../core/calc';
 import { focusFirstError } from '../core/validate';
 import { Icon, catIcon } from './icon';
@@ -27,6 +27,18 @@ const EMPTY: Form = { code: '', cat: '', name: '', inc: '', unit: 'm²', materia
         </div>
         <button type="button" class="btn primary" (click)="openNew()"><app-icon name="plus" [size]="18" /> Agregar servicio</button>
       </div>
+
+      @if (sugeridos().length) {
+        <details class="sug" [open]="!store.catalog().length">
+          <summary><app-icon name="tools" [size]="16" /> Servicios para agregar rápido <span class="muted">({{ sugeridos().length }})</span></summary>
+          <p class="muted small">Toca uno, pon tu precio y listo. Ej.: solo techado sobre una estructura que ya existe.</p>
+          <div class="chips">
+            @for (s of sugeridos(); track s.name) {
+              <button type="button" class="chip cchip" (click)="openSug(s)"><app-icon [name]="catIcon(s.cat)" [size]="15" /> {{ s.name }}</button>
+            }
+          </div>
+        </details>
+      }
 
       @if (samples().length) {
         <div class="sample">
@@ -164,6 +176,9 @@ const EMPTY: Form = { code: '', cat: '', name: '', inc: '', unit: 'm²', materia
     .sample { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--warn-soft); color: var(--warn); border: 1px solid #f0c48a; border-radius: 10px; padding: 10px 14px; font-weight: 600; }
     .btn.sm { min-height: 38px; padding: 7px 14px; }
     .tools { display: grid; gap: 10px; }
+    .sug { border: 1.5px dashed var(--line); border-radius: 12px; padding: 10px 14px; }
+    .sug summary { cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .sug p { margin: 8px 0; }
     .cchip { display: inline-flex; align-items: center; gap: 6px; }
     .grp { display: grid; gap: 10px; }
     .grp h3 { display: flex; align-items: center; gap: 8px; margin: 6px 0 0; font: 800 18px var(--f-display); text-transform: uppercase; letter-spacing: .04em; }
@@ -263,6 +278,16 @@ export class Prices {
 
   bad = (v: number | null) => v === null || (v as unknown) === '' || isNaN(+v) || +v < 0;
   total = (f: Form) => (this.bad(f.material) ? 0 : +f.material!) + (this.bad(f.labor) ? 0 : +f.labor!);
+
+  protected sugeridos = computed(() => {
+    const have = new Set(this.store.catalog().map((c) => norm(c.name)));
+    return SUGERIDOS.filter((s) => !have.has(norm(s.name)));
+  });
+
+  openSug(s: (typeof SUGERIDOS)[number]) {
+    this.openNew();
+    this.form.set({ ...EMPTY, cat: s.cat, name: s.name, inc: s.inc, unit: s.unit });
+  }
 
   openNew() {
     this.form.set({ ...EMPTY, cat: this.cat() || '' });

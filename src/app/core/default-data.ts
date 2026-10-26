@@ -36,6 +36,29 @@ const ROWS: Row[] = [
   ['SV-05', 'Servicios', 'Visita técnica y toma de medidas', 'Se descuenta si el cliente contrata', 'global', 0, 40],
 ];
 
+/** Servicios que se pueden agregar con un toque a la lista de precios (sin precio: lo pone el taller). */
+export const SUGERIDOS: { cat: string; name: string; inc: string; unit: string }[] = [
+  { cat: 'Techos y coberturas', name: 'Solo techado sobre estructura existente', inc: 'Colocación de calamina o policarbonato sobre la estructura que ya tiene el cliente, con fijaciones', unit: 'm²' },
+  { cat: 'Techos y coberturas', name: 'Solo estructura de techo (sin cobertura)', inc: 'Correas y vigas de tubo, listas para poner la cobertura', unit: 'm²' },
+  { cat: 'Techos y coberturas', name: 'Techo completo (estructura y cobertura)', inc: 'Estructura de tubo, cobertura y fijaciones', unit: 'm²' },
+  { cat: 'Techos y coberturas', name: 'Cambio de calamina o policarbonato', inc: 'Retiro de la cobertura vieja y colocación de la nueva', unit: 'm²' },
+  { cat: 'Techos y coberturas', name: 'Canaleta y bajada de agua', inc: 'Canaleta de plancha galvanizada, soportes y bajada', unit: 'ml' },
+  { cat: 'Puertas y portones', name: 'Puerta metálica', inc: 'Marco de tubo, forro de plancha, bisagras y chapa', unit: 'm²' },
+  { cat: 'Puertas y portones', name: 'Portón de cochera', inc: 'Estructura de tubo, forro de plancha, bisagras y pasadores', unit: 'm²' },
+  { cat: 'Rejas y ventanas', name: 'Reja de ventana', inc: 'Barrotes, marco y anclajes', unit: 'm²' },
+  { cat: 'Barandas', name: 'Baranda', inc: 'Tubo, pasamanos y anclajes', unit: 'ml' },
+  { cat: 'Escaleras', name: 'Escalera metálica', inc: 'Vigas, peldaños de plancha estriada y anclajes', unit: 'peldaño' },
+  { cat: 'Estructuras', name: 'Estructura metálica', inc: 'Columnas, vigas y uniones soldadas', unit: 'm²' },
+  { cat: 'Mantenimiento y reparación', name: 'Reparación de puerta o portón', inc: 'Soldadura, cambio de bisagras o piezas dañadas', unit: 'global' },
+  { cat: 'Mantenimiento y reparación', name: 'Mantenimiento y pintura de estructura', inc: 'Lijado, anticorrosivo y esmalte sobre estructura existente', unit: 'm²' },
+  { cat: 'Servicios', name: 'Solo mano de obra (el cliente pone el material)', inc: 'Fabricación o instalación con material del cliente', unit: 'global' },
+  { cat: 'Servicios', name: 'Solo instalación', inc: 'Montaje en obra de un trabajo ya fabricado', unit: 'global' },
+  { cat: 'Servicios', name: 'Soldadura a domicilio', inc: 'Traslado del equipo y soldadura en el lugar', unit: 'hora' },
+  { cat: 'Servicios', name: 'Desmontaje de estructura', inc: 'Retiro de estructura, techo o reja existente', unit: 'global' },
+  { cat: 'Servicios', name: 'Transporte', inc: 'Flete del trabajo terminado hasta la obra', unit: 'global' },
+  { cat: 'Servicios', name: 'Visita técnica y toma de medidas', inc: 'Se descuenta si el cliente contrata', unit: 'global' },
+];
+
 export const DEFAULT_CATALOG: CatalogItem[] = ROWS.map(([code, cat, name, inc, unit, material, labor]) => ({
   code, cat, name, inc, unit, material, labor,
 }));

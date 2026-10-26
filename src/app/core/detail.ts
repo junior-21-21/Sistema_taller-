@@ -39,6 +39,8 @@ export const PLANTILLAS: { name: string; mats: [string, string][]; fill: Partial
     fill: { diseno: 'Barrotes', accesorios: ['Pernos de anclaje'] } },
   { name: 'Escalera', mats: [['Tubo rectangular', '4"x2" · 2 mm'], ['Plancha estriada', '1/8"'], ['Ángulo', '1 1/2" · 3/16"']],
     fill: { accesorios: ['Pernos de anclaje'] } },
+  { name: 'Solo techado', mats: [['Calamina', '0.30 mm'], ['Tornillo autoperforante', 'con capuchón']],
+    fill: {} },
   { name: 'Techo', mats: [['Tubo rectangular', '2"x1" · 1.5 mm'], ['Tubo cuadrado', '2"x2" · 2 mm'], ['Calamina', '0.30 mm']],
     fill: { accesorios: ['Pernos de anclaje'] } },
 ];
