@@ -81,7 +81,7 @@
               <tr>
                 <td>{{ i + 1 }}</td>
                 <td>
-                  @if (it.img) { <img class="ph" [src]="it.img" [alt]="it.name"> }
+                  @if (store.fotoSrc(it.img); as src) { <img class="ph" [src]="src" [alt]="it.name"> }
                   <b>{{ it.name }}</b>
                   @if (it.inc) { <br><span class="sub">{{ it.inc }}</span> }
                   @if (it.unit === AREA) { <br><span class="sub">{{ it.q }} pza × {{ it.w }} × {{ it.h }} m</span> }

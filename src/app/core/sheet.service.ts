@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Store, StoreOp, Toast } from './store.service';
-import { CatalogItem, ESTADOS, Estado, Expense, Quote, Sale, Shop } from './models';
+import { CatalogItem, ESTADOS, Estado, Expense, Foto, Quote, Sale, Shop } from './models';
 import { lineTotal, qty, saleTotals, totals } from './calc';
 import { detailLines, fixDetail } from './detail';
 import { DEFAULT_SHOP } from './default-data';
@@ -50,6 +50,8 @@ export class SheetService {
   readonly loaded = signal(false);
   /** La hoja ya tiene la pestaña Gastos (el código de Apps Script está al día). */
   readonly hasGastos = signal(false);
+  /** La hoja ya tiene la pestaña Fotos. */
+  readonly hasFotos = signal(false);
 
   private queue: Op[] = [];
   private flushing = false;
@@ -88,6 +90,7 @@ export class SheetService {
       // Si mientras tanto alguien guardó aquí, no se pisa lo nuevo.
       if (this.sendable().length) return;
       this.hasGastos.set(!!data.sheets['Gastos']);
+      this.hasFotos.set(!!data.sheets['Fotos']);
       this.apply(data.sheets);
       this.sheetUrl.set(data.url);
       this.loaded.set(true);
@@ -183,7 +186,17 @@ export class SheetService {
       expenses = [...expenses.filter((e) => !waiting.has(e.id)), ...this.store.expenses().filter((e) => waiting.has(e.id))];
     }
 
-    this.store.replaceAll({ catalog, quotes, sales, expenses, shop: Object.keys(t).length ? shop : undefined });
+    // Igual con las fotos: sin la pestaña Fotos se quedan las de este equipo.
+    let fotos: Foto[] | undefined;
+    if (sheets['Fotos']) {
+      fotos = rows(sheets['Fotos'])
+        .map((r) => ({ id: str(r['id']), code: str(r['código']), n: num(r['orden']), src: str(r['foto (no editar)']) }))
+        .filter((f) => f.id && f.src);
+      const waiting = new Set(this.queue.filter((o) => o.sheet === 'Fotos').map((o) => ('key' in o ? o.key : '')));
+      fotos = [...fotos.filter((f) => !waiting.has(f.id)), ...this.store.fotos().filter((f) => waiting.has(f.id))];
+    }
+
+    this.store.replaceAll({ catalog, quotes, sales, expenses, fotos, shop: Object.keys(t).length ? shop : undefined });
   }
 
   // ------------------------------------------------------------------ guardar
@@ -244,6 +257,13 @@ export class SheetService {
       }
       case 'delExpense':
         return { type: 'remove', sheet: 'Gastos', key: c.id };
+      case 'foto': {
+        const f = this.store.fotos().find((x) => x.id === c.id);
+        if (!f) return null;
+        return { type: 'upsert', sheet: 'Fotos', key: f.id, row: [f.id, this.store.catalog().find((x) => x.code === f.code)?.name ?? '', f.code, f.n, f.src] };
+      }
+      case 'delFoto':
+        return { type: 'remove', sheet: 'Fotos', key: c.id };
       case 'shop': {
         const s = this.store.shop();
         const kv: [string, string | number][] = [
@@ -266,9 +286,9 @@ export class SheetService {
     }
   }
 
-  /** Lo que se puede mandar ya (los gastos esperan si la hoja aún no tiene la pestaña Gastos). */
+  /** Lo que se puede mandar ya (gastos y fotos esperan si la hoja aún no tiene su pestaña). */
   private sendable() {
-    return this.queue.filter((o) => o.sheet !== 'Gastos' || this.hasGastos());
+    return this.queue.filter((o) => (o.sheet !== 'Gastos' || this.hasGastos()) && (o.sheet !== 'Fotos' || this.hasFotos()));
   }
 
   async flush() {

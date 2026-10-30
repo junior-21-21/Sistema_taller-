@@ -1,6 +1,6 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
 import { DEFAULT_SHOP } from './default-data';
-import { CatalogItem, Client, Estado, Expense, Quote, Sale, Shop } from './models';
+import { CatalogItem, Client, Estado, Expense, Foto, Quote, Sale, Shop } from './models';
 import { clientKey, nowTime, saleTotals, suggestDays, todayIso, totals } from './calc';
 
 function load<T>(key: string): T | null {
@@ -33,6 +33,7 @@ export interface ClientSummary {
 export type StoreOp =
   | { t: 'quote' | 'delQuote' | 'sale'; num: string }
   | { t: 'expense' | 'delExpense'; id: string }
+  | { t: 'foto' | 'delFoto'; id: string }
   | { t: 'catalog' | 'shop' };
 
 /** Estado de la app. Se guarda en el navegador como copia de trabajo y el
@@ -43,6 +44,7 @@ export class Store {
   readonly quotes = signal<Quote[]>(load('rr.quotes') ?? []);
   readonly sales = signal<Sale[]>(load('rr.sales') ?? []);
   readonly expenses = signal<Expense[]>(load('rr.expenses') ?? []);
+  readonly fotos = signal<Foto[]>(load('rr.fotos') ?? []);
   readonly shop = signal<Shop>({ ...DEFAULT_SHOP, ...(load<Partial<Shop>>('rr.shop') ?? {}) });
   /** Hay cambios que todavía no están en el Excel. */
   readonly dirty = signal<boolean>(load('rr.dirty') ?? false);
@@ -101,6 +103,7 @@ export class Store {
     effect(() => persist('rr.quotes', this.quotes()));
     effect(() => persist('rr.sales', this.sales()));
     effect(() => persist('rr.expenses', this.expenses()));
+    effect(() => persist('rr.fotos', this.fotos()));
     effect(() => persist('rr.shop', this.shop()));
     effect(() => persist('rr.dirty', this.dirty()));
   }
@@ -272,6 +275,27 @@ export class Store {
     this.touch({ t: 'delExpense', id });
   }
 
+  // ---------------------------------------------------------------- fotos de los servicios
+  fotosOf(code: string) {
+    return this.fotos().filter((f) => f.code === code).sort((a, b) => a.n - b.n);
+  }
+
+  /** La imagen de una línea de cotización ('' si la foto se borró). */
+  fotoSrc(ref?: string) {
+    if (!ref) return '';
+    return ref.startsWith('f:') ? (this.fotos().find((f) => f.id === ref.slice(2))?.src ?? '') : ref;
+  }
+
+  saveFoto(f: Foto) {
+    this.fotos.update((list) => [...list.filter((x) => x.id !== f.id), f]);
+    this.touch({ t: 'foto', id: f.id });
+  }
+
+  deleteFoto(id: string) {
+    this.fotos.update((list) => list.filter((x) => x.id !== id));
+    this.touch({ t: 'delFoto', id });
+  }
+
   /** Gastos por cotización ('' = generales). */
   readonly spentByQuote = computed(() => {
     const m: Record<string, number> = {};
@@ -279,11 +303,12 @@ export class Store {
     return m;
   });
 
-  replaceAll(data: { catalog?: CatalogItem[]; quotes?: Quote[]; sales?: Sale[]; expenses?: Expense[]; shop?: Partial<Shop> }) {
+  replaceAll(data: { catalog?: CatalogItem[]; quotes?: Quote[]; sales?: Sale[]; expenses?: Expense[]; fotos?: Foto[]; shop?: Partial<Shop> }) {
     if (data.catalog) this.catalog.set(data.catalog);
     if (data.quotes) this.quotes.set(data.quotes);
     if (data.sales) this.sales.set(data.sales);
     if (data.expenses) this.expenses.set(data.expenses);
+    if (data.fotos) this.fotos.set(data.fotos);
     if (data.shop) this.shop.set({ ...DEFAULT_SHOP, ...data.shop });
     this.dirty.set(false);
   }

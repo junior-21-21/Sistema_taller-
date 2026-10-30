@@ -57,8 +57,19 @@ export interface QuoteItem {
   h: number | null;
   q: number;
   detail?: Detail;
-  /** Foto del modelo del catálogo de puertas (ruta dentro del sistema). */
+  /** Foto que sale en la cotización: ruta del catálogo de puertas o 'f:<id>' de una foto del servicio. */
   img?: string;
+}
+
+/** Una foto de un servicio de la lista de precios. */
+export interface Foto {
+  id: string;
+  /** Código del servicio. */
+  code: string;
+  /** Orden dentro del servicio (0 = la principal). */
+  n: number;
+  /** Imagen comprimida (data:) o ruta de una foto del catálogo de puertas. */
+  src: string;
 }
 
 export type Estado = 'Pendiente' | 'Aceptada' | 'Rechazada';

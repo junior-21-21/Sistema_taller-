@@ -1,21 +1,25 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Store, Toast } from '../core/store.service';
-import { CatalogItem, Detail, UNITS } from '../core/models';
+import { CatalogItem, Detail, Foto, UNITS } from '../core/models';
 import { detailLines, emptyDetail, fixDetail, hasDetail } from '../core/detail';
 import { DetailEditor } from './detail-editor';
 import { DEFAULT_CATALOG, SUGERIDOS } from '../core/default-data';
 import { fmt, norm } from '../core/calc';
 import { focusFirstError } from '../core/validate';
 import { Icon, catIcon } from './icon';
+import { DoorCatalog } from './door-catalog';
+import { newFotoId, shrinkPhoto } from '../core/foto';
+import { SheetService } from '../core/sheet.service';
 
-type Form = { code: string; cat: string; name: string; inc: string; unit: string; material: number | null; labor: number | null; detail?: Detail };
-const EMPTY: Form = { code: '', cat: '', name: '', inc: '', unit: 'm²', material: null, labor: null };
+type Form = { code: string; cat: string; name: string; inc: string; unit: string; material: number | null; labor: number | null; detail?: Detail; fotos: Foto[] };
+const EMPTY: Omit<Form, 'fotos'> = { code: '', cat: '', name: '', inc: '', unit: 'm²', material: null, labor: null };
+const MAX_FOTOS = 8;
 
 /** Lista de precios: tarjetas por categoría, con formulario para agregar, editar y borrar. Cada cambio se guarda solo. */
 @Component({
   selector: 'app-prices',
-  imports: [FormsModule, Icon, DetailEditor],
+  imports: [FormsModule, Icon, DetailEditor, DoorCatalog],
   // Los cambios aquí se guardan solos: no deben activar "Tienes cambios sin guardar" de la página.
   host: { '(input)': '$event.stopPropagation()', '(change)': '$event.stopPropagation()' },
   template: `
@@ -67,6 +71,13 @@ const EMPTY: Form = { code: '', cat: '', name: '', inc: '', unit: 'm²', materia
           <div class="cards">
             @for (c of g.items; track c.code) {
               <article class="sv" [class.ex]="isSample(c)">
+                @let fs = store.fotosOf(c.code);
+                @if (fs.length) {
+                  <button type="button" class="cover" (click)="openEdit(c)" [attr.aria-label]="'Fotos de ' + c.name">
+                    <img [src]="fs[0].src" alt="" loading="lazy">
+                    @if (fs.length > 1) { <span class="nf"><app-icon name="images" [size]="13" /> {{ fs.length }}</span> }
+                  </button>
+                }
                 <div class="sh">
                   <b class="nm">{{ c.name }}</b>
                   @if (isSample(c)) { <span class="tag">Ejemplo</span> }
@@ -130,6 +141,28 @@ const EMPTY: Form = { code: '', cat: '', name: '', inc: '', unit: 'm²', materia
           <label class="f"><span>Qué incluye <span class="muted">(sale en la cotización)</span></span>
             <textarea [(ngModel)]="f.inc" rows="2" placeholder="Ej: Marco de tubo 2x2, plancha LAF 1/40, pintura anticorrosiva"></textarea>
           </label>
+          <div class="f">
+            <span class="f-l">Fotos del trabajo <span class="muted">(al cotizar eliges cuál sale en la hoja)</span></span>
+            <div class="fotos">
+              @for (x of f.fotos; track x.id; let i = $index) {
+                <div class="fo" [class.first]="i === 0">
+                  <img [src]="x.src" alt="">
+                  @if (i === 0) { <span class="pri">Principal</span> } @else {
+                    <button type="button" class="star" (click)="first(f, i)" aria-label="Poner como principal" title="Poner como principal"><app-icon name="star" [size]="14" /></button>
+                  }
+                  <button type="button" class="del" (click)="f.fotos.splice(i, 1)" aria-label="Quitar foto"><app-icon name="close" [size]="14" /></button>
+                </div>
+              }
+              @if (f.fotos.length < maxFotos) {
+                <label class="add" [class.busy]="busy()">
+                  <input type="file" accept="image/*" multiple (change)="upload(f, $event)" [disabled]="busy()">
+                  <app-icon name="camera" [size]="22" /><span>{{ busy() ? 'Cargando…' : 'Subir foto' }}</span>
+                </label>
+                <button type="button" class="add" (click)="pickDoor.set(true)"><app-icon name="door" [size]="22" /><span>Del catálogo de puertas</span></button>
+              }
+            </div>
+            @if (needsScript()) { <span class="fe">Para guardar fotos en la hoja falta actualizar el código de Apps Script (pestaña Fotos). Mientras tanto se quedan en este equipo.</span> }
+          </div>
           <button type="button" class="dt" [class.on]="showDet()" (click)="toggleDet()">
             <app-icon name="bars" [size]="16" /> Materiales, espesores y chapa que usa <span class="muted">(opcional)</span>
             <span class="car">{{ showDet() ? '▲' : '▼' }}</span>
@@ -167,6 +200,12 @@ const EMPTY: Form = { code: '', cat: '', name: '', inc: '', unit: 'm²', materia
           <button type="button" class="btn primary" (click)="submit()">{{ editing() ? 'Guardar cambios' : 'Agregar servicio' }}</button>
         </div>
       </div>
+      @if (pickDoor()) {
+        <div class="dsheet" role="dialog" aria-modal="true" aria-label="Elegir foto del catálogo de puertas">
+          <div class="dsh"><b>Elige una foto</b><button type="button" class="btn ghost" (click)="pickDoor.set(false)">Cerrar</button></div>
+          <app-door-catalog pickLabel="Usar esta foto" (pick)="addDoor(f, $event.img)" />
+        </div>
+      }
     }
   `,
   styles: `
@@ -198,6 +237,25 @@ const EMPTY: Form = { code: '', cat: '', name: '', inc: '', unit: 'm²', materia
     .split { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 8px; }
     .split b { color: var(--ink); font-size: 13px; }
     .act { display: flex; gap: 8px; }
+    .cover { position: relative; margin: -14px -14px 0; padding: 0; border: none; cursor: pointer; display: block; height: 160px; background: #1b2126; border-radius: 8px 8px 0 0; overflow: hidden; }
+    .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .nf { position: absolute; right: 8px; bottom: 8px; display: inline-flex; gap: 4px; align-items: center; background: rgba(0,0,0,.65); color: #fff; font: 700 12px var(--f-body); padding: 3px 8px; border-radius: 999px; }
+    .fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+    .fo { position: relative; aspect-ratio: 3 / 4; border-radius: 10px; overflow: hidden; background: #1b2126; border: 2px solid var(--line); }
+    .fo.first { border-color: var(--fire); }
+    .fo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pri { position: absolute; left: 4px; bottom: 4px; background: var(--fire); color: #fff; font: 700 11px var(--f-body); padding: 2px 6px; border-radius: 6px; }
+    .fo button { position: absolute; top: 4px; width: 28px; height: 28px; border-radius: 50%; border: none; background: rgba(0,0,0,.65); color: #fff; display: grid; place-items: center; cursor: pointer; padding: 0; }
+    .fo .del { right: 4px; }
+    .fo .star { left: 4px; }
+    .add { aspect-ratio: 3 / 4; border: 2px dashed var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); display: grid; place-content: center; justify-items: center; gap: 6px;
+      text-align: center; font: 600 12.5px var(--f-body); cursor: pointer; padding: 6px; }
+    .add:hover { border-color: var(--fire); background: var(--soft); }
+    .add app-icon { color: var(--fire); }
+    .add input { display: none; }
+    .add.busy { opacity: .6; cursor: progress; }
+    .dsheet { position: fixed; z-index: 90; inset: 0; background: var(--bg); overflow: auto; padding: 0 16px 24px; }
+    .dsh { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 0; background: var(--bg); font-size: 18px; }
     .empty { display: grid; justify-items: center; gap: 8px; text-align: center; }
     .empty app-icon { color: var(--fire); }
 
@@ -247,6 +305,12 @@ export class Prices {
   protected armed = signal('');
   protected armedAll = signal(false);
   protected showDet = signal(false);
+  protected pickDoor = signal(false);
+  protected busy = signal(false);
+  protected readonly maxFotos = MAX_FOTOS;
+  private sheet = inject(SheetService);
+  /** La hoja de Google todavía no tiene la pestaña Fotos. */
+  protected needsScript = () => this.sheet.loaded() && !this.sheet.hasFotos() && !!this.form()?.fotos.length;
   protected detailLines = detailLines;
 
   specSummary(c: CatalogItem) {
@@ -286,11 +350,11 @@ export class Prices {
 
   openSug(s: (typeof SUGERIDOS)[number]) {
     this.openNew();
-    this.form.set({ ...EMPTY, cat: s.cat, name: s.name, inc: s.inc, unit: s.unit });
+    this.form.set({ ...EMPTY, cat: s.cat, name: s.name, inc: s.inc, unit: s.unit, fotos: [] });
   }
 
   openNew() {
-    this.form.set({ ...EMPTY, cat: this.cat() || '' });
+    this.form.set({ ...EMPTY, cat: this.cat() || '', fotos: [] });
     this.showDet.set(false);
     this.editing.set(false);
     this.tried.set(false);
@@ -298,7 +362,7 @@ export class Prices {
   }
 
   openEdit(c: CatalogItem) {
-    this.form.set({ ...structuredClone(c), detail: structuredClone(fixDetail(c.detail)) });
+    this.form.set({ ...structuredClone(c), detail: structuredClone(fixDetail(c.detail)), fotos: [...this.store.fotosOf(c.code)] });
     this.showDet.set(false);
     this.editing.set(true);
     this.tried.set(false);
@@ -306,6 +370,43 @@ export class Prices {
 
   close() {
     this.form.set(null);
+    this.pickDoor.set(false);
+  }
+
+  async upload(f: Form, e: Event) {
+    const input = e.target as HTMLInputElement;
+    const files = [...(input.files ?? [])].slice(0, MAX_FOTOS - f.fotos.length);
+    input.value = '';
+    this.busy.set(true);
+    let bad = 0;
+    for (const file of files) {
+      try {
+        f.fotos.push({ id: newFotoId(), code: f.code, n: f.fotos.length, src: await shrinkPhoto(file) });
+      } catch {
+        bad++;
+      }
+    }
+    this.busy.set(false);
+    if (bad) this.toast.show(bad === 1 ? 'No pude abrir esa foto. Prueba con otra.' : `No pude abrir ${bad} fotos. Prueba con otras.`);
+  }
+
+  addDoor(f: Form, src: string) {
+    if (f.fotos.length < MAX_FOTOS && !f.fotos.some((x) => x.src === src)) f.fotos.push({ id: newFotoId(), code: f.code, n: f.fotos.length, src });
+    this.pickDoor.set(false);
+  }
+
+  first(f: Form, i: number) {
+    f.fotos.unshift(...f.fotos.splice(i, 1));
+  }
+
+  /** Guarda en la hoja solo las fotos nuevas, quitadas o que cambiaron de lugar. */
+  private saveFotos(code: string, fotos: Foto[]) {
+    const old = this.store.fotosOf(code);
+    for (const o of old) if (!fotos.some((x) => x.id === o.id)) this.store.deleteFoto(o.id);
+    fotos.forEach((x, n) => {
+      const o = old.find((y) => y.id === x.id);
+      if (!o || o.n !== n || o.code !== code) this.store.saveFoto({ ...x, code, n });
+    });
   }
 
   submit() {
@@ -323,6 +424,7 @@ export class Prices {
     };
     const list = this.store.catalog();
     this.store.setCatalog(this.editing() ? list.map((c) => (c.code === item.code ? item : c)) : [...list, item]);
+    this.saveFotos(item.code, f.fotos);
     this.toast.show(this.editing() ? `Guardado: ${item.name}.` : `Agregado: ${item.name}.`);
     this.close();
   }
@@ -342,6 +444,7 @@ export class Prices {
     }
     this.armed.set('');
     this.store.setCatalog(this.store.catalog().filter((x) => x.code !== c.code));
+    for (const x of this.store.fotosOf(c.code)) this.store.deleteFoto(x.id);
     this.toast.show(`Borrado: ${c.name}.`);
   }
 

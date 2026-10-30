@@ -13,7 +13,8 @@ var HEADERS = {
   'Ventas detalle': ['Número', 'Fecha', 'Descripción', 'Unidad', 'Cantidad', 'Precio unitario', 'Importe'],
   'Precios': ['Código', 'Categoría', 'Trabajo', 'Qué incluye', 'Unidad', 'Material', 'Mano de obra', 'Precio total', 'Detalle (no editar)'],
   'Taller': ['Dato', 'Valor'],
-  'Gastos': ['Id', 'Fecha', 'Cotización', 'Cliente', 'Categoría', 'Descripción', 'Monto', 'Forma de pago', 'Datos (no editar)']
+  'Gastos': ['Id', 'Fecha', 'Cotización', 'Cliente', 'Categoría', 'Descripción', 'Monto', 'Forma de pago', 'Datos (no editar)'],
+  'Fotos': ['Id', 'Servicio', 'Código', 'Orden', 'Foto (no editar)']
 };
 
 function doGet() {

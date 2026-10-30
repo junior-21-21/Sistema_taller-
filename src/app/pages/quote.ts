@@ -192,7 +192,11 @@ export class QuotePage implements OnInit {
 
   // ---- paso 2
   add(c: CatalogItem) {
-    this.q.items.push({ code: c.code, name: c.name, inc: c.inc, unit: c.unit, price: c.material + c.labor, w: null, h: null, q: 1, detail: structuredClone(fixDetail(c.detail)) });
+    const foto = this.store.fotosOf(c.code)[0];
+    this.q.items.push({
+      code: c.code, name: c.name, inc: c.inc, unit: c.unit, price: c.material + c.labor, w: null, h: null, q: 1, detail: structuredClone(fixDetail(c.detail)),
+      ...(foto ? { img: 'f:' + foto.id } : {}),
+    });
     this.err.set('');
     this.touch();
     this.toast.show(`Agregado: ${c.name}. Pon las medidas.`, 2500);
@@ -200,6 +204,13 @@ export class QuotePage implements OnInit {
       const els = document.querySelectorAll<HTMLInputElement>('.cart .line:last-child input');
       els[0]?.focus();
     });
+  }
+
+  /** Elige la foto que sale en la hoja ('' = sin foto). */
+  setFoto(it: QuoteItem, id: string) {
+    if (id) it.img = 'f:' + id;
+    else delete it.img;
+    this.touch();
   }
 
   /** Catálogo de puertas abierto encima del paso 2. */

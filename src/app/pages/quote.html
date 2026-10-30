@@ -91,7 +91,8 @@
           </button>
           @for (c of catalog(); track c.code) {
             <button type="button" class="tile" (click)="add(c)">
-              <span class="cic"><app-icon [name]="catIcon(c.cat)" [size]="22" /></span>
+              @let tf = store.fotosOf(c.code)[0];
+              @if (tf) { <img class="cic tph" [src]="tf.src" alt=""> } @else { <span class="cic"><app-icon [name]="catIcon(c.cat)" [size]="22" /></span> }
               <span class="tn">{{ c.name }}</span>
               <span class="ti">{{ c.inc }}</span>
               <span class="tp"><b class="money">{{ fmt(c.material + c.labor) }}</b> / {{ c.unit }}</span>
@@ -121,11 +122,25 @@
               @if (it.code === 'OTRO') {
                 <input [(ngModel)]="it.name" placeholder="Nombre del trabajo *" aria-label="Nombre del trabajo" [class.bad]="show(2, e.name)">
               } @else {
-                @if (it.img) { <img class="thumb" [src]="it.img" alt=""> }
+                @if (store.fotoSrc(it.img); as src) { <img class="thumb" [src]="src" alt=""> }
                 <b>{{ it.name }}</b>
               }
               <button type="button" class="x" (click)="remove(i)" aria-label="Quitar">Quitar</button>
             </div>
+            @let fs = store.fotosOf(it.code);
+            @if (fs.length) {
+              <div class="fpick" role="radiogroup" aria-label="Foto que sale en la hoja">
+                <span class="muted small">Foto en la hoja:</span>
+                @for (x of fs; track x.id) {
+                  <button type="button" role="radio" class="fp" [class.on]="it.img === 'f:' + x.id" [attr.aria-checked]="it.img === 'f:' + x.id" (click)="setFoto(it, x.id)">
+                    <img [src]="x.src" alt="">
+                  </button>
+                }
+                <button type="button" role="radio" class="fp none" [class.on]="!it.img" [attr.aria-checked]="!it.img" (click)="setFoto(it, '')">
+                  <app-icon name="slash" [size]="18" /><span>Sin foto</span>
+                </button>
+              </div>
+            }
             <div class="dims">
               @if (it.code === 'OTRO') {
                 <label class="f">Unidad<select [(ngModel)]="it.unit">@for (u of units; track u) { <option [value]="u">{{ u }}</option> }</select></label>
