@@ -45,6 +45,13 @@ const MAX_FOTOS = 8;
         </details>
       }
 
+      @if (missing().length) {
+        <div class="refbar">
+          <span><app-icon name="back" [size]="18" /> <b>Faltan {{ missing().length }} servicios de la lista base</b> (puertas, rejas, techos, escaleras…). Puedes recuperarlos con sus precios de referencia.</span>
+          <button type="button" class="btn sm" (click)="restore()">Recuperar servicios</button>
+        </div>
+      }
+
       @if (noPhoto().length) {
         <div class="refbar">
           <span><app-icon name="images" [size]="18" /> <b>{{ noPhoto().length }} servicios sin foto.</b> Ponles su dibujo de referencia y se guardan en la hoja (luego los cambias por fotos de tus trabajos).</span>
@@ -493,6 +500,18 @@ export class Prices {
     this.store.setCatalog(this.store.catalog().filter((x) => x.code !== c.code));
     for (const x of this.store.fotosOf(c.code)) this.store.deleteFoto(x.id);
     this.toast.show(`Borrado: ${c.name}.`);
+  }
+
+  /** Servicios de la lista base que ya no están (por código o nombre). */
+  protected missing = computed(() => {
+    const have = this.store.catalog();
+    return DEFAULT_CATALOG.filter((d) => !have.some((c) => c.code === d.code || norm(c.name) === norm(d.name)));
+  });
+
+  restore() {
+    const list = this.missing();
+    this.store.setCatalog([...this.store.catalog(), ...structuredClone(list)]);
+    this.toast.show(`Recuperados ${list.length} servicios.`);
   }
 
   removeSamples() {

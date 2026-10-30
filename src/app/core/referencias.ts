@@ -1,6 +1,6 @@
 import { norm } from './calc';
 
-/** Dibujos de referencia de cada tipo de trabajo (public/servicios). */
+/** Imágenes de referencia de cada tipo de trabajo (public/servicios): foto real o dibujo. */
 export const REFS: { key: string; title: string }[] = [
   { key: 'puerta', title: 'Puerta metálica' },
   { key: 'puerta-seguridad', title: 'Puerta con diseño' },
@@ -23,7 +23,10 @@ export const REFS: { key: string; title: string }[] = [
   { key: 'medidas', title: 'Medidas' },
 ];
 
-export const refSrc = (key: string) => `servicios/${key}.svg`;
+/** Tipos de trabajo que ya tienen foto real de uso libre (public/servicios/<clave>.jpg, ver CREDITOS.txt). */
+const PHOTOS = new Set<string>([]);
+
+export const refSrc = (key: string) => `servicios/${key}.${PHOTOS.has(key) ? 'jpg' : 'svg'}`;
 
 /** Palabras que deciden el dibujo, de lo más específico a lo más general. */
 const RULES: [RegExp, string][] = [
