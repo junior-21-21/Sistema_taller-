@@ -24,7 +24,11 @@ export const REFS: { key: string; title: string }[] = [
 ];
 
 /** Tipos de trabajo que ya tienen foto real de uso libre (public/servicios/<clave>.jpg, ver CREDITOS.txt). */
-const PHOTOS = new Set<string>(['puerta', 'porton-batiente', 'porton-levadizo', 'baranda']);
+const PHOTOS = new Set<string>([
+  'puerta', 'porton-batiente', 'porton-levadizo', 'baranda',
+  'porton-corredizo', 'cerco', 'escalera', 'techado', 'estructura',
+  'reparacion', 'soldador', 'mueble', 'transporte', 'medidas',
+]);
 
 export const refSrc = (key: string) => `servicios/${key}.${PHOTOS.has(key) ? 'jpg' : 'svg'}`;
 
