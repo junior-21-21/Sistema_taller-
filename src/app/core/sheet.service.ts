@@ -9,7 +9,7 @@ import { DEFAULT_SHOP } from './default-data';
  * Dirección de la hoja de Google del taller (Apps Script publicado como aplicación web).
  * Todo se lee y se guarda ahí: cualquiera que abra el sistema ve los mismos datos.
  */
-export const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzV-cUHawinmXt75tIe2SJoZK4jzt_e11ch8aRiACL-4U6gpaHFHzKpKIDU0YCl3bg8uA/exec';
+export const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwR1laCTBWQJqnLQLFyJZqB1KNUuyWO7g6zXkFLgPyDGTUfIEvIU3Kg-E6ZYe5XEmDidg/exec';
 
 const QUEUE = 'rr.queue';
 const REFRESH_MS = 60_000;
