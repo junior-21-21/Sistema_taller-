@@ -1,7 +1,6 @@
 import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Icon, catIcon } from './icon';
-import { Hint } from './guide';
 import { DetailEditor } from './detail-editor';
 import { CloseDeal } from './close-deal';
 import { DoorCatalog } from './door-catalog';
@@ -20,7 +19,7 @@ const DRAFT = 'rr.draft';
 
 @Component({
   selector: 'app-quote',
-  imports: [FormsModule, RouterLink, Icon, Hint, NeedExcel, DetailEditor, CloseDeal, DoorCatalog],
+  imports: [FormsModule, RouterLink, Icon, NeedExcel, DetailEditor, CloseDeal, DoorCatalog],
   templateUrl: './quote.html',
   styleUrl: './quote.css',
 })
@@ -47,12 +46,6 @@ export class QuotePage implements OnInit {
   protected daysAuto = true;
 
   protected readonly steps = ['Cliente', 'Trabajos', 'Pago', 'Enviar'];
-  protected readonly tips = [
-    '¿Para quién es? Elige persona o empresa y escribe sus datos. Si ya es cliente, elige su nombre y se llenan solos.',
-    'Toca los trabajos que pidió y pon las medidas en metros. El precio se calcula solo.',
-    'Elige el descuento, el adelanto y el plazo. A la derecha ves cuánto paga y cuándo.',
-    '¡Listo! Mándala por WhatsApp, saca la hoja en PDF o cobra el adelanto.',
-  ];
   protected catIcon = catIcon;
   protected readonly units = UNITS;
   protected readonly estados = ESTADOS;

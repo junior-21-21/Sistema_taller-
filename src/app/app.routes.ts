@@ -13,6 +13,5 @@ export const routes: Routes = [
   { path: 'catalogo', loadComponent: () => import('./pages/catalog').then((m) => m.CatalogPage), title: 'Catálogo de puertas · Run Run' },
   { path: 'clientes', loadComponent: () => import('./pages/clients').then((m) => m.ClientsPage), title: 'Clientes · Run Run' },
   { path: 'ajustes', loadComponent: () => import('./pages/settings').then((m) => m.SettingsPage), title: 'Precios y taller · Run Run' },
-  { path: 'ayuda', loadComponent: () => import('./pages/help').then((m) => m.HelpPage), title: 'Ayuda · Run Run' },
   { path: '**', redirectTo: '' },
 ];

@@ -4,23 +4,14 @@ import { Store, Toast } from '../core/store.service';
 import { Shop } from '../core/models';
 import { focusFirstError, hasErrors, shopErrors } from '../core/validate';
 import { ExcelPanel } from './excel-panel';
-import { Guide } from './guide';
 import { Prices } from './prices';
 
 @Component({
   selector: 'app-settings',
-  imports: [FormsModule, ExcelPanel, Guide, Prices],
+  imports: [FormsModule, ExcelPanel, Prices],
   template: `
     <div class="page" (input)="changed.set(true)" (change)="changed.set(true)">
       <h1>Precios y taller</h1>
-
-      <app-guide id="ajustes" title="Aquí configuras tu taller">
-        <ol>
-          <li><b>Tus datos</b>: todo se guarda solo en la hoja de Google del taller.</li>
-          <li><b>Datos del taller</b>: salen en tus hojas, contratos y notas de venta.</li>
-          <li><b>Lista de precios</b>: agrega, edita o borra tus servicios con sus botones. Se guarda solo.</li><li><b>Datos del taller</b>: al cambiarlos toca <b>Guardar cambios</b> (abajo).</li>
-        </ol>
-      </app-guide>
 
       <section class="card" id="excel"><app-excel-panel /></section>
 

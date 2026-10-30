@@ -4,11 +4,10 @@ import { RouterLink } from '@angular/router';
 import { ClientSummary, Store } from '../core/store.service';
 import { fmt, fmtDate, norm, saleTotals, totals, waPhone } from '../core/calc';
 import { Icon } from './icon';
-import { Guide } from './guide';
 
 @Component({
   selector: 'app-clients',
-  imports: [FormsModule, RouterLink, Icon, Guide],
+  imports: [FormsModule, RouterLink, Icon],
   template: `
     <div class="page">
       <div class="ph">
@@ -17,10 +16,6 @@ import { Guide } from './guide';
           <p class="muted">Se arman solos con tus cotizaciones y ventas. Toca un cliente para ver todo lo que le cotizaste y vendiste.</p>
         </div>
       </div>
-      <app-guide id="clientes" title="Tus clientes se guardan solos">
-        <p>Cada vez que haces una cotización o una venta con nombre, el cliente aparece aquí. Toca uno para ver su celular,
-          lo que le cotizaste, lo que te compró y escribirle por WhatsApp.</p>
-      </app-guide>
       <label class="searchbox"><app-icon name="search" />
         <input type="search" placeholder="Buscar por nombre, DNI, RUC o celular" [ngModel]="q()" (ngModelChange)="q.set($event)" aria-label="Buscar cliente">
       </label>

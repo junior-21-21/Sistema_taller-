@@ -5,14 +5,13 @@ import { filter, map } from 'rxjs';
 import { SheetService } from './core/sheet.service';
 import { Store, Toast } from './core/store.service';
 import { Icon } from './pages/icon';
-import { Tour } from './pages/guide';
 
 /** Pantallas con su propia barra de abajo: ahí se esconde el menú del celular. */
 const OWN_BAR = /^\/(cotizar|venta|hoja|boleta)\b/;
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, Tour],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
@@ -39,6 +38,5 @@ export class App {
     { to: '/caja', label: 'Ingresos y gastos', icon: 'cash', exact: false },
     { to: '/clientes', label: 'Clientes', icon: 'users', exact: false },
     { to: '/ajustes', label: 'Precios y taller', icon: 'gear', exact: false },
-    { to: '/ayuda', label: 'Ayuda', icon: 'help', exact: false },
   ];
 }

@@ -20,11 +20,6 @@
     }
   </ol>
 
-  <div class="tip" role="status">
-    <span class="tn">Paso {{ step() }} de 4</span>
-    <span>{{ tips[step() - 1] }}</span>
-  </div>
-
   @if (err()) {
     <div class="err" role="alert">{{ err() }}</div>
   }
@@ -186,7 +181,7 @@
           @if (show(3, pe.discount, q.discount); as m) { <span class="fe">{{ m }} El máximo lo cambias en Precios y taller.</span> }
         </div>
         <div class="opt">
-          <span class="f-l">Redondear el precio <app-hint>Baja el total a un número cerrado, por ejemplo de S/ 5,917.67 a S/ 5,900. La diferencia sale en la hoja como descuento especial.</app-hint></span>
+          <span class="f-l">Redondear el precio</span>
           <div class="chips">
             @for (r of rounds(); track r) {
               <button type="button" class="chip" [class.on]="t.esp && t.tot === r" (click)="setFinal(r)">{{ fmt(r) }} <small class="muted">−{{ fmt(base().tot - r) }}</small></button>
@@ -199,7 +194,7 @@
           @if (finalErr(); as m) { <span class="fe">{{ m }}</span> }
         </div>
         <div class="opt">
-          <span class="f-l">Adelanto al aceptar <app-hint>Lo que el cliente paga para que empieces a fabricar. Lo demás lo paga al entregar.</app-hint></span>
+          <span class="f-l">Adelanto al aceptar</span>
           <div class="chips">
             @for (a of [30, 50, 70, 100]; track a) {
               <button type="button" class="chip" [class.on]="!q.advanceAmt && q.advance === a" (click)="setAdvance(a)">{{ a }}%</button>
@@ -218,7 +213,7 @@
             @if (show(3, pe.validity, q.validity); as m) { <span class="fe">{{ m }}</span> }</label>
           <label class="f" [class.bad]="show(3, pe.warranty, q.warranty)">Garantía (meses) *<input type="number" min="0" [(ngModel)]="q.warranty">
             @if (show(3, pe.warranty, q.warranty); as m) { <span class="fe">{{ m }}</span> }</label>
-          <label class="f" [class.bad]="show(3, pe.penalty, q.penalty)"><span class="f-l">Multa por retraso del taller (% por día) <app-hint>Opcional. Si pones un número, el contrato dice que el taller paga ese % por cada día de retraso, hasta 10%. Déjalo en 0 para no incluirlo.</app-hint></span><input type="number" min="0" max="2" step="0.1" [(ngModel)]="q.penalty" placeholder="0 = sin multa">
+          <label class="f" [class.bad]="show(3, pe.penalty, q.penalty)"><span class="f-l">Multa por retraso del taller (% por día)</span><input type="number" min="0" max="2" step="0.1" [(ngModel)]="q.penalty" placeholder="0 = sin multa">
             @if (show(3, pe.penalty, q.penalty); as m) { <span class="fe">{{ m }}</span> }</label>
         </div>
         <label class="check"><input type="checkbox" [(ngModel)]="q.igv" (ngModelChange)="resetRound()"> Sumar IGV 18% (si das factura)</label>

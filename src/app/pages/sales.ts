@@ -5,11 +5,10 @@ import { Store } from '../core/store.service';
 import { PAY_METHODS, Sale } from '../core/models';
 import { fmt, fmtDate, norm, saleTotals } from '../core/calc';
 import { Icon } from './icon';
-import { Guide } from './guide';
 
 @Component({
   selector: 'app-sales',
-  imports: [FormsModule, RouterLink, Icon, Guide],
+  imports: [FormsModule, RouterLink, Icon],
   template: `
     <div class="page">
       <div class="ph">
@@ -19,15 +18,6 @@ import { Guide } from './guide';
         </div>
         <a class="btn primary" routerLink="/venta"><app-icon name="plus" /> Nueva venta</a>
       </div>
-
-      <app-guide id="ventas" title="Aquí está todo lo que cobraste">
-        <ul>
-          <li>Cada fila es una <b>nota de venta</b> con su número (NV01-…), fecha, cliente y forma de pago.</li>
-          <li><b>Concepto</b>: Venta (algo suelto), Adelanto o Saldo de una cotización.</li>
-          <li>Arriba ves el <b>total cobrado</b> y cuánto entró por efectivo, Yape, Plin, etc. Filtra por fechas para ver un día o una semana.</li>
-          <li>Toca <b>Ver</b> para imprimir el ticket o anularla si te equivocaste.</li>
-        </ul>
-      </app-guide>
 
       <section class="card">
         <div class="filters">

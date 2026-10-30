@@ -5,11 +5,11 @@ import { Store } from '../core/store.service';
 import { fmt, fmtDate, saleTotals, totals } from '../core/calc';
 import { ExcelPanel } from './excel-panel';
 import { Icon } from './icon';
-import { Guide, Hint, Sparks } from './guide';
+import { Sparks } from './sparks';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, ExcelPanel, Icon, Guide, Hint, Sparks],
+  imports: [RouterLink, ExcelPanel, Icon, Sparks],
   template: `
     <section class="hero steel">
       <app-sparks />
@@ -25,14 +25,6 @@ import { Guide, Hint, Sparks } from './guide';
     </section>
 
     <div class="page">
-      <app-guide id="inicio" title="Esta es tu pantalla de inicio">
-        <ul>
-          <li><b>Nueva cotización</b>: cuando un cliente te pide precio.</li>
-          <li><b>Nueva venta</b>: cuando cobras algo y das la nota de venta.</li>
-          <li><b>Este mes</b>: cuánto cotizaste, cuánto aceptaron, cuánto cobraste y cuánto te deben. Toca el <b>?</b> de cada cuadro.</li>
-        </ul>
-      </app-guide>
-
       @if (sheet.status() === 'none' || sheet.status() === 'offline') {
         <section class="card warnbox"><app-excel-panel /></section>
       }
@@ -41,19 +33,19 @@ import { Guide, Hint, Sparks } from './guide';
         <h2 class="sec">Este mes</h2>
         <div class="stats">
           <a routerLink="/cotizaciones" class="st">
-            <span class="lbl">Cotizado <app-hint>La suma de todas las cotizaciones que hiciste este mes, aceptadas o no.</app-hint></span>
+            <span class="lbl">Cotizado</span>
             <b class="money">{{ fmt(stats().quoted) }}</b><small>{{ stats().count }} cotizaciones</small>
           </a>
           <a routerLink="/cotizaciones" [queryParams]="{ estado: 'Aceptada' }" class="st">
-            <span class="lbl">Aceptado <app-hint>Cotizaciones de este mes que el cliente aceptó. Se marcan solas cuando cobras el adelanto.</app-hint></span>
+            <span class="lbl">Aceptado</span>
             <b class="money">{{ fmt(stats().wonAmount) }}</b><small>{{ stats().won }} trabajos</small>
           </a>
           <a routerLink="/ventas" class="st in">
-            <span class="lbl">Cobrado <app-hint>Lo que entró a caja este mes: la suma de las notas de venta no anuladas.</app-hint></span>
+            <span class="lbl">Cobrado</span>
             <b class="money">{{ fmt(stats().cashed) }}</b><small>{{ stats().salesCount }} ventas</small>
           </a>
           <a routerLink="/cotizaciones" [queryParams]="{ estado: 'Aceptada' }" class="st due">
-            <span class="lbl">Por cobrar <app-hint>Lo que todavía te deben de los trabajos aceptados: total menos lo ya cobrado.</app-hint></span>
+            <span class="lbl">Por cobrar</span>
             <b class="money">{{ fmt(stats().owed) }}</b><small>de trabajos aceptados</small>
           </a>
         </div>
@@ -63,7 +55,7 @@ import { Guide, Hint, Sparks } from './guide';
         <a class="qa" routerLink="/cotizaciones"><app-icon name="search" [size]="26" /><b>Buscar cotización</b><span>Por cliente, número o fecha</span></a>
         <a class="qa" routerLink="/clientes"><app-icon name="users" [size]="26" /><b>Clientes</b><span>Historial de cada uno</span></a>
         <a class="qa" routerLink="/ajustes"><app-icon name="gear" [size]="26" /><b>Precios y taller</b><span>Tus precios y tus datos</span></a>
-        <a class="qa" routerLink="/ayuda"><app-icon name="help" [size]="26" /><b>¿Cómo se usa?</b><span>Paso a paso</span></a>
+        <a class="qa" routerLink="/catalogo"><app-icon name="door" [size]="26" /><b>Catálogo de puertas</b><span>73 modelos con foto y precio</span></a>
       </section>
 
       <div class="two">

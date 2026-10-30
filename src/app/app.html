@@ -20,13 +20,11 @@
       <a class="mob-ic" routerLink="/catalogo" aria-label="Catálogo de puertas"><app-icon name="door" /></a>
       <a class="mob-ic" routerLink="/caja" aria-label="Ingresos y gastos"><app-icon name="cash" /></a>
       <a class="mob-ic" routerLink="/ajustes" aria-label="Precios y taller"><app-icon name="gear" /></a>
-      <a class="mob-ic" routerLink="/ayuda" aria-label="Ayuda"><app-icon name="help" /></a>
     </div>
   </div>
 </header>
 
 <router-outlet />
-<app-tour />
 
 @if (!ownBar()) {
   <nav class="tabs no-print" aria-label="Menú">

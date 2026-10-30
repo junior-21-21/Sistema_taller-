@@ -5,14 +5,13 @@ import { Store, Toast } from '../core/store.service';
 import { ESTADOS, Estado, Quote } from '../core/models';
 import { fmt, fmtDate, norm, totals, waLink } from '../core/calc';
 import { Icon } from './icon';
-import { Guide, Hint } from './guide';
 import { CloseDeal } from './close-deal';
 
 type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
 
 @Component({
   selector: 'app-quotes',
-  imports: [FormsModule, RouterLink, Icon, Guide, Hint, CloseDeal],
+  imports: [FormsModule, RouterLink, Icon, CloseDeal],
   template: `
     <div class="page">
       <div class="ph">
@@ -22,15 +21,6 @@ type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
         </div>
         <a class="btn primary" routerLink="/cotizar"><app-icon name="plus" /> Nueva cotización</a>
       </div>
-
-      <app-guide id="cotizaciones" title="Así se lee cada cotización">
-        <ul>
-          <li>Arriba: <b>número y fecha</b>, el <b>cliente</b> y los <b>trabajos</b> que pidió.</li>
-          <li>A la derecha: el <b>total</b>, cuánto <b>falta cobrar</b> y el <b>estado</b> (cámbialo tocándolo).</li>
-          <li>Abajo, los botones: <b>Editar</b>, sacar la <b>Hoja / PDF</b>, el <b>Contrato</b>, <b>Cobrar</b> el adelanto o saldo y mandarla por <b>WhatsApp</b>.</li>
-          <li>Para encontrar una, escribe cualquier dato en el buscador: nombre, DNI, celular o "portón".</li>
-        </ul>
-      </app-guide>
 
       <section class="card">
         <div class="filters">
@@ -54,7 +44,7 @@ type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
             }
           </div>
           <span class="spacer"></span>
-          <span class="count">{{ list().length }} resultado{{ list().length === 1 ? '' : 's' }} · <b class="money">{{ fmt(sum()) }}</b> <app-hint>Cuántas cotizaciones coinciden con tu búsqueda y la suma de sus totales.</app-hint></span>
+          <span class="count">{{ list().length }} resultado{{ list().length === 1 ? '' : 's' }} · <b class="money">{{ fmt(sum()) }}</b></span>
           @if (q() || from() || to() || estado()) { <button type="button" class="btn ghost" (click)="clear()">Limpiar</button> }
         </div>
       </section>

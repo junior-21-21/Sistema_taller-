@@ -14,7 +14,7 @@
 .stepper button.done .n { background: var(--ok); color: #fff; }
 .stepper button.on { border-color: var(--fire); color: var(--ink); box-shadow: 0 0 0 3px rgba(232, 101, 15, .15); }
 .stepper button.on .n { background: var(--fire); color: #fff; }
-@media (max-width: 600px) { .stepper .l { display: none; } .stepper button { justify-content: center; } .stepper button.on .l { display: inline; } }
+@media (max-width: 600px) { .stepper button { flex-direction: column; justify-content: center; gap: 3px; padding: 6px 2px; font-size: 12px; } .stepper .n { width: 24px; height: 24px; } }
 
 .err { background: var(--warn-soft); color: var(--warn); border: 1px solid #f0c48a; border-radius: 10px; padding: 12px 14px; font-weight: 600; }
 
@@ -87,9 +87,6 @@
 .bar .bt b { font-size: 22px; color: #ffb070; }
 .bar .btn:not(.primary):not(.wa) { background: var(--steel-2); border-color: #4a555f; color: #fff; }
 
-.tip { display: flex; gap: 12px; align-items: center; background: var(--steel); background-image: var(--plate); color: #fff; border-radius: 10px; padding: 12px 16px; font-size: 16px; }
-.tip .tn { background: var(--molten); border-radius: 6px; padding: 3px 9px; font: 800 14px var(--f-display); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
-@media (max-width: 560px) { .tip { flex-direction: column; align-items: flex-start; gap: 6px; } }
 .cic { width: 38px; height: 38px; border-radius: 9px; background: var(--steel); color: var(--amber); display: grid; place-items: center; margin-bottom: 4px; }
 .tile:hover .cic { background: var(--molten); color: #fff; }
 .cchip { display: inline-flex; align-items: center; gap: 6px; }

@@ -6,13 +6,12 @@ import { PAY_METHODS, Sale, UNITS } from '../core/models';
 import { fmt, saleTotals, totals } from '../core/calc';
 import { clientErrors, focusFirstError, hasErrors, saleItemErrors, vRange } from '../core/validate';
 import { Icon } from './icon';
-import { Guide, Hint } from './guide';
 import { NeedExcel } from './need-excel';
 import { SheetService } from '../core/sheet.service';
 
 @Component({
   selector: 'app-sale',
-  imports: [FormsModule, RouterLink, Icon, Guide, Hint, NeedExcel],
+  imports: [FormsModule, RouterLink, Icon, NeedExcel],
   template: `
     @if (!sheet.loaded() && sheet.status() !== 'offline') {
       <app-need-excel />
@@ -29,15 +28,6 @@ import { SheetService } from '../core/sheet.service';
           }
         </div>
       </div>
-
-      <app-guide id="venta" title="Cómo registrar una venta">
-        <ol>
-          <li><b>Cliente</b>: escribe su nombre (si ya existe, se completa solo) o elige <b>Clientes varios</b>.</li>
-          <li><b>Qué se cobra</b>: agrégalo de tu lista de precios o con <b>Línea libre</b>.</li>
-          <li><b>Cobro</b>: elige cómo te pagan. En efectivo, pon con cuánto paga y te calcula el vuelto.</li>
-          <li>Toca <b>Emitir nota de venta</b> y sale el ticket para imprimir o mandar por WhatsApp.</li>
-        </ol>
-      </app-guide>
 
       @if (err()) { <div class="err" role="alert">{{ err() }}</div> }
 
@@ -142,7 +132,7 @@ import { SheetService } from '../core/sheet.service';
               <button type="button" class="chip" (click)="s.received = t().tot">Exacto</button>
               @for (b of bills(); track b) { <button type="button" class="chip" (click)="s.received = b">S/ {{ b }}</button> }
             </div>
-            <div class="change"><span>Vuelto <app-hint>Lo que le devuelves al cliente: lo que paga menos el total.</app-hint></span><b class="money">{{ fmt(t().change) }}</b></div>
+            <div class="change"><span>Vuelto</span><b class="money">{{ fmt(t().change) }}</b></div>
           }
           <label class="f">Nota (opcional)<input [(ngModel)]="s.notes" placeholder="Ej: Operación Yape 123456"></label>
           <button type="button" class="btn primary big" (click)="emit()"><app-icon name="receipt" /> Emitir nota de venta</button>
