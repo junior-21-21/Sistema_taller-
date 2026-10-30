@@ -57,6 +57,8 @@ export interface QuoteItem {
   h: number | null;
   q: number;
   detail?: Detail;
+  /** Foto del modelo del catálogo de puertas (ruta dentro del sistema). */
+  img?: string;
 }
 
 export type Estado = 'Pendiente' | 'Aceptada' | 'Rechazada';

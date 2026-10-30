@@ -78,3 +78,4 @@ ul { margin: 0; padding-left: 18px; }
 .advp .amt.on { border-color: var(--fire); background: var(--soft); }
 .advp .res { display: flex; gap: 14px; flex-wrap: wrap; font-size: 14px; background: var(--soft); border-radius: 10px; padding: 6px 12px; }
 .advp .fe { flex-basis: 100%; }
+.ph { float: left; width: 26mm; height: 35mm; object-fit: cover; border-radius: 2mm; margin: 0 3mm 1mm 0; }

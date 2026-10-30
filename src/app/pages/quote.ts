@@ -4,6 +4,9 @@ import { Icon, catIcon } from './icon';
 import { Hint } from './guide';
 import { DetailEditor } from './detail-editor';
 import { CloseDeal } from './close-deal';
+import { DoorCatalog } from './door-catalog';
+import { ADD_MODEL } from './catalog';
+import { MODELOS, Modelo, modeloItem } from '../core/catalogo';
 import { detailLines, emptyDetail, fixDetail, hasDetail } from '../core/detail';
 import { NeedExcel } from './need-excel';
 import { SheetService } from '../core/sheet.service';
@@ -17,7 +20,7 @@ const DRAFT = 'rr.draft';
 
 @Component({
   selector: 'app-quote',
-  imports: [FormsModule, RouterLink, Icon, Hint, NeedExcel, DetailEditor, CloseDeal],
+  imports: [FormsModule, RouterLink, Icon, Hint, NeedExcel, DetailEditor, CloseDeal, DoorCatalog],
   templateUrl: './quote.html',
   styleUrl: './quote.css',
 })
@@ -88,6 +91,19 @@ export class QuotePage implements OnInit {
       }
     } catch {
       /* sin borrador */
+    }
+    // Viene del catálogo de puertas con un modelo elegido.
+    let code: string | null = null;
+    try {
+      code = localStorage.getItem(ADD_MODEL);
+      localStorage.removeItem(ADD_MODEL);
+    } catch {
+      /* sin almacenamiento */
+    }
+    const m = MODELOS.find((x) => x.code === code);
+    if (m) {
+      this.addModel(m);
+      if (this.step() === 1 && !this.q.client.name) this.toast.show(`Agregado ${m.code}. Ahora escribe los datos del cliente.`, 3000);
     }
   }
 
@@ -191,6 +207,18 @@ export class QuotePage implements OnInit {
       const els = document.querySelectorAll<HTMLInputElement>('.cart .line:last-child input');
       els[0]?.focus();
     });
+  }
+
+  /** Catálogo de puertas abierto encima del paso 2. */
+  protected doors = signal(false);
+  protected readonly modelCount = MODELOS.length;
+
+  addModel(m: Modelo) {
+    this.q.items.push(modeloItem(m));
+    this.doors.set(false);
+    this.err.set('');
+    this.touch();
+    this.toast.show(m.price ? `Agregado: ${m.code}.` : `Agregado: ${m.code}. Pon el precio según la medida.`, 2500);
   }
 
   addCustom() {

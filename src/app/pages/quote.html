@@ -88,6 +88,12 @@
           }
         </div>
         <div class="tiles">
+          <button type="button" class="tile doors" (click)="doors.set(true)">
+            <span class="cic"><app-icon name="door" [size]="22" /></span>
+            <span class="tn">Catálogo de puertas</span>
+            <span class="ti">{{ modelCount }} modelos con foto y precio</span>
+            <span class="plus" aria-hidden="true">›</span>
+          </button>
           @for (c of catalog(); track c.code) {
             <button type="button" class="tile" (click)="add(c)">
               <span class="cic"><app-icon [name]="catIcon(c.cat)" [size]="22" /></span>
@@ -120,6 +126,7 @@
               @if (it.code === 'OTRO') {
                 <input [(ngModel)]="it.name" placeholder="Nombre del trabajo *" aria-label="Nombre del trabajo" [class.bad]="show(2, e.name)">
               } @else {
+                @if (it.img) { <img class="thumb" [src]="it.img" alt=""> }
                 <b>{{ it.name }}</b>
               }
               <button type="button" class="x" (click)="remove(i)" aria-label="Quitar">Quitar</button>
@@ -284,4 +291,15 @@
   </div>
 </div>
   @if (deal()) { <app-close-deal [num]="q.num" (closed)="closeDeal()" /> }
+}
+
+@if (doors()) {
+  <div class="dback" (click)="doors.set(false)"></div>
+  <div class="dsheet" role="dialog" aria-modal="true" aria-label="Catálogo de puertas">
+    <div class="dhead">
+      <h2>Catálogo de puertas</h2>
+      <button type="button" class="dx" (click)="doors.set(false)" aria-label="Cerrar"><app-icon name="close" /></button>
+    </div>
+    <div class="dbody"><app-door-catalog pickLabel="Agregar a la cotización" (pick)="addModel($event)" /></div>
+  </div>
 }

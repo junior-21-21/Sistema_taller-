@@ -35,6 +35,7 @@ export class App {
     { to: '/', label: 'Inicio', icon: 'home', exact: true },
     { to: '/cotizaciones', label: 'Cotizaciones', icon: 'quote', exact: false },
     { to: '/ventas', label: 'Ventas', icon: 'receipt', exact: false },
+    { to: '/catalogo', label: 'Catálogo', icon: 'door', exact: false },
     { to: '/caja', label: 'Ingresos y gastos', icon: 'cash', exact: false },
     { to: '/clientes', label: 'Clientes', icon: 'users', exact: false },
     { to: '/ajustes', label: 'Precios y taller', icon: 'gear', exact: false },

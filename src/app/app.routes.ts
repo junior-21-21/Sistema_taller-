@@ -10,6 +10,7 @@ export const routes: Routes = [
   { path: 'venta', loadComponent: () => import('./pages/sale').then((m) => m.SalePage), title: 'Nueva venta · Run Run' },
   { path: 'boleta/:num', loadComponent: () => import('./pages/receipt').then((m) => m.ReceiptPage), title: 'Nota de venta · Run Run' },
   { path: 'caja', loadComponent: () => import('./pages/cash').then((m) => m.CashPage), title: 'Ingresos y gastos · Run Run' },
+  { path: 'catalogo', loadComponent: () => import('./pages/catalog').then((m) => m.CatalogPage), title: 'Catálogo de puertas · Run Run' },
   { path: 'clientes', loadComponent: () => import('./pages/clients').then((m) => m.ClientsPage), title: 'Clientes · Run Run' },
   { path: 'ajustes', loadComponent: () => import('./pages/settings').then((m) => m.SettingsPage), title: 'Precios y taller · Run Run' },
   { path: 'ayuda', loadComponent: () => import('./pages/help').then((m) => m.HelpPage), title: 'Ayuda · Run Run' },
