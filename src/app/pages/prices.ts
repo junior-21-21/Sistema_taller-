@@ -10,6 +10,7 @@ import { focusFirstError } from '../core/validate';
 import { Icon, catIcon } from './icon';
 import { DoorCatalog } from './door-catalog';
 import { newFotoId, shrinkPhoto } from '../core/foto';
+import { REFS, refFor, refSrc } from '../core/referencias';
 import { SheetService } from '../core/sheet.service';
 
 type Form = { code: string; cat: string; name: string; inc: string; unit: string; material: number | null; labor: number | null; detail?: Detail; fotos: Foto[] };
@@ -44,6 +45,13 @@ const MAX_FOTOS = 8;
         </details>
       }
 
+      @if (noPhoto().length) {
+        <div class="refbar">
+          <span><app-icon name="images" [size]="18" /> <b>{{ noPhoto().length }} servicios sin foto.</b> Ponles su dibujo de referencia y se guardan en la hoja (luego los cambias por fotos de tus trabajos).</span>
+          <button type="button" class="btn sm" (click)="fillRefs()">Poner dibujos</button>
+        </div>
+      }
+
       @if (samples().length) {
         <div class="sample">
           <span>⚠ Tienes <b>{{ samples().length }} precios de ejemplo</b> sin cambiar. Edítalos con tus precios reales o quítalos.</span>
@@ -72,12 +80,11 @@ const MAX_FOTOS = 8;
             @for (c of g.items; track c.code) {
               <article class="sv" [class.ex]="isSample(c)">
                 @let fs = store.fotosOf(c.code);
-                @if (fs.length) {
-                  <button type="button" class="cover" (click)="openEdit(c)" [attr.aria-label]="'Fotos de ' + c.name">
-                    <img [src]="fs[0].src" alt="" loading="lazy">
-                    @if (fs.length > 1) { <span class="nf"><app-icon name="images" [size]="13" /> {{ fs.length }}</span> }
-                  </button>
-                }
+                <button type="button" class="cover" (click)="openEdit(c)" [attr.aria-label]="'Fotos de ' + c.name">
+                  <img [src]="fs.length ? fs[0].src : refFor(c.name, c.cat)" alt="" loading="lazy">
+                  @if (fs.length > 1) { <span class="nf"><app-icon name="images" [size]="13" /> {{ fs.length }}</span> }
+                  @if (!fs.length) { <span class="nf ref">Referencia</span> }
+                </button>
                 <div class="sh">
                   <b class="nm">{{ c.name }}</b>
                   @if (isSample(c)) { <span class="tag">Ejemplo</span> }
@@ -159,8 +166,16 @@ const MAX_FOTOS = 8;
                   <app-icon name="camera" [size]="22" /><span>{{ busy() ? 'Cargando…' : 'Subir foto' }}</span>
                 </label>
                 <button type="button" class="add" (click)="pickDoor.set(true)"><app-icon name="door" [size]="22" /><span>Del catálogo de puertas</span></button>
+                <button type="button" class="add" (click)="pickRef.set(!pickRef())"><app-icon name="images" [size]="22" /><span>Dibujos de referencia</span></button>
               }
             </div>
+            @if (pickRef()) {
+              <div class="refs">
+                @for (x of refsFor(f); track x.key) {
+                  <button type="button" class="rf" (click)="addRef(f, x.key)"><img [src]="refSrc(x.key)" alt=""><span>{{ x.title }}</span></button>
+                }
+              </div>
+            }
             @if (needsScript()) { <span class="fe">Para guardar fotos en la hoja falta actualizar el código de Apps Script (pestaña Fotos). Mientras tanto se quedan en este equipo.</span> }
           </div>
           <button type="button" class="dt" [class.on]="showDet()" (click)="toggleDet()">
@@ -239,6 +254,14 @@ const MAX_FOTOS = 8;
     .act { display: flex; gap: 8px; }
     .cover { position: relative; margin: -14px -14px 0; padding: 0; border: none; cursor: pointer; display: block; height: 160px; background: #1b2126; border-radius: 8px 8px 0 0; overflow: hidden; }
     .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .nf.ref { background: rgba(43, 49, 56, .75); }
+    .refbar { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--soft); border: 1px solid #f6c9a3; border-radius: 10px; padding: 10px 14px; }
+    .refbar span { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .refbar app-icon { color: var(--fire); }
+    .refs { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; margin-top: 4px; padding: 10px; background: var(--bg); border-radius: 10px; }
+    .rf { display: grid; gap: 4px; padding: 4px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--panel); cursor: pointer; font: 600 12px var(--f-body); color: var(--ink); }
+    .rf:hover { border-color: var(--fire); }
+    .rf img { width: 100%; aspect-ratio: 4 / 3; display: block; border-radius: 5px; }
     .nf { position: absolute; right: 8px; bottom: 8px; display: inline-flex; gap: 4px; align-items: center; background: rgba(0,0,0,.65); color: #fff; font: 700 12px var(--f-body); padding: 3px 8px; border-radius: 999px; }
     .fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
     .fo { position: relative; aspect-ratio: 3 / 4; border-radius: 10px; overflow: hidden; background: #1b2126; border: 2px solid var(--line); }
@@ -306,6 +329,10 @@ export class Prices {
   protected armedAll = signal(false);
   protected showDet = signal(false);
   protected pickDoor = signal(false);
+  protected pickRef = signal(false);
+  protected refFor = refFor;
+  protected refSrc = refSrc;
+  protected noPhoto = computed(() => this.store.catalog().filter((c) => !this.store.fotosOf(c.code).length));
   protected busy = signal(false);
   protected readonly maxFotos = MAX_FOTOS;
   private sheet = inject(SheetService);
@@ -371,6 +398,7 @@ export class Prices {
   close() {
     this.form.set(null);
     this.pickDoor.set(false);
+    this.pickRef.set(false);
   }
 
   async upload(f: Form, e: Event) {
@@ -393,6 +421,25 @@ export class Prices {
   addDoor(f: Form, src: string) {
     if (f.fotos.length < MAX_FOTOS && !f.fotos.some((x) => x.src === src)) f.fotos.push({ id: newFotoId(), code: f.code, n: f.fotos.length, src });
     this.pickDoor.set(false);
+  }
+
+  /** Los dibujos, con el que más se parece al servicio primero. */
+  refsFor(f: Form) {
+    const best = refFor(f.name, f.cat);
+    return [...REFS].sort((a, b) => +(refSrc(b.key) === best) - +(refSrc(a.key) === best));
+  }
+
+  addRef(f: Form, key: string) {
+    const src = refSrc(key);
+    if (f.fotos.length < MAX_FOTOS && !f.fotos.some((x) => x.src === src)) f.fotos.push({ id: newFotoId(), code: f.code, n: f.fotos.length, src });
+    this.pickRef.set(false);
+  }
+
+  /** Guarda en la hoja el dibujo de referencia de cada servicio sin foto. */
+  fillRefs() {
+    const list = this.noPhoto();
+    list.forEach((c, i) => this.store.saveFoto({ id: newFotoId() + i, code: c.code, n: 0, src: refFor(c.name, c.cat) }));
+    this.toast.show(`Listo: ${list.length} servicios con su dibujo de referencia.`);
   }
 
   first(f: Form, i: number) {

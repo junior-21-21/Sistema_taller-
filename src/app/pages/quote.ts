@@ -6,6 +6,7 @@ import { CloseDeal } from './close-deal';
 import { DoorCatalog } from './door-catalog';
 import { ADD_MODEL } from './catalog';
 import { MODELOS, Modelo, modeloItem } from '../core/catalogo';
+import { refFor } from '../core/referencias';
 import { detailLines, emptyDetail, fixDetail, hasDetail } from '../core/detail';
 import { NeedExcel } from './need-excel';
 import { SheetService } from '../core/sheet.service';
@@ -47,6 +48,7 @@ export class QuotePage implements OnInit {
 
   protected readonly steps = ['Cliente', 'Trabajos', 'Pago', 'Enviar'];
   protected catIcon = catIcon;
+  protected refFor = refFor;
   protected readonly units = UNITS;
   protected readonly estados = ESTADOS;
   protected readonly AREA = AREA;
