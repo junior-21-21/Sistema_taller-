@@ -62,3 +62,9 @@ export function refFor(name: string, cat = ''): string {
   const hit = (t: string) => RULES.find(([re]) => re.test(norm(t)))?.[1];
   return refSrc(hit(name) ?? hit(cat) ?? 'soldador');
 }
+
+/** Un dibujo guardado antes (servicios/<clave>.svg) pasa a su foto real si ya la hay. */
+export function fixRef(src: string): string {
+  const m = /^servicios\/([\w-]+)\.svg$/.exec(src);
+  return m ? refSrc(m[1]) : src;
+}

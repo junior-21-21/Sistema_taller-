@@ -1,6 +1,7 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
 import { DEFAULT_SHOP } from './default-data';
 import { CatalogItem, Client, Estado, Expense, Foto, Quote, Sale, Shop } from './models';
+import { fixRef } from './referencias';
 import { clientKey, nowTime, saleTotals, suggestDays, todayIso, totals } from './calc';
 
 function load<T>(key: string): T | null {
@@ -277,13 +278,16 @@ export class Store {
 
   // ---------------------------------------------------------------- fotos de los servicios
   fotosOf(code: string) {
-    return this.fotos().filter((f) => f.code === code).sort((a, b) => a.n - b.n);
+    return this.fotos()
+      .filter((f) => f.code === code)
+      .sort((a, b) => a.n - b.n)
+      .map((f) => ({ ...f, src: fixRef(f.src) }));
   }
 
   /** La imagen de una línea de cotización ('' si la foto se borró). */
   fotoSrc(ref?: string) {
     if (!ref) return '';
-    return ref.startsWith('f:') ? (this.fotos().find((f) => f.id === ref.slice(2))?.src ?? '') : ref;
+    return fixRef(ref.startsWith('f:') ? (this.fotos().find((f) => f.id === ref.slice(2))?.src ?? '') : ref);
   }
 
   saveFoto(f: Foto) {
