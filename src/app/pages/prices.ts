@@ -4,7 +4,7 @@ import { Store, Toast } from '../core/store.service';
 import { CatalogItem, Detail, Foto, UNITS } from '../core/models';
 import { detailLines, emptyDetail, fixDetail, hasDetail } from '../core/detail';
 import { DetailEditor } from './detail-editor';
-import { DEFAULT_CATALOG, SUGERIDOS } from '../core/default-data';
+import { SUGERIDOS } from '../core/default-data';
 import { fmt, norm } from '../core/calc';
 import { focusFirstError } from '../core/validate';
 import { Icon, catIcon } from './icon';
@@ -45,24 +45,10 @@ const MAX_FOTOS = 8;
         </details>
       }
 
-      @if (missing().length) {
-        <div class="refbar">
-          <span><app-icon name="back" [size]="18" /> <b>Faltan {{ missing().length }} servicios de la lista base</b> (puertas, rejas, techos, escaleras…). Puedes recuperarlos con sus precios de referencia.</span>
-          <button type="button" class="btn sm" (click)="restore()">Recuperar servicios</button>
-        </div>
-      }
-
       @if (noPhoto().length) {
         <div class="refbar">
           <span><app-icon name="images" [size]="18" /> <b>{{ noPhoto().length }} servicios sin foto.</b> Ponles su dibujo de referencia y se guardan en la hoja (luego los cambias por fotos de tus trabajos).</span>
           <button type="button" class="btn sm" (click)="fillRefs()">Poner dibujos</button>
-        </div>
-      }
-
-      @if (samples().length) {
-        <div class="sample">
-          <span>⚠ Tienes <b>{{ samples().length }} precios de ejemplo</b> sin cambiar. Edítalos con tus precios reales o quítalos.</span>
-          <button type="button" class="btn danger sm" (click)="removeSamples()">{{ armedAll() ? '¿Seguro? Toca otra vez' : 'Quitar ejemplos' }}</button>
         </div>
       }
 
@@ -85,7 +71,7 @@ const MAX_FOTOS = 8;
           <h3><span class="gi"><app-icon [name]="catIcon(g.cat)" [size]="18" /></span> {{ g.cat }} <span class="cnt">{{ g.items.length }}</span></h3>
           <div class="cards">
             @for (c of g.items; track c.code) {
-              <article class="sv" [class.ex]="isSample(c)">
+              <article class="sv">
                 @let fs = store.fotosOf(c.code);
                 <button type="button" class="cover" (click)="openEdit(c)" [attr.aria-label]="'Fotos de ' + c.name">
                   <img [src]="fs.length ? fs[0].src : refFor(c.name, c.cat)" alt="" loading="lazy">
@@ -94,7 +80,6 @@ const MAX_FOTOS = 8;
                 </button>
                 <div class="sh">
                   <b class="nm">{{ c.name }}</b>
-                  @if (isSample(c)) { <span class="tag">Ejemplo</span> }
                 </div>
                 @if (c.inc) { <p class="inc">{{ c.inc }}</p> }
                 @if (c.detail && detailLines(c.detail).length) {
@@ -234,7 +219,6 @@ const MAX_FOTOS = 8;
     .pl { display: grid; gap: 16px; }
     .top { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
     .top p { margin: 4px 0 0; }
-    .sample { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--warn-soft); color: var(--warn); border: 1px solid #f0c48a; border-radius: 10px; padding: 10px 14px; font-weight: 600; }
     .btn.sm { min-height: 38px; padding: 7px 14px; }
     .tools { display: grid; gap: 10px; }
     .sug { border: 1.5px dashed var(--line); border-radius: 12px; padding: 10px 14px; }
@@ -248,10 +232,8 @@ const MAX_FOTOS = 8;
     .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
     .sv { position: relative; display: grid; gap: 8px; align-content: start; background: var(--panel); border: 1.5px solid var(--line); border-radius: 12px; padding: 14px; box-shadow: var(--shadow); border-top: 4px solid var(--fire); }
     .sv:hover { border-color: var(--fire); }
-    .sv.ex { border-top-color: var(--amber); background: linear-gradient(#fffaf2, #fff); }
     .sh { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; }
     .nm { font-size: 16px; line-height: 1.25; }
-    .tag { font-size: 11px; font-weight: 700; background: var(--warn-soft); color: var(--warn); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
     .inc { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .pr { display: flex; align-items: baseline; gap: 6px; }
     .pr .big { font: 800 26px var(--f-display); color: var(--fire-dark); }
@@ -333,7 +315,6 @@ export class Prices {
   protected editing = signal(false);
   protected tried = signal(false);
   protected armed = signal('');
-  protected armedAll = signal(false);
   protected showDet = signal(false);
   protected pickDoor = signal(false);
   protected pickRef = signal(false);
@@ -367,12 +348,6 @@ export class Prices {
     for (const c of list) map.set(c.cat, [...(map.get(c.cat) || []), c]);
     return [...map].map(([cat, items]) => ({ cat, items }));
   });
-
-  protected samples = computed(() => this.store.catalog().filter((c) => this.isSample(c)));
-
-  isSample(c: CatalogItem) {
-    return DEFAULT_CATALOG.some((d) => d.code === c.code && d.name === c.name && d.material === c.material && d.labor === c.labor);
-  }
 
   bad = (v: number | null) => v === null || (v as unknown) === '' || isNaN(+v) || +v < 0;
   total = (f: Form) => (this.bad(f.material) ? 0 : +f.material!) + (this.bad(f.labor) ? 0 : +f.labor!);
@@ -500,29 +475,5 @@ export class Prices {
     this.store.setCatalog(this.store.catalog().filter((x) => x.code !== c.code));
     for (const x of this.store.fotosOf(c.code)) this.store.deleteFoto(x.id);
     this.toast.show(`Borrado: ${c.name}.`);
-  }
-
-  /** Servicios de la lista base que ya no están (por código o nombre). */
-  protected missing = computed(() => {
-    const have = this.store.catalog();
-    return DEFAULT_CATALOG.filter((d) => !have.some((c) => c.code === d.code || norm(c.name) === norm(d.name)));
-  });
-
-  restore() {
-    const list = this.missing();
-    this.store.setCatalog([...this.store.catalog(), ...structuredClone(list)]);
-    this.toast.show(`Recuperados ${list.length} servicios.`);
-  }
-
-  removeSamples() {
-    if (!this.armedAll()) {
-      this.armedAll.set(true);
-      setTimeout(() => this.armedAll.set(false), 4000);
-      return;
-    }
-    this.armedAll.set(false);
-    const n = this.samples().length;
-    this.store.setCatalog(this.store.catalog().filter((c) => !this.isSample(c)));
-    this.toast.show(`Se quitaron ${n} precios de ejemplo.`);
   }
 }
