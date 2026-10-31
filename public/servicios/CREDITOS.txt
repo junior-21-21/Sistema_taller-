@@ -12,3 +12,7 @@ soldador | AlfredPalmerwelder1 (Wikimedia Commons) | Alfred T. Palmer | Dominio 
 mueble | Workbench12 (Wikimedia Commons) | Bruce Reed SIC Metals & Fabrication LLC. | Dominio público | https://commons.wikimedia.org/wiki/File:Workbench12.jpg
 transporte | Flatbed semi-trailer truck, Russia (Wikimedia Commons) | Georg Pik | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Flatbed_semi-trailer_truck,_Russia.jpg
 medidas | Measuring-tape (Wikimedia Commons) | Evan-Amos | Dominio público | https://commons.wikimedia.org/wiki/File:Measuring-tape.jpg
+puerta-seguridad | Wrought iron door rhodes (Wikimedia Commons) | Jebulon | CC0 1.0 | https://commons.wikimedia.org/wiki/File:Wrought_iron_door_rhodes.jpg
+reja-ventana | Bars on window, Kingston upon Hull (Wikimedia Commons) | User:Imagaril | Dominio público | https://commons.wikimedia.org/wiki/File:Bars_on_window,_Kingston_upon_Hull.jpg
+techo | US Navy 040312-N-9808P-003 Workers place a cantilevered roof truss on an Aircraft Maintenance Hangar under construction at Naval Station Norfolk, Va (Wikimedia Commons) | U.S. Navy photo by John E. Peters. | Dominio público | https://commons.wikimedia.org/wiki/File:US_Navy_040312-N-9808P-003_Workers_place_a_cantilevered_roof_truss_on_an_Aircraft_Maintenance_Hangar_under_construction_at_Naval_Station_Norfolk,_Va.jpg
+canaleta | External Gutter (Wikimedia Commons) | Ivangiesen | CC0 1.0 | https://commons.wikimedia.org/wiki/File:External_Gutter.jpg

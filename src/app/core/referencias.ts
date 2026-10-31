@@ -28,6 +28,7 @@ const PHOTOS = new Set<string>([
   'puerta', 'porton-batiente', 'porton-levadizo', 'baranda',
   'porton-corredizo', 'cerco', 'escalera', 'techado', 'estructura',
   'reparacion', 'soldador', 'mueble', 'transporte', 'medidas',
+  'puerta-seguridad', 'reja-ventana', 'techo', 'canaleta',
 ]);
 
 export const refSrc = (key: string) => `servicios/${key}.${PHOTOS.has(key) ? 'jpg' : 'svg'}`;
