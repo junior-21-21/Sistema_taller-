@@ -184,6 +184,14 @@ import { SheetService } from '../core/sheet.service';
     .bar .bt span { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #aab4bd; }
     .bar .bt b { font-size: 22px; color: #ffb070; }
     .bar .btn:not(.primary) { background: var(--steel-2); border-color: #4a555f; color: #fff; }
+    /* En el celular la barra de abajo siempre cabe, aunque el total sea grande. */
+    @media (max-width: 480px) {
+      .bar .in { padding: 8px 10px; gap: 8px; }
+      .bar .bt { min-width: 0; }
+      .bar .bt b { font-size: 17px; }
+      .bar .btn { padding: 8px 12px; font-size: 14px; line-height: 1.15; flex: none; }
+      .bar .btn.primary { flex: 0 1 auto; white-space: normal; min-width: 92px; }
+    }
   `,
 })
 export class SalePage implements OnInit {

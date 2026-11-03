@@ -75,8 +75,8 @@
 .check input { width: 22px; height: 22px; accent-color: var(--fire); }
 .sum .sl { display: flex; justify-content: space-between; gap: 10px; }
 .sum .sl.ok { color: var(--ok); }
-.sum .sl.big { border-top: 2px solid var(--ink); padding-top: 10px; font: 800 30px var(--f-display); }
-.pay { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sum .sl.big { border-top: 2px solid var(--ink); padding-top: 10px; font: 800 30px var(--f-display); flex-wrap: wrap; }
+.pay { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
 .pay div { border: 1px solid var(--line); border-left: 4px solid var(--fire); border-radius: 8px; padding: 10px; display: grid; }
 .pay span { font-size: 13px; color: var(--muted); }
 .pay b { font-size: 17px; }
@@ -103,6 +103,14 @@
 .bar .bt span { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #aab4bd; }
 .bar .bt b { font-size: 22px; color: #ffb070; }
 .bar .btn:not(.primary):not(.wa) { background: var(--steel-2); border-color: #4a555f; color: #fff; }
+/* En el celular la barra de abajo siempre cabe, aunque el total sea grande. */
+@media (max-width: 480px) {
+  .bar .in { padding: 8px 10px; gap: 8px; }
+  .bar .bt { min-width: 0; }
+  .bar .bt b { font-size: 17px; }
+  .bar .btn { padding: 8px 12px; font-size: 14px; line-height: 1.15; flex: none; }
+  .bar .btn.primary { flex: 0 1 auto; white-space: normal; min-width: 92px; }
+}
 
 .cic { width: 38px; height: 38px; border-radius: 9px; background: var(--steel); color: var(--amber); display: grid; place-items: center; margin-bottom: 4px; }
 .tile:hover .cic { background: var(--molten); color: #fff; }
@@ -163,4 +171,9 @@
   font: 700 13px/1 var(--f-body); cursor: pointer; padding: 0; display: grid; place-items: center; }
 .fp.up { color: var(--fire); font: 600 10px var(--f-body); gap: 2px; align-content: center; text-align: center; border-style: dashed; width: 64px; }
 .fp.up.busy { opacity: .6; pointer-events: none; }
+/* En el celular estos dos se tocan con el dedo: área más grande sin cambiar cómo se ven. */
+@media (pointer: coarse) {
+  .x { min-height: 44px; padding: 6px 10px; }
+  .fx::after { content: ''; position: absolute; inset: -8px; }
+}
 .fx.armed { background: #b91c1c; color: #fff; border-color: #b91c1c; }

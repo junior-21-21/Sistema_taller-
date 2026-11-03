@@ -76,6 +76,8 @@
   .tabs a.on { color: var(--fire-dark); }
   .tabs .fab { align-self: center; justify-self: center; width: 56px; height: 56px; border-radius: 50%; background: var(--molten); border: 3px solid var(--panel); color: #fff; place-items: center; margin-top: -22px; box-shadow: 0 6px 16px rgba(232, 101, 15, .45); }
 }
+/* Sin señal: "Reintentar" basta; con el texto completo la barra no cabe y ensancha toda la página. */
+@media (max-width: 480px) { .state:has(.retry) .xt { display: none; } }
 @media (max-width: 380px) { .state .xt { display: none; } .state { padding: 7px; } }
 @media (max-width: 340px) { .menu-btn span { display: none; } }
 @media (prefers-reduced-motion: reduce) { .mmenu, .mback, .state.wait .dot { animation: none; } }
