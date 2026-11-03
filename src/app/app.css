@@ -82,4 +82,7 @@
 @media (max-width: 480px) { .state:has(.retry) .xt { display: none; } }
 @media (max-width: 380px) { .state .xt { display: none; } .state { padding: 7px; } }
 @media (max-width: 340px) { .menu-btn span { display: none; } }
+/* Sin señal y con cambios por subir la barra lleva más cosas: el menú se queda solo con su ícono. */
+@media (max-width: 420px) { .xl:has(.pend) .menu-btn span { display: none; } }
+@media (max-width: 350px) { .in:has(.pend) .brand img { height: 30px; } }
 @media (prefers-reduced-motion: reduce) { .mmenu, .mback, .state.wait .dot { animation: none; } }
