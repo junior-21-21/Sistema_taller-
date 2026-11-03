@@ -4,6 +4,7 @@ import { Store } from '../core/store.service';
 import { AREA, isCompany } from '../core/models';
 import { detailLines } from '../core/detail';
 import { addDays, fmt, fmtDate, fmtQty, inWords, lineTotal, qty, shopTels, totals, waLink } from '../core/calc';
+import { printPage } from '../core/native';
 
 const CLAUSES = [
   'PRIMERA', 'SEGUNDA', 'TERCERA', 'CUARTA', 'QUINTA', 'SEXTA', 'SÉTIMA', 'OCTAVA', 'NOVENA', 'DÉCIMA',
@@ -84,10 +85,7 @@ export class DocPage {
   protected wa = computed(() => (this.q() ? waLink(this.q()!, this.shop()) : '#'));
 
   print() {
-    const prev = document.title;
-    document.title = `${this.isContract() ? this.conNum() : this.num()} ${this.q()?.client.name ?? ''}`.trim();
-    window.print();
-    document.title = prev;
+    printPage(`${this.isContract() ? this.conNum() : this.num()} ${this.q()?.client.name ?? ''}`.trim());
   }
 
   trimDot(s: string) {

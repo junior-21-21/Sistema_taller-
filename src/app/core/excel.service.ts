@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import type { Workbook, Worksheet } from 'exceljs';
 import { Store } from './store.service';
+import { saveFile } from './native';
 import { ESTADOS } from './models';
 import { lineTotal, qty, saleTotals, totals } from './calc';
 
@@ -16,13 +17,7 @@ export class ExcelService {
 
   /** Descarga una copia del Excel (sirve en cualquier navegador y celular). */
   async download() {
-    const buf = await this.build();
-    const url = URL.createObjectURL(new Blob([buf], { type: XLSX_TYPE }));
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = FILE_NAME;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    await saveFile(FILE_NAME, await this.build(), XLSX_TYPE);
   }
   private async lib() {
     const mod = (await import('exceljs')) as unknown as { default?: typeof import('exceljs') } & typeof import('exceljs');

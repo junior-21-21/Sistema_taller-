@@ -1,6 +1,8 @@
 .top { background-color: var(--steel); background-image: var(--plate), linear-gradient(180deg, #262d33, #161a1e); color: #fff; position: sticky; top: 0; z-index: 30;
   box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
 .top::after { content: ''; display: block; height: 5px; background: var(--hazard); }
+/* En la APK (pantalla completa en Android nuevos) deja espacio para la barra de estado del celular. */
+.top { padding-top: env(safe-area-inset-top, 0px); }
 .top .in { max-width: 1240px; margin: 0 auto; padding: 8px 16px; display: flex; align-items: center; gap: 14px; min-height: 64px; }
 .brand { flex: none; display: block; border-radius: 8px; }
 .brand img { height: 46px; display: block; }
@@ -86,3 +88,8 @@
 @media (max-width: 420px) { .xl:has(.pend) .menu-btn span { display: none; } }
 @media (max-width: 350px) { .in:has(.pend) .brand img { height: 30px; } }
 @media (prefers-reduced-motion: reduce) { .mmenu, .mback, .state.wait .dot { animation: none; } }
+
+/* Aviso de APK nueva (solo en la app de Android). */
+.upd { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px 12px; padding: 8px 16px;
+  background: #fff7ed; border-bottom: 1px solid #fed7aa; font-size: 14px; color: var(--ink); text-align: center; }
+.upd .btn { min-height: 36px; padding: 6px 12px; }

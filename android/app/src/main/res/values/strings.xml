@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Run Run</string>
+    <string name="title_activity_main">Run Run</string>
+    <string name="package_name">pe.runrun.cotizador</string>
+    <string name="custom_url_scheme">pe.runrun.cotizador</string>
+</resources>

@@ -46,6 +46,13 @@
   </nav>
 }
 
+@if (apk.next()) {
+  <div class="upd no-print" role="status">
+    <span>Hay una versión nueva de la app. Descárgala e instálala encima; tus datos se quedan.</span>
+    <button type="button" class="btn primary" (click)="apk.download()">Descargar</button>
+  </div>
+}
+
 <router-outlet />
 
 @if (!ownBar()) {

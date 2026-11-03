@@ -1,0 +1,68 @@
+# Arma la APK de Android cada vez que se sube un cambio a main y la deja en
+# Releases › "android" (https://github.com/junior-21-21/Sistema_taller-/releases/tag/android).
+# La app instalada revisa ahí y avisa cuando hay una más nueva.
+#
+# Firma: para que cada APK se instale ENCIMA de la anterior (sin perder datos), la firma
+# debe ser siempre la misma. Va en Settings › Secrets and variables › Actions:
+#   RUNRUN_KEYSTORE_B64       el archivo .jks en base64
+#   RUNRUN_KEYSTORE_PASSWORD  su contraseña
+# Sin esos secretos se arma con la firma de prueba (se instala, pero no actualiza encima).
+name: Armar APK Android
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    env:
+      APK_BUILD: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - name: Número de versión dentro de la app
+        run: echo "export const APK_BUILD = ${APK_BUILD};" > src/app/core/build-info.ts
+      - run: npx ng build
+      - run: npx cap sync android
+      - name: Firma
+        env:
+          KS: ${{ secrets.RUNRUN_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS" ]; then
+            echo "$KS" | base64 -d > "$RUNNER_TEMP/runrun.jks"
+            echo "RUNRUN_KEYSTORE=$RUNNER_TEMP/runrun.jks" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Sin firma guardada: la APK no podrá instalarse encima de la anterior."
+          fi
+      - name: Armar APK
+        working-directory: android
+        env:
+          RUNRUN_KEYSTORE_PASSWORD: ${{ secrets.RUNRUN_KEYSTORE_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/RunRun.apk"
+      - name: Publicar en Releases › android
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view android >/dev/null 2>&1 || gh release create android --title "Run Run build ${APK_BUILD}" --notes "APK de Android"
+          gh release upload android "$RUNNER_TEMP/RunRun.apk" --clobber
+          gh release edit android --title "Run Run build ${APK_BUILD}" --notes "APK de Android, armado ${APK_BUILD} ($(date -u +%F))." --latest

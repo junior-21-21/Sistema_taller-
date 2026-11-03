@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AppUpdate } from './core/app-update.service';
+import { ApkUpdate } from './core/apk-update.service';
 import { SheetService } from './core/sheet.service';
 import { Store, Toast } from './core/store.service';
 import { Icon } from './pages/icon';
@@ -20,6 +21,7 @@ const OWN_BAR = /^\/(cotizar|venta|hoja|boleta)\b/;
 export class App {
   protected sheet = inject(SheetService);
   protected store = inject(Store);
+  protected apk = inject(ApkUpdate);
   protected toast = inject(Toast);
   protected update = inject(AppUpdate);
   private router = inject(Router);

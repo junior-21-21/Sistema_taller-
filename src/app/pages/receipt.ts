@@ -4,6 +4,7 @@ import { Store, Toast } from '../core/store.service';
 import { Sale } from '../core/models';
 import { fmt, fmtDate, inWords, saleTotals, shopTels, waPhone } from '../core/calc';
 import { Icon } from './icon';
+import { printPage } from '../core/native';
 
 type Format = 'ticket' | 'a4';
 
@@ -69,10 +70,7 @@ export class ReceiptPage implements OnDestroy {
   }
 
   print() {
-    const prev = document.title;
-    document.title = `${this.num()} ${this.s()?.client.name ?? ''}`.trim();
-    window.print();
-    document.title = prev;
+    printPage(`${this.num()} ${this.s()?.client.name ?? ''}`.trim());
   }
 
   wa(): string {
