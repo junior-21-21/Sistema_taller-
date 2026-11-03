@@ -15,7 +15,7 @@ import { Prices } from './prices';
 
       <section class="card" id="excel"><app-excel-panel /></section>
 
-      <section class="card">
+      <section class="card" id="taller">
         <h2>Datos del taller</h2>
         <p class="muted small">Salen en la hoja de cotización, en el contrato y en las notas de venta.</p>
         <div class="grid">

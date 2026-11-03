@@ -120,6 +120,7 @@
           <div class="line" [class.lbad]="show(2, e.name) || show(2, e.w) || show(2, e.h) || show(2, e.q) || show(2, e.price)">
             <div class="lh">
               @if (it.code === 'OTRO') {
+                @if (store.fotoSrc(it.img); as src) { <img class="thumb" [src]="src" alt=""> }
                 <input [(ngModel)]="it.name" placeholder="Nombre del trabajo *" aria-label="Nombre del trabajo" [class.bad]="show(2, e.name)">
               } @else {
                 @if (store.fotoSrc(it.img); as src) { <img class="thumb" [src]="src" alt=""> }
@@ -127,25 +128,42 @@
               }
               <button type="button" class="x" (click)="remove(i)" aria-label="Quitar">Quitar</button>
             </div>
-            @let fs = store.fotosOf(it.code);
-            @if (it.code !== 'OTRO' && !it.code.startsWith('PM ')) {
-              <div class="fpick" role="radiogroup" aria-label="Foto que sale en la hoja">
-                <span class="muted small">Foto en la hoja:</span>
-                @for (x of fs; track x.id) {
-                  <button type="button" role="radio" class="fp" [class.on]="it.img === 'f:' + x.id" [attr.aria-checked]="it.img === 'f:' + x.id" (click)="setFoto(it, x.id)">
-                    <img [src]="x.src" alt="">
-                  </button>
-                } @empty {
+            @let fs = it.code === 'OTRO' || it.code.startsWith('PM ') ? [] : store.fotosOf(it.code);
+            <div class="fpick" role="radiogroup" aria-label="Foto que sale en la hoja">
+              <span class="muted small">Foto en la hoja:</span>
+              @if (it.code.startsWith('PM ') && modelImg(it.code); as mi) {
+                <button type="button" role="radio" class="fp" [class.on]="it.img === mi" [attr.aria-checked]="it.img === mi" (click)="it.img = mi; touch()" title="Foto del catálogo">
+                  <img [src]="mi" alt="">
+                </button>
+              }
+              @for (x of fs; track x.id) {
+                <button type="button" role="radio" class="fp" [class.on]="it.img === 'f:' + x.id" [attr.aria-checked]="it.img === 'f:' + x.id" (click)="setFoto(it, x.id)">
+                  <img [src]="x.src" alt="">
+                </button>
+              } @empty {
+                @if (it.code !== 'OTRO' && !it.code.startsWith('PM ')) {
                   @let rs = refFor(it.name, '');
                   <button type="button" role="radio" class="fp" [class.on]="it.img === rs" [attr.aria-checked]="it.img === rs" (click)="it.img = rs; touch()" title="Dibujo de referencia">
                     <img [src]="rs" alt="">
                   </button>
                 }
-                <button type="button" role="radio" class="fp none" [class.on]="!it.img" [attr.aria-checked]="!it.img" (click)="setFoto(it, '')">
-                  <app-icon name="slash" [size]="18" /><span>Sin foto</span>
-                </button>
-              </div>
-            }
+              }
+              @for (x of clientFotos(); track x.id) {
+                <span class="fpw">
+                  <button type="button" role="radio" class="fp cli" [class.on]="it.img === 'f:' + x.id" [attr.aria-checked]="it.img === 'f:' + x.id" (click)="setFoto(it, x.id)" title="Foto del cliente">
+                    <img [src]="x.src" alt="">
+                  </button>
+                  <button type="button" class="fx" (click)="delClientFoto(x.id)" [attr.aria-label]="'Quitar foto del cliente'">{{ fotoArmed() === x.id ? '¿?' : '×' }}</button>
+                </span>
+              }
+              <label class="fp up" [class.busy]="uploading() === i" title="Subir una foto del cliente (de su casa, su diseño o la obra)">
+                <input type="file" accept="image/*" (change)="uploadClientFoto(it, i, $event)" hidden>
+                <app-icon name="camera" [size]="18" /><span>{{ uploading() === i ? 'Subiendo…' : 'Foto del cliente' }}</span>
+              </label>
+              <button type="button" role="radio" class="fp none" [class.on]="!it.img" [attr.aria-checked]="!it.img" (click)="setFoto(it, '')">
+                <app-icon name="slash" [size]="18" /><span>Sin foto</span>
+              </button>
+            </div>
             <div class="dims">
               @if (it.code === 'OTRO') {
                 <label class="f">Unidad<select [(ngModel)]="it.unit">@for (u of units; track u) { <option [value]="u">{{ u }}</option> }</select></label>

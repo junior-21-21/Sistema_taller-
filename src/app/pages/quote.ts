@@ -11,7 +11,8 @@ import { detailLines, emptyDetail, fixDetail, hasDetail } from '../core/detail';
 import { NeedExcel } from './need-excel';
 import { SheetService } from '../core/sheet.service';
 import { Router, RouterLink } from '@angular/router';
-import { Store, Toast } from '../core/store.service';
+import { Store, Toast, quoteFotoCode } from '../core/store.service';
+import { newFotoId, shrinkPhoto } from '../core/foto';
 import { AREA, CatalogItem, ESTADOS, Quote, QuoteItem, UNITS, isCompany } from '../core/models';
 import { advLabel, balLabel, fmt, fmtQty, lineTotal, qty, suggestDays, totals, waLink } from '../core/calc';
 import { clientErrors, focusFirstError, hasErrors, itemErrors, payErrors } from '../core/validate';
@@ -203,7 +204,7 @@ export class QuotePage implements OnInit {
     this.touch();
     this.toast.show(`Agregado: ${c.name}. Pon las medidas.`, 2500);
     setTimeout(() => {
-      const els = document.querySelectorAll<HTMLInputElement>('.cart .line:last-child input');
+      const els = document.querySelectorAll<HTMLInputElement>('.cart .line:last-child input:not([type=file])');
       els[0]?.focus();
     });
   }
@@ -212,6 +213,50 @@ export class QuotePage implements OnInit {
   setFoto(it: QuoteItem, id: string) {
     if (id) it.img = 'f:' + id;
     else delete it.img;
+    this.touch();
+  }
+
+  // ---- fotos propias del cliente (se guardan en la pestaña Fotos con el número de la cotización)
+  protected uploading = signal(-1);
+  protected fotoArmed = signal('');
+  /** Fotos del cliente de esta cotización (también las que vienen de un borrador con otro número). */
+  protected clientFotos() {
+    const code = quoteFotoCode(this.q.num);
+    const used = new Set(this.q.items.map((x) => x.img?.slice(2)));
+    return this.store.fotos().filter((f) => f.code === code || (f.code.startsWith('Q:') && used.has(f.id))).sort((a, b) => a.n - b.n);
+  }
+  protected modelImg = (code: string) => MODELOS.find((m) => m.code === code)?.img ?? '';
+
+  async uploadClientFoto(it: QuoteItem, i: number, ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { this.toast.show('Ese archivo no es una foto.'); return; }
+    this.uploading.set(i);
+    try {
+      const src = await shrinkPhoto(file);
+      const id = newFotoId();
+      const code = quoteFotoCode(this.q.num);
+      this.store.saveFoto({ id, code, n: this.store.fotosOf(code).length + 1, src });
+      this.setFoto(it, id);
+      this.toast.show(this.sheet.hasFotos() ? 'Foto del cliente agregada. Sale en la hoja de la cotización.' : 'Foto agregada en este equipo. Se subirá a la hoja cuando tenga la pestaña Fotos.', 3500);
+    } catch {
+      this.toast.show('No se pudo leer esa foto. Prueba con otra.');
+    } finally {
+      this.uploading.set(-1);
+    }
+  }
+
+  delClientFoto(id: string) {
+    if (this.fotoArmed() !== id) {
+      this.fotoArmed.set(id);
+      setTimeout(() => this.fotoArmed() === id && this.fotoArmed.set(''), 3500);
+      return;
+    }
+    this.fotoArmed.set('');
+    for (const it of this.q.items) if (it.img === 'f:' + id) delete it.img;
+    this.store.deleteFoto(id);
     this.touch();
   }
 

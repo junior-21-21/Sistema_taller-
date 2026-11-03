@@ -31,6 +31,15 @@ export interface ClientSummary {
   last: string;
 }
 
+/** Servicio borrado: se puede recuperar durante 30 días. */
+export interface TrashItem { item: CatalogItem; fotos: Foto[]; at: string; }
+export const TRASH_DAYS = 30;
+const DAY = 86_400_000;
+const fresh = (list: TrashItem[]) => list.filter((x) => Date.now() - Date.parse(x.at) < TRASH_DAYS * DAY);
+
+/** Código de las fotos propias del cliente en una cotización. */
+export const quoteFotoCode = (num: string) => 'Q:' + num;
+
 export type StoreOp =
   | { t: 'quote' | 'delQuote' | 'sale'; num: string }
   | { t: 'expense' | 'delExpense'; id: string }
@@ -46,6 +55,8 @@ export class Store {
   readonly sales = signal<Sale[]>(load('rr.sales') ?? []);
   readonly expenses = signal<Expense[]>(load('rr.expenses') ?? []);
   readonly fotos = signal<Foto[]>(load('rr.fotos') ?? []);
+  /** Papelera de servicios borrados (en este equipo). */
+  readonly trash = signal<TrashItem[]>(fresh(load('rr.trash') ?? []));
   readonly shop = signal<Shop>({ ...DEFAULT_SHOP, ...(load<Partial<Shop>>('rr.shop') ?? {}) });
   /** Hay cambios que todavía no están en el Excel. */
   readonly dirty = signal<boolean>(load('rr.dirty') ?? false);
@@ -106,6 +117,7 @@ export class Store {
     effect(() => persist('rr.expenses', this.expenses()));
     effect(() => persist('rr.fotos', this.fotos()));
     effect(() => persist('rr.shop', this.shop()));
+    effect(() => persist('rr.trash', this.trash()));
     effect(() => persist('rr.dirty', this.dirty()));
   }
 
@@ -186,6 +198,7 @@ export class Store {
     if (this.salesOf(num).length) return false;
     this.quotes.update((list) => list.filter((q) => q.num !== num));
     this.touch({ t: 'delQuote', num });
+    for (const f of this.fotosOf(quoteFotoCode(num))) this.deleteFoto(f.id);
     return true;
   }
 
@@ -298,6 +311,40 @@ export class Store {
   deleteFoto(id: string) {
     this.fotos.update((list) => list.filter((x) => x.id !== id));
     this.touch({ t: 'delFoto', id });
+  }
+
+  // ---------------------------------------------------------------- papelera de servicios
+  /** Quita el servicio de la lista y lo guarda en la papelera con sus fotos. */
+  trashService(code: string) {
+    const item = this.catalog().find((c) => c.code === code);
+    if (!item) return;
+    const fotos = this.fotos().filter((f) => f.code === code);
+    this.trash.update((list) => [{ item: structuredClone(item), fotos, at: new Date().toISOString() }, ...fresh(list).filter((x) => x.item.code !== code)]);
+    this.setCatalog(this.catalog().filter((c) => c.code !== code));
+    for (const f of fotos) this.deleteFoto(f.id);
+  }
+
+  /** Devuelve el servicio a la lista con sus fotos. Si el código ya se usa, le da uno nuevo. */
+  restoreService(at: string): CatalogItem | null {
+    const t = this.trash().find((x) => x.at === at);
+    if (!t) return null;
+    const used = new Set(this.catalog().map((c) => c.code));
+    let code = t.item.code;
+    if (used.has(code)) {
+      let n = 1;
+      while (used.has(`SV-${String(n).padStart(3, '0')}`)) n++;
+      code = `SV-${String(n).padStart(3, '0')}`;
+    }
+    const item = { ...t.item, code };
+    this.setCatalog([...this.catalog(), item]);
+    for (const f of t.fotos) this.saveFoto({ ...f, code });
+    this.trash.update((list) => list.filter((x) => x.at !== at));
+    return item;
+  }
+
+  /** Borra para siempre de la papelera. */
+  purgeTrash(at?: string) {
+    this.trash.update((list) => (at ? list.filter((x) => x.at !== at) : []));
   }
 
   /** Gastos por cotización ('' = generales). */

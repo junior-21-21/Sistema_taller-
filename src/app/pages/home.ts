@@ -29,6 +29,18 @@ import { Sparks } from './sparks';
         <section class="card warnbox"><app-excel-panel /></section>
       }
 
+      @if (pending().length) {
+        <section class="card todo">
+          <h2><app-icon name="tools" [size]="20" /> Te falta completar</h2>
+          <p class="muted small">Esto sale en tus cotizaciones, contratos y notas de venta. Tócalo para completarlo.</p>
+          <div class="tl">
+            @for (p of pending(); track p.t) {
+              <a class="ti" routerLink="/ajustes" [fragment]="p.go"><b>{{ p.t }}</b><span>{{ p.d }}</span><app-icon name="edit" [size]="16" /></a>
+            }
+          </div>
+        </section>
+      }
+
       <section>
         <h2 class="sec">Este mes</h2>
         <div class="stats">
@@ -95,6 +107,16 @@ import { Sparks } from './sparks';
     .ghost-l { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .25); color: #fff; }
     .ghost-l:hover { border-color: #fff; }
     @media (max-width: 560px) { .cta .btn { flex: 1 1 100%; } }
+    .todo { border-color: var(--amber); border-left: 5px solid var(--amber); }
+    .todo h2 { display: flex; align-items: center; gap: 8px; font-size: 19px; margin-bottom: 2px; }
+    .todo h2::after { display: none; }
+    .todo p { margin: 0 0 10px; }
+    .tl { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+    .ti { display: grid; grid-template-columns: 1fr auto; column-gap: 8px; align-items: center; text-decoration: none; color: var(--ink);
+      border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 12px; background: var(--bg); }
+    .ti:hover { border-color: var(--fire); }
+    .ti span { grid-column: 1; color: var(--muted); font-size: 13px; }
+    .ti app-icon { grid-row: 1 / 3; grid-column: 2; color: var(--fire); }
     .warnbox { border-color: var(--fire); background: var(--soft); }
     .sec { font-size: 20px; margin-bottom: 10px; }
     .sec::after { display: none; }
@@ -135,6 +157,20 @@ export class HomePage {
   protected fmt = fmt;
   protected fmtDate = fmtDate;
   protected stats = computed(() => (this.store.quotes(), this.store.sales(), this.store.monthStats()));
+  /** Datos que faltan para que los documentos salgan completos. */
+  protected pending = computed(() => {
+    const s = this.store.shop();
+    const list: { t: string; d: string; go: string }[] = [];
+    if (!s.ruc.trim()) list.push({ t: 'RUC del taller', d: 'Sale en la cotización y el contrato', go: 'taller' });
+    if (!s.rep.trim()) list.push({ t: 'Quién firma los contratos', d: 'Nombre completo del dueño', go: 'taller' });
+    if (!s.repDni.trim()) list.push({ t: 'DNI de quien firma', d: 'Va en el contrato', go: 'taller' });
+    if (!s.payInfo.trim()) list.push({ t: 'Yape / Plin o cuenta', d: 'Para que el cliente sepa dónde pagar', go: 'taller' });
+    const cat = this.store.catalog();
+    const noPrice = cat.filter((c) => !(c.material + c.labor)).length;
+    if (!cat.length) list.push({ t: 'Tu lista de precios', d: 'Agrega tus servicios con su precio', go: 'precios' });
+    else if (noPrice) list.push({ t: `${noPrice} servicio${noPrice > 1 ? 's' : ''} sin precio`, d: 'Ponles tu precio real', go: 'precios' });
+    return list;
+  });
   protected recentQuotes = computed(() => this.store.sortedQuotes().slice(0, 5));
   protected recentSales = computed(() => this.store.sortedSales().slice(0, 5));
   protected greeting = () => {

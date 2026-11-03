@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Store, Toast } from '../core/store.service';
+import { Store, TRASH_DAYS, Toast } from '../core/store.service';
 import { CatalogItem, Detail, Foto, UNITS } from '../core/models';
 import { detailLines, emptyDetail, fixDetail, hasDetail } from '../core/detail';
 import { DetailEditor } from './detail-editor';
@@ -24,14 +24,33 @@ const MAX_FOTOS = 8;
   // Los cambios aquí se guardan solos: no deben activar "Tienes cambios sin guardar" de la página.
   host: { '(input)': '$event.stopPropagation()', '(change)': '$event.stopPropagation()' },
   template: `
-    <section class="card pl">
+    <section class="card pl" id="precios">
       <div class="top">
         <div>
           <h2>Lista de precios</h2>
           <p class="muted small">{{ store.catalog().length }} servicios · Precio = material + mano de obra. Cada cambio se guarda solo en la hoja.</p>
         </div>
-        <button type="button" class="btn primary" (click)="openNew()"><app-icon name="plus" [size]="18" /> Agregar servicio</button>
+        <div class="topb">
+          @if (store.trash().length) {
+            <button type="button" class="btn" (click)="showTrash.set(!showTrash())" [attr.aria-expanded]="showTrash()"><app-icon name="trash" [size]="17" /> Papelera ({{ store.trash().length }})</button>
+          }
+          <button type="button" class="btn primary" (click)="openNew()"><app-icon name="plus" [size]="18" /> Agregar servicio</button>
+        </div>
       </div>
+
+      @if (showTrash() && store.trash().length) {
+        <div class="trash">
+          <p class="muted small">Servicios borrados. Se pueden recuperar durante {{ TRASH_DAYS }} días con sus fotos; después se borran solos.</p>
+          @for (t of store.trash(); track t.at) {
+            <div class="tr">
+              <img [src]="t.fotos.length ? store.fotoSrc(t.fotos[0].src) : refFor(t.item.name, t.item.cat)" alt="">
+              <div class="ti"><b>{{ t.item.name }}</b><span class="muted small">{{ t.item.cat }} · {{ fmt(t.item.material + t.item.labor) }} / {{ t.item.unit }} · quedan {{ daysLeft(t.at) }} días</span></div>
+              <button type="button" class="btn sm primary" (click)="restore(t.at)">Recuperar</button>
+              <button type="button" class="iconbtn danger" (click)="purge(t.at)">{{ purgeArmed() === t.at ? '¿Seguro?' : 'Borrar ya' }}</button>
+            </div>
+          }
+        </div>
+      }
 
       @if (sugeridos().length) {
         <details class="sug" [open]="!store.catalog().length">
@@ -217,6 +236,12 @@ const MAX_FOTOS = 8;
   `,
   styles: `
     .pl { display: grid; gap: 16px; }
+    .topb { display: flex; gap: 8px; flex-wrap: wrap; }
+    .trash { border: 1.5px dashed var(--line); border-radius: var(--r); padding: 10px 12px; margin: 10px 0; display: grid; gap: 8px; background: var(--bg); }
+    .trash p { margin: 0; }
+    .tr { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .tr img { width: 48px; height: 48px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
+    .tr .ti { display: grid; flex: 1 1 180px; min-width: 0; }
     .top { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
     .top p { margin: 4px 0 0; }
     .btn.sm { min-height: 38px; padding: 7px 14px; }
@@ -306,6 +331,7 @@ export class Prices {
   protected store = inject(Store);
   private toast = inject(Toast);
   protected fmt = fmt;
+  protected readonly TRASH_DAYS = TRASH_DAYS;
   protected catIcon = catIcon;
   protected units = UNITS;
 
@@ -472,8 +498,28 @@ export class Prices {
       return;
     }
     this.armed.set('');
-    this.store.setCatalog(this.store.catalog().filter((x) => x.code !== c.code));
-    for (const x of this.store.fotosOf(c.code)) this.store.deleteFoto(x.id);
-    this.toast.show(`Borrado: ${c.name}.`);
+    this.store.trashService(c.code);
+    this.toast.show(`${c.name} se fue a la papelera. Puedes recuperarlo durante ${TRASH_DAYS} días.`, 5000);
+  }
+
+  protected showTrash = signal(false);
+  protected daysLeft = (at: string) => Math.max(1, TRASH_DAYS - Math.floor((Date.now() - Date.parse(at)) / 86_400_000));
+  protected purgeArmed = signal('');
+
+  restore(at: string) {
+    const item = this.store.restoreService(at);
+    if (item) this.toast.show(`Recuperado: ${item.name}.`);
+    if (!this.store.trash().length) this.showTrash.set(false);
+  }
+
+  purge(at: string) {
+    if (this.purgeArmed() !== at) {
+      this.purgeArmed.set(at);
+      setTimeout(() => this.purgeArmed() === at && this.purgeArmed.set(''), 3500);
+      return;
+    }
+    this.purgeArmed.set('');
+    this.store.purgeTrash(at);
+    if (!this.store.trash().length) this.showTrash.set(false);
   }
 }

@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { ViewportScroller } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -20,6 +21,8 @@ export class App {
   protected store = inject(Store);
   protected toast = inject(Toast);
   private router = inject(Router);
+  // Al saltar a una sección (#taller, #precios) deja espacio para el encabezado fijo.
+  private _scroll = inject(ViewportScroller).setOffset([0, 84]);
 
   protected url = toSignal(
     this.router.events.pipe(

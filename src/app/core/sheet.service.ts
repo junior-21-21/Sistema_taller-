@@ -260,7 +260,7 @@ export class SheetService {
       case 'foto': {
         const f = this.store.fotos().find((x) => x.id === c.id);
         if (!f) return null;
-        return { type: 'upsert', sheet: 'Fotos', key: f.id, row: [f.id, this.store.catalog().find((x) => x.code === f.code)?.name ?? '', f.code, f.n, f.src] };
+        return { type: 'upsert', sheet: 'Fotos', key: f.id, row: [f.id, (f.code.startsWith('Q:') ? 'Foto del cliente · ' + f.code.slice(2) : this.store.catalog().find((x) => x.code === f.code)?.name ?? ''), f.code, f.n, f.src] };
       }
       case 'delFoto':
         return { type: 'remove', sheet: 'Fotos', key: c.id };
