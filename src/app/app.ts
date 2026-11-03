@@ -3,6 +3,7 @@ import { ViewportScroller } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
+import { AppUpdate } from './core/app-update.service';
 import { SheetService } from './core/sheet.service';
 import { Store, Toast } from './core/store.service';
 import { Icon } from './pages/icon';
@@ -20,6 +21,7 @@ export class App {
   protected sheet = inject(SheetService);
   protected store = inject(Store);
   protected toast = inject(Toast);
+  protected update = inject(AppUpdate);
   private router = inject(Router);
   // Al saltar a una sección (#taller, #precios) deja espacio para el encabezado fijo.
   private _scroll = inject(ViewportScroller).setOffset([0, 84]);
@@ -32,6 +34,7 @@ export class App {
     { initialValue: '/' },
   );
   protected ownBar = () => OWN_BAR.test(this.url());
+  private _update = effect(() => this.update.navigated(this.url()));
 
   protected readonly nav = [
     { to: '/', label: 'Inicio', short: 'Inicio', icon: 'home', exact: true, hint: 'Resumen del mes' },
@@ -48,6 +51,13 @@ export class App {
   private _closeMenu = effect(() => { this.url(); this.menu.set(false); });
   private _focusMenu = effect(() => { if (this.menu()) setTimeout(() => document.querySelector<HTMLElement>('.mclose')?.focus()); });
 
+  /** En iPhone no hay aviso del navegador: se explica cómo instalarla. */
+  protected install() {
+    if (this.update.canInstall()) this.update.install();
+    else this.toast.show('En Safari toca Compartir y luego "Agregar a pantalla de inicio".', 7000);
+    this.menu.set(false);
+  }
+
   protected stateKind = computed(() => {
     const s = this.sheet.status();
     return s === 'ok' || s === 'saving' ? 'ok' : s === 'loading' ? 'wait' : 'warn';
@@ -57,7 +67,7 @@ export class App {
       case 'ok': return 'Guardado';
       case 'saving': return 'Guardando…';
       case 'loading': return 'Conectando…';
-      case 'offline': return 'Sin conexión';
+      case 'offline': return 'Sin internet';
       default: return 'Falta la hoja';
     }
   });

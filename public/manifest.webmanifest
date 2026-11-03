@@ -1,0 +1,17 @@
+{
+  "name": "Run Run · Cotizador del taller",
+  "short_name": "Run Run",
+  "description": "Cotizaciones, ventas y caja del taller Run Run, también sin internet.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1b2126",
+  "theme_color": "#1b2126",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

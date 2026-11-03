@@ -11,6 +11,9 @@
     <div class="xl">
       <span class="state" [class]="'state ' + stateKind()" [attr.title]="stateText()" role="status">
         <span class="dot"></span><span class="xt">{{ stateText() }}</span>
+        @if (sheet.pending() && sheet.status() !== 'saving') {
+          <span class="pend" [attr.title]="sheet.pending() + ' por subir a la hoja'" [attr.aria-label]="sheet.pending() + ' por subir a la hoja'">{{ sheet.pending() }}</span>
+        }
         @if (sheet.status() === 'offline') {
           <button type="button" class="retry" (click)="sheet.flush(); sheet.load(false)">Reintentar</button>
         }
@@ -36,6 +39,9 @@
         <span class="mic"><app-icon [name]="n.icon" [size]="20" /></span>
         <span class="mt"><b>{{ n.label }}</b><small>{{ n.hint }}</small></span>
       </a>
+    }
+    @if (update.canInstall() || update.iosInstall) {
+      <button type="button" class="btn minstall" (click)="install()"><app-icon name="phone" [size]="18" /> Instalar en este celular</button>
     }
   </nav>
 }

@@ -13,6 +13,21 @@ function load<T>(key: string): T | null {
   }
 }
 
+/** Código corto de este equipo: no cambia aunque se cierre la app. */
+function deviceCode() {
+  const KEY = 'rr.device';
+  try {
+    let c = localStorage.getItem(KEY);
+    if (!c) {
+      c = Math.random().toString(36).slice(2, 4).toUpperCase().padEnd(2, 'X');
+      localStorage.setItem(KEY, c);
+    }
+    return c;
+  } catch {
+    return 'X';
+  }
+}
+
 function persist(key: string, value: unknown) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
@@ -50,6 +65,8 @@ export type StoreOp =
  *  SheetService lo guarda en la hoja de Google. */
 @Injectable({ providedIn: 'root' })
 export class Store {
+  /** Sin conexión con la hoja: lo que se cree aquí todavía no se puede comparar con otros equipos. */
+  readonly offline = signal(false);
   readonly catalog = signal<CatalogItem[]>(load('rr.catalog') ?? []);
   readonly quotes = signal<Quote[]>(load('rr.quotes') ?? []);
   readonly sales = signal<Sale[]>(load('rr.sales') ?? []);
@@ -135,6 +152,11 @@ export class Store {
     return this.quotes().find((q) => q.num === num);
   }
 
+  /** Sin señal otro equipo puede sacar el mismo número y al subir se pisarían: se agrega el código de este equipo. */
+  private numSuffix() {
+    return this.offline() || navigator.onLine === false ? '-' + deviceCode() : '';
+  }
+
   private nextQuoteSeq(year: string) {
     return Math.max(0, ...this.quotes().filter((q) => q.date.startsWith(year)).map((q) => q.seq)) + 1;
   }
@@ -145,7 +167,7 @@ export class Store {
     const year = date.slice(0, 4);
     const seq = this.nextQuoteSeq(year);
     return {
-      num: `COT-${year}-${String(seq).padStart(4, '0')}`,
+      num: `COT-${year}-${String(seq).padStart(4, '0')}${this.numSuffix()}`,
       seq,
       date,
       client: { name: '', doc: '', tel: '', place: '' },
@@ -211,7 +233,7 @@ export class Store {
     const serie = (this.shop().serie || 'NV01').toUpperCase();
     const seq = Math.max(0, ...this.sales().filter((s) => s.num.startsWith(serie + '-')).map((s) => s.seq)) + 1;
     return {
-      num: `${serie}-${String(seq).padStart(8, '0')}`,
+      num: `${serie}-${String(seq).padStart(8, '0')}${this.numSuffix()}`,
       seq,
       date: todayIso(),
       time: nowTime(),

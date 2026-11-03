@@ -25,6 +25,8 @@
 .state.warn { color: #fde68a; border-color: rgba(251, 191, 36, .45); }
 .state.warn .dot { background: #fbbf24; }
 @keyframes pulse { 50% { opacity: .35; } }
+.pend { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--amber); color: var(--ink); font: 700 11px var(--f-body); }
+.minstall { width: calc(100% - 8px); margin: 12px 4px 4px; }
 .retry { font: 700 12px var(--f-body); color: #fff; background: var(--fire); border: none; border-radius: 999px; padding: 4px 10px; cursor: pointer; margin-left: 2px; }
 .new { padding: 8px 14px; min-height: 0; font-size: 14px; white-space: nowrap; }
 .menu-btn { display: none; align-items: center; gap: 6px; font: 700 13px var(--f-body); color: #fff; cursor: pointer;

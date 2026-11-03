@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
 import { Store, StoreOp, Toast } from './store.service';
 import { CatalogItem, ESTADOS, Estado, Expense, Foto, Quote, Sale, Shop } from './models';
 import { lineTotal, qty, saleTotals, totals } from './calc';
@@ -13,6 +13,10 @@ export const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwR1laCTBWQJqn
 
 const QUEUE = 'rr.queue';
 const REFRESH_MS = 60_000;
+/** Con señal mala el pedido se queda colgado: pasado este tiempo se sigue trabajando sin conexión. */
+const READ_TIMEOUT_MS = 25_000;
+const READ_TIMEOUT_CACHED_MS = 10_000;
+const SAVE_TIMEOUT_MS = 45_000;
 
 type Cell = string | number | boolean | null;
 type Op =
@@ -52,12 +56,17 @@ export class SheetService {
   readonly hasGastos = signal(false);
   /** La hoja ya tiene la pestaña Fotos. */
   readonly hasFotos = signal(false);
+  /** Cambios guardados en este equipo que todavía no llegan a la hoja. */
+  readonly pending = signal(0);
 
   private queue: Op[] = [];
   private flushing = false;
   /** Última respuesta de la hoja, para no reprocesarla si no cambió. */
   private lastText = '';
   private retry: ReturnType<typeof setTimeout> | undefined;
+  /** Falló un guardado: al volver la señal se avisa y se trae lo nuevo de la hoja. */
+  private recovering = false;
+  private _offline = effect(() => this.store.offline.set(this.status() === 'offline'));
 
   constructor() {
     if (!SHEET_URL) return;
@@ -66,9 +75,13 @@ export class SheetService {
     } catch {
       this.queue = [];
     }
+    this.pending.set(this.queue.length);
+    // Pide que el navegador no borre los datos de este equipo cuando le falte espacio.
+    navigator.storage?.persist?.().catch(() => { /* no es obligatorio */ });
     this.store.onChange = (op) => this.enqueue(op);
     this.start();
-    window.addEventListener('online', () => this.flush());
+    window.addEventListener('online', () => this.reconnect());
+    window.addEventListener('offline', () => this.status.set('offline'));
     document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && this.refresh());
     setInterval(() => document.visibilityState === 'visible' && this.refresh(), REFRESH_MS);
   }
@@ -76,6 +89,12 @@ export class SheetService {
   private async start() {
     if (this.queue.length) await this.flush();
     await this.load(false);
+  }
+
+  /** Volvió la señal: primero sube lo pendiente y luego trae lo nuevo de la hoja. */
+  private async reconnect() {
+    await this.flush();
+    if (!this.flushing && !this.sendable().length) await this.load(true);
   }
 
   /** Trae los cambios que hicieron otras personas (solo si aquí no hay nada por guardar). */
@@ -86,7 +105,8 @@ export class SheetService {
   async load(quiet: boolean) {
     if (!quiet) this.status.set('loading');
     try {
-      const r = await fetch(SHEET_URL);
+      const cached = !this.loaded() && this.store.catalog().length > 0;
+      const r = await fetch(SHEET_URL, { signal: AbortSignal.timeout(cached ? READ_TIMEOUT_CACHED_MS : READ_TIMEOUT_MS) });
       const text = await r.text();
       // Si la hoja no cambió desde la última lectura, no se vuelve a procesar nada (evita el "lag" cada minuto).
       if (text === this.lastText && this.loaded() && !this.sendable().length) {
@@ -99,6 +119,11 @@ export class SheetService {
       if (this.sendable().length) return;
       this.hasGastos.set(!!data.sheets['Gastos']);
       this.hasFotos.set(!!data.sheets['Fotos']);
+      // Ahora se pueden mandar fotos o gastos que esperaban su pestaña: primero suben, para que la lectura no los borre de aquí.
+      if (this.sendable().length) {
+        this.flush();
+        return;
+      }
       this.apply(data.sheets);
       this.sheetUrl.set(data.url);
       this.loaded.set(true);
@@ -106,10 +131,8 @@ export class SheetService {
       this.status.set('ok');
       if (this.sendable().length) this.flush();
     } catch {
-      if (!quiet) {
-        this.status.set('offline');
-        this.toast.show(this.loaded() ? 'Sin conexión con la hoja de Google.' : 'No pude leer la hoja de Google. Revisa tu internet; trabajas con lo último que se guardó en este equipo.', 6000);
-      }
+      this.status.set('offline');
+      if (!quiet) this.toast.show('Sin internet: puedes seguir cotizando. Se subirá solo a la hoja cuando vuelva la señal.', 6000);
     }
   }
 
@@ -291,8 +314,9 @@ export class SheetService {
     try {
       localStorage.setItem(QUEUE, JSON.stringify(this.queue));
     } catch {
-      /* nada */
+      this.toast.show('Este equipo se quedó sin espacio. Conéctate a internet para subir lo pendiente antes de cerrar la app.', 8000);
     }
+    this.pending.set(this.queue.length);
   }
 
   /** Lo que se puede mandar ya (gastos y fotos esperan si la hoja aún no tiene su pestaña). */
@@ -306,24 +330,32 @@ export class SheetService {
     clearTimeout(this.retry);
     this.status.set('saving');
     const batch = this.sendable();
+    let sent = false;
     try {
       // text/plain evita el permiso previo del navegador (CORS) que Apps Script no responde.
-      const r = await fetch(SHEET_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ops: batch }) });
+      const r = await fetch(SHEET_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ ops: batch }), signal: AbortSignal.timeout(SAVE_TIMEOUT_MS) });
       const res = (await r.json()) as { ok: boolean; error?: string };
       if (!res.ok) throw new Error(res.error);
       // Se quitan solo los que se mandaron (pudieron entrar otros mientras tanto).
       this.queue = this.queue.filter((o) => !batch.includes(o));
       this.persist();
+      sent = true;
       if (!this.sendable().length) {
         this.store.dirty.set(!!this.queue.length);
         this.status.set('ok');
       }
     } catch {
       this.status.set('offline');
+      this.recovering = true;
       this.retry = setTimeout(() => this.flush(), 15_000);
     } finally {
       this.flushing = false;
     }
     if (this.sendable().length && this.status() !== 'offline') this.flush();
+    else if (sent && this.recovering && !this.sendable().length) {
+      this.recovering = false;
+      this.toast.show('Listo: lo que hiciste sin internet ya está en la hoja.', 5000);
+      await this.load(true);
+    }
   }
 }
