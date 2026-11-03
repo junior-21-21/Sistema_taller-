@@ -323,7 +323,7 @@
       <button type="button" class="btn" [disabled]="step() === 1" (click)="go(step() - 1)">Atrás</button>
       <div class="bt"><span>Total</span><b class="money">{{ fmt(t.tot) }}</b></div>
       @if (step() < 4) {
-        <button type="button" class="btn primary" (click)="next()">{{ step() === 3 ? 'Guardar y terminar' : 'Siguiente' }}</button>
+        <button type="button" class="btn primary" (click)="next()">@if (step() === 3) { Guardar<span class="long"> y terminar</span> } @else { Siguiente }</button>
       } @else {
         <a class="btn wa" [href]="waHref" target="_blank" rel="noopener" (click)="save()">WhatsApp</a>
       }

@@ -290,17 +290,30 @@ export class Store {
   }
 
   // ---------------------------------------------------------------- fotos de los servicios
-  fotosOf(code: string) {
-    return this.fotos()
-      .filter((f) => f.code === code)
-      .sort((a, b) => a.n - b.n)
-      .map((f) => ({ ...f, src: fixRef(f.src) }));
+  /** Fotos agrupadas por servicio, ya ordenadas: se calcula una vez por cambio, no en cada pantalla. */
+  private readonly fotoIndex = computed(() => {
+    const byCode = new Map<string, Foto[]>();
+    const byId = new Map<string, string>();
+    for (const f of this.fotos()) {
+      const x = { ...f, src: fixRef(f.src) };
+      byId.set(f.id, x.src);
+      const list = byCode.get(f.code);
+      if (list) list.push(x);
+      else byCode.set(f.code, [x]);
+    }
+    for (const list of byCode.values()) list.sort((a, b) => a.n - b.n);
+    return { byCode, byId };
+  });
+  private static readonly NONE: Foto[] = [];
+
+  fotosOf(code: string): Foto[] {
+    return this.fotoIndex().byCode.get(code) ?? Store.NONE;
   }
 
   /** La imagen de una línea de cotización ('' si la foto se borró). */
   fotoSrc(ref?: string) {
     if (!ref) return '';
-    return fixRef(ref.startsWith('f:') ? (this.fotos().find((f) => f.id === ref.slice(2))?.src ?? '') : ref);
+    return ref.startsWith('f:') ? (this.fotoIndex().byId.get(ref.slice(2)) ?? '') : fixRef(ref);
   }
 
   saveFoto(f: Foto) {

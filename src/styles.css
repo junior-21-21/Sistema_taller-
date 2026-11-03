@@ -162,3 +162,6 @@ button, a, summary { -webkit-tap-highlight-color: rgba(236, 106, 18, .18); }
   .iconbtn:not(.wa):not(.armed):not(.deal):hover { border-color: var(--line); color: var(--ink); }
   .iconbtn:active { border-color: var(--fire); color: var(--fire-dark); }
 }
+
+/* Botón "Mostrar más" de las listas largas. */
+.more-btn { justify-self: center; margin: 4px auto 0; }

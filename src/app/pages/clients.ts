@@ -5,6 +5,8 @@ import { ClientSummary, Store } from '../core/store.service';
 import { fmt, fmtDate, norm, saleTotals, totals, waPhone } from '../core/calc';
 import { Icon } from './icon';
 
+const PAGE = 30;
+
 @Component({
   selector: 'app-clients',
   imports: [FormsModule, RouterLink, Icon],
@@ -22,7 +24,7 @@ import { Icon } from './icon';
 
       <div class="grid2">
         <div class="list">
-          @for (c of list(); track c.key) {
+          @for (c of list().slice(0, shown()); track c.key) {
             <button type="button" class="cl" [class.on]="sel()?.key === c.key" (click)="sel.set(c)">
               <span class="av" aria-hidden="true">{{ initials(c) }}</span>
               <span class="who"><b>{{ c.client.name || 'Sin nombre' }}</b><span class="muted small">{{ c.client.doc || 'Sin DNI' }} · {{ c.client.tel || 'sin celular' }}</span></span>
@@ -31,6 +33,9 @@ import { Icon } from './icon';
           } @empty {
             <div class="empty">@if (store.clients().length) { Nadie coincide con esa búsqueda. } @else { Aquí aparecerán tus clientes cuando hagas cotizaciones o ventas. }</div>
           }
+        @if (list().length > shown()) {
+          <button type="button" class="btn more-btn" (click)="shown.set(shown() + PAGE_SIZE)">Mostrar más ({{ list().length - shown() }} más)</button>
+        }
         </div>
 
         @if (sel(); as c) {
@@ -91,6 +96,9 @@ export class ClientsPage {
   protected q = signal('');
   protected sel = signal<ClientSummary | null>(null);
 
+  /** Se muestran de a pocos para que la pantalla abra rápido aunque haya cientos. */
+  protected shown = signal(PAGE);
+  protected readonly PAGE_SIZE = PAGE;
   protected list = computed(() => {
     const words = norm(this.q()).split(/\s+/).filter(Boolean);
     return this.store.clients().filter((c) => {

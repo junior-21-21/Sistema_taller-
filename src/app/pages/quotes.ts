@@ -9,6 +9,8 @@ import { CloseDeal } from './close-deal';
 
 type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
 
+const PAGE = 30;
+
 @Component({
   selector: 'app-quotes',
   imports: [FormsModule, RouterLink, Icon, CloseDeal],
@@ -50,7 +52,7 @@ type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
       </section>
 
       <div class="list">
-        @for (item of list(); track item.num) {
+        @for (item of list().slice(0, shown()); track item.num) {
           <article class="qc">
             <div class="top">
               <div class="who">
@@ -95,6 +97,9 @@ type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
             @if (store.quotes().length) { No encontré cotizaciones con esa búsqueda. }
             @else { Todavía no hay cotizaciones. <a routerLink="/cotizar">Haz la primera</a>. }
           </div>
+        }
+        @if (list().length > shown()) {
+          <button type="button" class="btn more-btn" (click)="shown.set(shown() + PAGE_SIZE)">Mostrar más ({{ list().length - shown() }} más)</button>
         }
       </div>
       @if (deal()) { <app-close-deal [num]="deal()" (closed)="deal.set('')" /> }
@@ -148,6 +153,9 @@ export class QuotesPage implements OnInit {
     if (ESTADOS.includes(e)) this.estado.set(e);
   }
 
+  /** Se muestran de a pocos para que la pantalla abra rápido aunque haya cientos. */
+  protected shown = signal(PAGE);
+  protected readonly PAGE_SIZE = PAGE;
   protected list = computed(() => {
     const words = norm(this.q()).split(/\s+/).filter(Boolean);
     const [f, t, e] = [this.from(), this.to(), this.estado()];

@@ -6,6 +6,8 @@ import { PAY_METHODS, Sale } from '../core/models';
 import { fmt, fmtDate, norm, saleTotals } from '../core/calc';
 import { Icon } from './icon';
 
+const PAGE = 30;
+
 @Component({
   selector: 'app-sales',
   imports: [FormsModule, RouterLink, Icon],
@@ -47,7 +49,7 @@ import { Icon } from './icon';
           <table>
             <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Concepto</th><th>Pago</th><th class="n">Total</th><th></th></tr></thead>
             <tbody>
-              @for (s of list(); track s.num) {
+              @for (s of list().slice(0, shown()); track s.num) {
                 <tr [class.void]="s.void">
                   <td class="money">{{ s.num }}</td>
                   <td>{{ fmtDate(s.date) }} <span class="muted small">{{ s.time }}</span></td>
@@ -63,6 +65,9 @@ import { Icon } from './icon';
             </tbody>
           </table>
         </div>
+        @if (list().length > shown()) {
+          <button type="button" class="btn more-btn" (click)="shown.set(shown() + PAGE_SIZE)">Mostrar más ({{ list().length - shown() }} más)</button>
+        }
       </section>
     </div>
   `,
@@ -93,6 +98,9 @@ export class SalesPage {
 
   tot = (s: Sale) => saleTotals(s, this.store.shop().igv).tot;
 
+  /** Se muestran de a pocos para que la pantalla abra rápido aunque haya cientos. */
+  protected shown = signal(PAGE);
+  protected readonly PAGE_SIZE = PAGE;
   protected list = computed(() => {
     const words = norm(this.q()).split(/\s+/).filter(Boolean);
     const [f, t, p] = [this.from(), this.to(), this.pay()];

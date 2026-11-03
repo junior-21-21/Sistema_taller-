@@ -55,6 +55,8 @@ export class SheetService {
 
   private queue: Op[] = [];
   private flushing = false;
+  /** Última respuesta de la hoja, para no reprocesarla si no cambió. */
+  private lastText = '';
   private retry: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
@@ -85,7 +87,13 @@ export class SheetService {
     if (!quiet) this.status.set('loading');
     try {
       const r = await fetch(SHEET_URL);
-      const data = (await r.json()) as { ok: boolean; sheets: Record<string, Cell[][]>; url: string; error?: string };
+      const text = await r.text();
+      // Si la hoja no cambió desde la última lectura, no se vuelve a procesar nada (evita el "lag" cada minuto).
+      if (text === this.lastText && this.loaded() && !this.sendable().length) {
+        this.status.set('ok');
+        return;
+      }
+      const data = JSON.parse(text) as { ok: boolean; sheets: Record<string, Cell[][]>; url: string; error?: string };
       if (!data.ok) throw new Error(data.error);
       // Si mientras tanto alguien guardó aquí, no se pisa lo nuevo.
       if (this.sendable().length) return;
@@ -94,6 +102,7 @@ export class SheetService {
       this.apply(data.sheets);
       this.sheetUrl.set(data.url);
       this.loaded.set(true);
+      this.lastText = text;
       this.status.set('ok');
       if (this.sendable().length) this.flush();
     } catch {
