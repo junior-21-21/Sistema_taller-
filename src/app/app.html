@@ -43,6 +43,9 @@
     @if (update.canInstall() || update.iosInstall) {
       <button type="button" class="btn minstall" (click)="install()"><app-icon name="phone" [size]="18" /> Instalar en este celular</button>
     }
+    @if (!isNative) {
+      <a class="btn minstall" [href]="apkUrl" rel="noopener" (click)="menu.set(false)"><app-icon name="download" [size]="18" /> Descargar app Android (APK)</a>
+    }
   </nav>
 }
 

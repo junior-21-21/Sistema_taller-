@@ -4,6 +4,10 @@ import { isNative, openExternal } from './native';
 
 /** Donde GitHub deja cada APK nueva (la arma .github/workflows/apk.yml). */
 const APK_RELEASE = 'https://api.github.com/repos/junior-21-21/Sistema_taller-/releases/tags/android';
+/** Enlace fijo a la última APK (para el botón "Descargar app Android" de la web). */
+export const APK_URL = 'https://github.com/junior-21-21/Sistema_taller-/releases/download/android/RunRun.apk';
+/** Celular Android abriendo la web (no la APK): ahí conviene ofrecer la descarga. */
+export const ANDROID_WEB = !isNative && /android/i.test(navigator.userAgent);
 const CHECK_MS = 30 * 60_000;
 
 /** Solo en la APK: avisa cuando GitHub armó una APK más nueva que la instalada. */

@@ -4,7 +4,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { AppUpdate } from './core/app-update.service';
-import { ApkUpdate } from './core/apk-update.service';
+import { APK_URL, ApkUpdate } from './core/apk-update.service';
+import { isNative } from './core/native';
 import { SheetService } from './core/sheet.service';
 import { Store, Toast } from './core/store.service';
 import { Icon } from './pages/icon';
@@ -24,6 +25,8 @@ export class App {
   protected apk = inject(ApkUpdate);
   protected toast = inject(Toast);
   protected update = inject(AppUpdate);
+  protected readonly apkUrl = APK_URL;
+  protected readonly isNative = isNative;
   private router = inject(Router);
   // Al saltar a una sección (#taller, #precios) deja espacio para el encabezado fijo.
   private _scroll = inject(ViewportScroller).setOffset([0, 84]);

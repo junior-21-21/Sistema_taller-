@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SheetService } from '../core/sheet.service';
+import { ANDROID_WEB, APK_URL } from '../core/apk-update.service';
 import { Store } from '../core/store.service';
 import { Quote } from '../core/models';
 import { fmt, fmtDate, saleTotals, shopTels, totals, waPhone } from '../core/calc';
@@ -54,6 +55,17 @@ import { Sparks } from './sparks';
 
       @if (sheet.status() === 'none' || sheet.status() === 'offline') {
         <section class="card warnbox"><app-excel-panel /></section>
+      }
+
+      @if (androidWeb) {
+        <section class="card apkbox">
+          <span class="ai"><app-icon name="download" [size]="22" /></span>
+          <div class="atx">
+            <b>Descarga la app Run Run para Android</b>
+            <small>Se instala como cualquier app, guarda todo en tu celular y funciona sin internet. Si Android pregunta, permite «instalar apps de esta fuente».</small>
+          </div>
+          <a class="btn primary" [href]="apkUrl" rel="noopener">Descargar APK</a>
+        </section>
       }
 
       @if (pending().length) {
@@ -258,6 +270,9 @@ import { Sparks } from './sparks';
     .fi.s { background: var(--ok-soft); color: var(--ok); }
     .fr { display: grid; justify-items: end; flex: none; }
     .fr small { color: var(--muted); font-size: 12px; }
+    .apkbox { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-left: 4px solid var(--fire); }
+    .apkbox .atx { flex: 1 1 220px; min-width: 0; display: grid; gap: 3px; }
+    .apkbox small { color: var(--muted); }
     .void { text-decoration: line-through; color: var(--muted); }
     @media (prefers-reduced-motion: reduce) { .act { transition: none; } .act:hover { transform: none; } }
   `,
@@ -265,6 +280,8 @@ import { Sparks } from './sparks';
 export class HomePage {
   protected store = inject(Store);
   protected sheet = inject(SheetService);
+  protected readonly androidWeb = ANDROID_WEB;
+  protected readonly apkUrl = APK_URL;
   protected fmt = fmt;
   protected fmtDate = fmtDate;
   protected stats = computed(() => (this.store.quotes(), this.store.sales(), this.store.monthStats()));
