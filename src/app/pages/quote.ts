@@ -48,6 +48,12 @@ export class QuotePage implements OnInit {
   protected daysAuto = true;
 
   protected readonly steps = ['Cliente', 'Trabajos', 'Pago', 'Enviar'];
+  protected readonly stepInfo = [
+    { icon: 'user', hint: 'Nombre y celular' },
+    { icon: 'tools', hint: 'Medidas y precios' },
+    { icon: 'cash', hint: 'Adelanto y plazo' },
+    { icon: 'wa', hint: 'PDF y WhatsApp' },
+  ];
   protected catIcon = catIcon;
   protected refFor = refFor;
   protected readonly units = UNITS;

@@ -1,20 +1,37 @@
 .head .num { font-size: 13px; color: var(--fire-dark); }
 
-.stepper { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.stepper button {
-  width: 100%; display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1.5px solid var(--line);
-  border-radius: 10px; padding: 10px 12px; font: 600 15px var(--f-body); color: var(--muted); cursor: pointer; text-align: left;
+/* Pasos: tarjeta con línea de avance, ícono por paso y check en los terminados. */
+.steps { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 10px 12px; }
+.sbar { position: absolute; left: 12.5%; right: 12.5%; top: 36px; height: 4px; border-radius: 4px; background: var(--line); }
+.sbar span { display: block; height: 100%; border-radius: 4px; background: var(--molten); transition: width .3s ease; }
+.stepper { position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.stepper button { width: 100%; display: grid; justify-items: center; gap: 8px; background: none; border: none; padding: 0 4px; cursor: pointer;
+  font: inherit; color: var(--muted); text-align: center; border-radius: 12px; }
+.stepper button:disabled { cursor: default; }
+.stepper button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+.stepper .n { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--panel); color: var(--muted);
+  border: 2.5px solid var(--line); transition: transform .15s, background .15s; position: relative; z-index: 1; }
+.stepper .t { display: grid; gap: 1px; min-width: 0; }
+.stepper small { font: 700 11px var(--f-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.stepper b { font: 700 17px var(--f-display); letter-spacing: .03em; text-transform: uppercase; color: var(--muted); }
+.stepper em { font-style: normal; font-size: 12.5px; color: var(--muted); }
+.stepper li.locked .n { border-style: dashed; opacity: .75; }
+.stepper li.locked .t { opacity: .7; }
+.stepper li.done .n { background: var(--ok); border-color: var(--ok); color: #fff; }
+.stepper li.done b { color: var(--ink); }
+.stepper li.done button:hover .n { transform: scale(1.06); }
+.stepper li.on .n { background: var(--molten); border-color: #c4520a; color: #fff; transform: scale(1.08); box-shadow: 0 0 0 5px rgba(236, 106, 18, .18), 0 4px 10px rgba(236, 106, 18, .35); }
+.stepper li.on small { color: var(--fire-dark); }
+.stepper li.on b { color: var(--ink); }
+.stepper li.on em { color: var(--ink); }
+@media (max-width: 640px) {
+  .steps { padding: 12px 4px 10px; }
+  .sbar { top: 31px; }
+  .stepper .n { width: 40px; height: 40px; }
+  .stepper b { font-size: 14px; }
+  .stepper em, .stepper small { display: none; }
 }
-.stepper button:disabled { cursor: default; opacity: .6; }
-.stepper .n {
-  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex: none;
-  background: var(--bg); font-family: var(--f-num); font-size: 13px;
-}
-.stepper button.done { color: var(--ink); }
-.stepper button.done .n { background: var(--ok); color: #fff; }
-.stepper button.on { border-color: var(--fire); color: var(--ink); box-shadow: 0 0 0 3px rgba(232, 101, 15, .15); }
-.stepper button.on .n { background: var(--fire); color: #fff; }
-@media (max-width: 600px) { .stepper button { flex-direction: column; justify-content: center; gap: 3px; padding: 6px 2px; font-size: 12px; } .stepper .n { width: 24px; height: 24px; } }
+@media (prefers-reduced-motion: reduce) { .sbar span, .stepper .n { transition: none; } }
 
 .err { background: var(--warn-soft); color: var(--warn); border: 1px solid #f0c48a; border-radius: 10px; padding: 12px 14px; font-weight: 600; }
 
