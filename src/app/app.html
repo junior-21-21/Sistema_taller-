@@ -1,28 +1,44 @@
 <header class="top no-print">
   <div class="in">
     <a routerLink="/" class="brand" aria-label="Inicio"><img src="logo-runrun.webp" alt="Run Run Estructuras Metálicas"></a>
-    <nav class="desk">
+    <nav class="desk" aria-label="Menú principal">
       @for (n of nav; track n.to) {
-        <a [routerLink]="n.to" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: n.exact }">{{ n.label }}</a>
+        <a [routerLink]="n.to" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: n.exact }" [attr.title]="n.label">
+          <app-icon [name]="n.icon" [size]="18" /><span>{{ n.short }}</span>
+        </a>
       }
     </nav>
     <div class="xl">
-      @switch (sheet.status()) {
-        @case ('ok') { <span class="dot ok"></span><span class="xt">Guardado en la hoja</span> }
-        @case ('saving') { <span class="dot ok"></span><span class="xt">Guardando…</span> }
-        @case ('loading') { <span class="dot"></span><span class="xt">Conectando…</span> }
-        @case ('offline') {
-          <span class="dot warn"></span>
-          <button type="button" (click)="sheet.flush(); sheet.load(false)">Sin conexión · Reintentar</button>
+      <span class="state" [class]="'state ' + stateKind()" [attr.title]="stateText()" role="status">
+        <span class="dot"></span><span class="xt">{{ stateText() }}</span>
+        @if (sheet.status() === 'offline') {
+          <button type="button" class="retry" (click)="sheet.flush(); sheet.load(false)">Reintentar</button>
         }
-        @default { <span class="dot warn"></span><span class="xt">Falta la hoja</span> }
-      }
-      <a class="mob-ic" routerLink="/catalogo" aria-label="Catálogo de puertas"><app-icon name="door" /></a>
-      <a class="mob-ic" routerLink="/caja" aria-label="Ingresos y gastos"><app-icon name="cash" /></a>
-      <a class="mob-ic" routerLink="/ajustes" aria-label="Precios y taller"><app-icon name="gear" /></a>
+      </span>
+      <a class="btn primary new" routerLink="/cotizar"><app-icon name="plus" [size]="17" /><span>Cotizar</span></a>
+      <button type="button" class="menu-btn" (click)="menu.set(!menu())" [attr.aria-expanded]="menu()" aria-controls="mmenu">
+        <app-icon [name]="menu() ? 'close' : 'menu'" [size]="22" /><span>Menú</span>
+      </button>
     </div>
   </div>
 </header>
+
+@if (menu()) {
+  <div class="mback no-print" (click)="menu.set(false)"></div>
+  <nav class="mmenu no-print" id="mmenu" aria-label="Menú" (keydown.escape)="menu.set(false)">
+    <div class="mhead"><b>Menú</b><button type="button" class="mclose" (click)="menu.set(false)" aria-label="Cerrar menú"><app-icon name="close" [size]="20" /></button></div>
+    <div class="mquick">
+      <a class="btn primary" routerLink="/cotizar" (click)="menu.set(false)"><app-icon name="quote" [size]="18" /> Nueva cotización</a>
+      <a class="btn" routerLink="/venta" (click)="menu.set(false)"><app-icon name="receipt" [size]="18" /> Nueva venta</a>
+    </div>
+    @for (n of nav; track n.to) {
+      <a class="mi" [routerLink]="n.to" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: n.exact }" (click)="menu.set(false)">
+        <span class="mic"><app-icon [name]="n.icon" [size]="20" /></span>
+        <span class="mt"><b>{{ n.label }}</b><small>{{ n.hint }}</small></span>
+      </a>
+    }
+  </nav>
+}
 
 <router-outlet />
 

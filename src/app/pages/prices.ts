@@ -46,7 +46,7 @@ const MAX_FOTOS = 8;
               <img [src]="t.fotos.length ? store.fotoSrc(t.fotos[0].src) : refFor(t.item.name, t.item.cat)" alt="">
               <div class="ti"><b>{{ t.item.name }}</b><span class="muted small">{{ t.item.cat }} · {{ fmt(t.item.material + t.item.labor) }} / {{ t.item.unit }} · quedan {{ daysLeft(t.at) }} días</span></div>
               <button type="button" class="btn sm primary" (click)="restore(t.at)">Recuperar</button>
-              <button type="button" class="iconbtn danger" (click)="purge(t.at)">{{ purgeArmed() === t.at ? '¿Seguro?' : 'Borrar ya' }}</button>
+              <button type="button" class="iconbtn danger" [class.armed]="purgeArmed() === t.at" (click)="purge(t.at)">{{ purgeArmed() === t.at ? 'Toca otra vez para borrar' : 'Borrar ya' }}</button>
             </div>
           }
         </div>
@@ -113,7 +113,7 @@ const MAX_FOTOS = 8;
                 </div>
                 <div class="act">
                   <button type="button" class="iconbtn" (click)="openEdit(c)"><app-icon name="edit" [size]="16" /> Editar</button>
-                  <button type="button" class="iconbtn danger" (click)="del(c)"><app-icon name="trash" [size]="16" /> {{ armed() === c.code ? '¿Seguro?' : 'Borrar' }}</button>
+                  <button type="button" class="iconbtn danger" [class.armed]="armed() === c.code" (click)="del(c)"><app-icon name="trash" [size]="16" /> {{ armed() === c.code ? 'Toca otra vez' : 'Borrar' }}</button>
                 </div>
               </article>
             }
@@ -494,7 +494,7 @@ export class Prices {
   del(c: CatalogItem) {
     if (this.armed() !== c.code) {
       this.armed.set(c.code);
-      setTimeout(() => this.armed() === c.code && this.armed.set(''), 3500);
+      setTimeout(() => this.armed() === c.code && this.armed.set(''), 5000);
       return;
     }
     this.armed.set('');
@@ -515,7 +515,7 @@ export class Prices {
   purge(at: string) {
     if (this.purgeArmed() !== at) {
       this.purgeArmed.set(at);
-      setTimeout(() => this.purgeArmed() === at && this.purgeArmed.set(''), 3500);
+      setTimeout(() => this.purgeArmed() === at && this.purgeArmed.set(''), 5000);
       return;
     }
     this.purgeArmed.set('');

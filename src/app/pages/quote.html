@@ -153,7 +153,7 @@
                   <button type="button" role="radio" class="fp cli" [class.on]="it.img === 'f:' + x.id" [attr.aria-checked]="it.img === 'f:' + x.id" (click)="setFoto(it, x.id)" title="Foto del cliente">
                     <img [src]="x.src" alt="">
                   </button>
-                  <button type="button" class="fx" (click)="delClientFoto(x.id)" [attr.aria-label]="'Quitar foto del cliente'">{{ fotoArmed() === x.id ? '¿?' : '×' }}</button>
+                  <button type="button" class="fx" [class.armed]="fotoArmed() === x.id" (click)="delClientFoto(x.id)" [attr.aria-label]="fotoArmed() === x.id ? 'Toca otra vez para quitar la foto' : 'Quitar foto del cliente'">{{ fotoArmed() === x.id ? '?' : '×' }}</button>
                 </span>
               }
               <label class="fp up" [class.busy]="uploading() === i" title="Subir una foto del cliente (de su casa, su diseño o la obra)">

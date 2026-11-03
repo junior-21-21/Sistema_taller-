@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ViewportScroller } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
@@ -34,12 +34,31 @@ export class App {
   protected ownBar = () => OWN_BAR.test(this.url());
 
   protected readonly nav = [
-    { to: '/', label: 'Inicio', icon: 'home', exact: true },
-    { to: '/cotizaciones', label: 'Cotizaciones', icon: 'quote', exact: false },
-    { to: '/ventas', label: 'Ventas', icon: 'receipt', exact: false },
-    { to: '/catalogo', label: 'Catálogo', icon: 'door', exact: false },
-    { to: '/caja', label: 'Ingresos y gastos', icon: 'cash', exact: false },
-    { to: '/clientes', label: 'Clientes', icon: 'users', exact: false },
-    { to: '/ajustes', label: 'Precios y taller', icon: 'gear', exact: false },
+    { to: '/', label: 'Inicio', short: 'Inicio', icon: 'home', exact: true, hint: 'Resumen del mes' },
+    { to: '/cotizaciones', label: 'Cotizaciones', short: 'Cotizaciones', icon: 'quote', exact: false, hint: 'Buscar, editar y enviar' },
+    { to: '/ventas', label: 'Ventas', short: 'Ventas', icon: 'receipt', exact: false, hint: 'Notas de venta y cobros' },
+    { to: '/catalogo', label: 'Catálogo de puertas', short: 'Catálogo', icon: 'door', exact: false, hint: 'Modelos con foto y precio' },
+    { to: '/caja', label: 'Ingresos y gastos', short: 'Caja', icon: 'cash', exact: false, hint: 'Lo que entra y lo que sale' },
+    { to: '/clientes', label: 'Clientes', short: 'Clientes', icon: 'users', exact: false, hint: 'Historial de cada uno' },
+    { to: '/ajustes', label: 'Precios y taller', short: 'Precios', icon: 'gear', exact: false, hint: 'Tus precios y tus datos' },
   ];
+
+  /** Menú completo del celular. */
+  protected menu = signal(false);
+  private _closeMenu = effect(() => { this.url(); this.menu.set(false); });
+  private _focusMenu = effect(() => { if (this.menu()) setTimeout(() => document.querySelector<HTMLElement>('.mclose')?.focus()); });
+
+  protected stateKind = computed(() => {
+    const s = this.sheet.status();
+    return s === 'ok' || s === 'saving' ? 'ok' : s === 'loading' ? 'wait' : 'warn';
+  });
+  protected stateText = computed(() => {
+    switch (this.sheet.status()) {
+      case 'ok': return 'Guardado';
+      case 'saving': return 'Guardando…';
+      case 'loading': return 'Conectando…';
+      case 'offline': return 'Sin conexión';
+      default: return 'Falta la hoja';
+    }
+  });
 }

@@ -87,7 +87,7 @@ type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
               }
               <a class="iconbtn wa" [href]="wa(item)" target="_blank" rel="noopener"><app-icon name="wa" [size]="16" /> WhatsApp</a>
               <button type="button" class="iconbtn" (click)="dup(item.num)"><app-icon name="copy" [size]="16" /> Duplicar</button>
-              <button type="button" class="iconbtn danger" (click)="del(item.num)"><app-icon name="trash" [size]="16" /> {{ armed() === item.num ? '¿Seguro? Toca otra vez' : 'Borrar' }}</button>
+              <button type="button" class="iconbtn danger" [class.armed]="armed() === item.num" (click)="del(item.num)"><app-icon name="trash" [size]="16" /> {{ armed() === item.num ? '¿Seguro? Toca otra vez' : 'Borrar' }}</button>
             </div>
           </article>
         } @empty {
@@ -104,7 +104,9 @@ type Sort = 'recientes' | 'antiguas' | 'mayor' | 'menor';
     .list { display: grid; gap: 12px; }
     .esp { color: var(--ok); font-weight: 700; }
     .iconbtn.deal { border-color: #f6c59a; background: var(--soft); color: var(--fire-dark); }
-    .qc { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 12px; }
+    .qc { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 12px; min-width: 0; }
+    .acts > * { max-width: 100%; white-space: normal; text-align: left; }
+    @media (max-width: 400px) { .qc { padding: 12px; } .acts { gap: 6px; } }
     .top { display: flex; justify-content: space-between; gap: 16px; }
     .who { display: grid; gap: 1px; min-width: 0; }
     .who b { font-size: 18px; }
@@ -190,7 +192,7 @@ export class QuotesPage implements OnInit {
   del(num: string) {
     if (this.armed() !== num) {
       this.armed.set(num);
-      setTimeout(() => this.armed() === num && this.armed.set(''), 3500);
+      setTimeout(() => this.armed() === num && this.armed.set(''), 5000);
       return;
     }
     this.armed.set('');

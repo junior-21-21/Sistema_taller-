@@ -142,7 +142,8 @@
 .lh > b { flex: 1; }
 .fpw { position: relative; display: inline-grid; }
 .fp.cli { border-style: dashed; }
-.fx { position: absolute; top: -7px; right: -7px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); color: var(--danger, #c0392b);
+.fx { position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); color: var(--danger, #c0392b);
   font: 700 13px/1 var(--f-body); cursor: pointer; padding: 0; display: grid; place-items: center; }
 .fp.up { color: var(--fire); font: 600 10px var(--f-body); gap: 2px; align-content: center; text-align: center; border-style: dashed; width: 64px; }
 .fp.up.busy { opacity: .6; pointer-events: none; }
+.fx.armed { background: #b91c1c; color: #fff; border-color: #b91c1c; }
