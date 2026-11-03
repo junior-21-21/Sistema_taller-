@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Para Android 7 (sin íconos adaptables): fondo oscuro redondeado + el círculo RR. -->
+<!-- Para Android 7 (sin íconos adaptables): fondo oscuro redondeado + el logo del taller. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="oval">
