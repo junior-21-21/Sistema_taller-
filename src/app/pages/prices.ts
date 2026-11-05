@@ -244,7 +244,8 @@ const MAX_FOTOS = 8;
     .tr .ti { display: grid; flex: 1 1 180px; min-width: 0; }
     .top { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
     .top p { margin: 4px 0 0; }
-    .btn.sm { min-height: 38px; padding: 7px 14px; }
+    .btn.sm { min-height: 40px; padding: 7px 14px; }
+    @media (pointer: coarse) { .btn.sm { min-height: 44px; } }
     .tools { display: grid; gap: 10px; }
     .sug { border: 1.5px dashed var(--line); border-radius: 12px; padding: 10px 14px; }
     .sug summary { cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 8px; }

@@ -23,8 +23,10 @@ const PAGE = 30;
 
       <section class="card">
         <div class="filters">
-          <label class="searchbox q"><app-icon name="search" />
-            <input type="search" placeholder="Buscar cliente, número o descripción" [ngModel]="q()" (ngModelChange)="q.set($event)" aria-label="Buscar">
+          <label class="f q">Buscar
+            <span class="searchbox"><app-icon name="search" />
+              <input type="search" placeholder="Cliente, número o descripción" [ngModel]="q()" (ngModelChange)="q.set($event)">
+            </span>
           </label>
           <label class="f">Desde<input type="date" [ngModel]="from()" (ngModelChange)="from.set($event)"></label>
           <label class="f">Hasta<input type="date" [ngModel]="to()" (ngModelChange)="to.set($event)"></label>

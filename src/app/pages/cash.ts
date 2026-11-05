@@ -161,6 +161,7 @@ interface Move { date: string; kind: 'in' | 'out'; desc: string; job: string; am
     }
   `,
   styles: `
+    .hd + p { margin: -6px 0 0; }
     .warn { background: #fff4e5; border: 1.5px solid #f6c59a; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
     .warn summary { cursor: pointer; }
     .warn ol { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 4px; }

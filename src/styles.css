@@ -10,14 +10,14 @@
   --steel-2: #2a3239;
   --steel-3: #3a444d;
   --fire: #ec6a12;
-  --fire-dark: #c4520a;
+  --fire-dark: #b04a0a;
   --amber: #f8a01c;
   --soft: #fff2e5;
-  --ok: #1f8a4c;
+  --ok: #17783f;
   --ok-soft: #e3f4ea;
   --warn: #b45309;
   --warn-soft: #fdf1df;
-  --wa: #1f9d55;
+  --wa: #15803d;
   --molten: linear-gradient(180deg, #f8862a 0%, #e15d0b 100%);
   --bead: linear-gradient(90deg, #c4520a, #ec6a12 35%, #f8a01c 70%, #ffd27a);
   --hazard: repeating-linear-gradient(-45deg, #f8a01c 0 10px, #1a1f24 10px 20px);
@@ -121,7 +121,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--f
 .filters input, .filters select { min-width: 0; width: 100%; }
 /* Nada en la página puede ser más ancho que la pantalla del celular. */
 .page > * { min-width: 0; }
-.searchbox { position: relative; }
+.searchbox { position: relative; display: block; }
 .searchbox app-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
 .searchbox input { padding-left: 40px; }
 .count { font-size: 14px; color: var(--muted); }
@@ -156,7 +156,12 @@ button, a, summary { -webkit-tap-highlight-color: rgba(236, 106, 18, .18); }
   /* Todo lo que se toca mide al menos 44 px, como pide Apple y Google. */
   .btn, .iconbtn, .chip, summary, select { min-height: 44px; }
   .iconbtn, .chip { padding-top: 9px; padding-bottom: 9px; }
-  .btn.sm { min-height: 40px; }
+  .btn.sm { min-height: 44px; }
+  .iconbtn { min-width: 44px; justify-content: center; }
+  /* Si la letra de un campo es menor a 16 px, el celular hace zoom al tocarlo. */
+  select, input, textarea { font-size: max(16px, 1em); }
+  /* Enlaces sueltos como "Ver todo": más área para el dedo. */
+  .row > a:not(.btn):not(.iconbtn) { display: inline-flex; align-items: center; min-height: 44px; padding: 0 6px; margin: 0 -6px; }
   input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; }
   /* En el celular el "pasar el mouse" se queda pegado: se apaga. */
   .iconbtn:not(.wa):not(.armed):not(.deal):hover { border-color: var(--line); color: var(--ink); }

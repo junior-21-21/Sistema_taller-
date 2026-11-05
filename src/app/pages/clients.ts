@@ -28,7 +28,7 @@ const PAGE = 30;
             <button type="button" class="cl" [class.on]="sel()?.key === c.key" (click)="sel.set(c)">
               <span class="av" aria-hidden="true">{{ initials(c) }}</span>
               <span class="who"><b>{{ c.client.name || 'Sin nombre' }}</b><span class="muted small">{{ c.client.doc || 'Sin DNI' }} · {{ c.client.tel || 'sin celular' }}</span></span>
-              <span class="r"><b class="money">{{ fmt(c.bought) }}</b><span class="muted small">{{ c.quotes.length }} cot. · {{ c.sales.length }} ventas</span></span>
+              <span class="r"><b class="money">{{ fmt(c.bought) }}</b><span class="muted small">{{ c.quotes.length }} cot. · {{ c.sales.length }} {{ c.sales.length === 1 ? 'venta' : 'ventas' }}</span></span>
             </button>
           } @empty {
             <div class="empty">@if (store.clients().length) { Nadie coincide con esa búsqueda. } @else { Aquí aparecerán tus clientes cuando hagas cotizaciones o ventas. }</div>

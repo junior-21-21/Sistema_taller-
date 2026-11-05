@@ -26,8 +26,10 @@ const PAGE = 30;
 
       <section class="card">
         <div class="filters">
-          <label class="searchbox q"><app-icon name="search" />
-            <input type="search" placeholder="Ej: Rosa, 45892104, portón, COT-2026-0003" [ngModel]="q()" (ngModelChange)="q.set($event)" aria-label="Buscar">
+          <label class="f q">Buscar
+            <span class="searchbox"><app-icon name="search" />
+              <input type="search" placeholder="Ej: Rosa, 45892104, portón, COT-2026-0003" [ngModel]="q()" (ngModelChange)="q.set($event)">
+            </span>
           </label>
           <label class="f">Desde<input type="date" [ngModel]="from()" (ngModelChange)="from.set($event)"></label>
           <label class="f">Hasta<input type="date" [ngModel]="to()" (ngModelChange)="to.set($event)"></label>
@@ -120,6 +122,7 @@ const PAGE = 30;
     .amt { display: grid; justify-items: end; gap: 4px; align-content: start; }
     .amt > b { font-size: 20px; }
     .st { width: auto; padding: 6px 10px; font-weight: 700; font-size: 14px; }
+    @media (pointer: coarse) { .st { font-size: 16px; } }
     .st.Aceptada { color: var(--ok); border-color: var(--ok); }
     .st.Pendiente { color: var(--warn); border-color: #f0c48a; }
     .st.Rechazada { color: var(--muted); }
