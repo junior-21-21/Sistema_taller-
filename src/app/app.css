@@ -1,4 +1,4 @@
-.top { background-color: var(--steel); background-image: var(--plate), linear-gradient(180deg, #262d33, #161a1e); color: #fff; position: sticky; top: 0; z-index: 30;
+.top { background-color: var(--steel); background-image: var(--plate), linear-gradient(180deg, rgba(27, 20, 16, .96), rgba(11, 8, 6, .96)); color: #fff; position: sticky; top: 0; z-index: 30;
   box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
 .top::after { content: ''; display: block; height: 5px; background: var(--hazard); }
 /* En la APK (pantalla completa en Android nuevos) deja espacio para la barra de estado del celular. */
@@ -9,9 +9,9 @@
 
 /* Menú de la computadora: ícono + nombre, el activo resaltado en naranja. */
 .desk { display: flex; gap: 4px; min-width: 0; }
-.desk a { display: inline-flex; align-items: center; gap: 7px; color: #c9d1d8; text-decoration: none; font-weight: 600; font-size: 14.5px;
+.desk a { display: inline-flex; align-items: center; gap: 7px; color: #d8cbbd; text-decoration: none; font-weight: 600; font-size: 14.5px;
   padding: 8px 11px; border-radius: 10px; border: 1px solid transparent; white-space: nowrap; transition: background .15s, color .15s; }
-.desk a app-icon { color: #8d99a4; transition: color .15s; }
+.desk a app-icon { color: #b8a999; transition: color .15s; }
 .desk a:hover { color: #fff; background: rgba(255, 255, 255, .07); border-color: rgba(255, 255, 255, .08); }
 .desk a:hover app-icon { color: var(--amber); }
 .desk a.on { color: #fff; background: var(--molten); border-color: #c4520a; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 2px 0 #8f3b08; }
@@ -19,9 +19,9 @@
 .desk a:focus-visible, .menu-btn:focus-visible, .brand:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 
 .xl { margin-left: auto; display: flex; align-items: center; gap: 10px; flex: none; }
-.state { display: inline-flex; align-items: center; gap: 7px; font: 600 12.5px var(--f-body); color: #c9d1d8; white-space: nowrap;
+.state { display: inline-flex; align-items: center; gap: 7px; font: 600 12.5px var(--f-body); color: #d8cbbd; white-space: nowrap;
   background: rgba(0, 0, 0, .28); border: 1px solid rgba(255, 255, 255, .1); border-radius: 999px; padding: 5px 11px 5px 9px; }
-.dot { width: 9px; height: 9px; border-radius: 50%; background: #7d8790; flex: none; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: #8a7a6a; flex: none; }
 .state.ok .dot { background: #4ade80; box-shadow: 0 0 0 3px rgba(74, 222, 128, .18); }
 .state.wait .dot { background: #93c5fd; animation: pulse 1.2s ease-in-out infinite; }
 .state.warn { color: #fde68a; border-color: rgba(251, 191, 36, .45); }
@@ -43,7 +43,7 @@
 }
 
 /* Menú desplegable del celular. */
-.mback { position: fixed; inset: 0; background: rgba(10, 13, 16, .5); z-index: 40; animation: fade .15s ease-out; }
+.mback { position: fixed; inset: 0; background: rgba(0, 0, 0, .6); z-index: 40; animation: fade .15s ease-out; }
 .mmenu { position: fixed; top: 0; right: 0; bottom: 0; width: min(340px, 88vw); z-index: 41; background: var(--panel); overflow-y: auto;
   padding: 14px 12px calc(16px + env(safe-area-inset-bottom, 0px)); display: grid; align-content: start; gap: 4px;
   box-shadow: -10px 0 30px rgba(0, 0, 0, .3); border-left: 5px solid var(--fire); animation: slide .18s ease-out; }
@@ -91,5 +91,5 @@
 
 /* Aviso de APK nueva (solo en la app de Android). */
 .upd { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px 12px; padding: 8px 16px;
-  background: #fff7ed; border-bottom: 1px solid #fed7aa; font-size: 14px; color: var(--ink); text-align: center; }
+  background: var(--soft); border-bottom: 1px solid var(--soft-line); font-size: 14px; color: var(--ink); text-align: center; }
 .upd .btn { min-height: 36px; padding: 6px 12px; }

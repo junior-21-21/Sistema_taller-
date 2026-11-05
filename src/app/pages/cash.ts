@@ -162,7 +162,7 @@ interface Move { date: string; kind: 'in' | 'out'; desc: string; job: string; am
   `,
   styles: `
     .hd + p { margin: -6px 0 0; }
-    .warn { background: #fff4e5; border: 1.5px solid #f6c59a; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
+    .warn { background: var(--soft); border: 1.5px solid var(--soft-line); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; }
     .warn summary { cursor: pointer; }
     .warn ol { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 4px; }
     .per { margin-bottom: 14px; }
@@ -190,7 +190,7 @@ interface Move { date: string; kind: 'in' | 'out'; desc: string; job: string; am
     .out { color: var(--bad); }
     @media (max-width: 760px) { .nums { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; } .nums span { text-align: left; } }
     .jb { padding: 4px 14px 14px; background: var(--bg); display: grid; gap: 8px; }
-    .bar2 { height: 8px; background: #dfe4e8; border-radius: 99px; overflow: hidden; margin-top: 8px; }
+    .bar2 { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin-top: 8px; }
     .bar2 .sp { display: block; height: 100%; background: var(--fire); max-width: 100%; }
     .jb p { margin: 0; }
     .acts { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -198,13 +198,13 @@ interface Move { date: string; kind: 'in' | 'out'; desc: string; job: string; am
     .mv li { display: flex; align-items: center; gap: 10px; background: var(--panel); border-radius: 10px; padding: 8px 10px; }
     .mv.all li { border: 1px solid var(--line); }
     .mv .sg { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; flex: none; }
-    .mv li.in .sg { background: #e3f4e8; color: var(--ok); }
+    .mv li.in .sg { background: var(--ok-soft); color: var(--ok); }
     .mv li.out .sg { background: var(--bad-soft); color: var(--bad); }
     .mv li.out > b { color: var(--bad); }
     .mv li.in > b { color: var(--ok); }
     .mv .d { flex: 1; display: grid; min-width: 0; }
     .mv .d b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .back { position: fixed; inset: 0; background: rgba(15, 18, 22, .55); z-index: 70; }
+    .back { position: fixed; inset: 0; background: rgba(0, 0, 0, .65); z-index: 70; }
     .modal { position: fixed; z-index: 71; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(540px, calc(100% - 24px));
       max-height: calc(100dvh - 24px); display: grid; grid-template-rows: auto 1fr auto; background: var(--panel); border-radius: 16px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.4); }
     .mh { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--steel); background-image: var(--plate); color: #fff; border-bottom: 4px solid transparent; border-image: var(--hazard) 1; }

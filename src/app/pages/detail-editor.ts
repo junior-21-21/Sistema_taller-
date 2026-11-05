@@ -162,7 +162,7 @@ import { Icon } from './icon';
   styles: `
     .de { display: grid; gap: 16px; }
     section { display: grid; gap: 8px; }
-    h4 { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--steel-3); }
+    h4 { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
     h4 app-icon { color: var(--fire); }
     .f { display: grid; gap: 4px; font-size: 12.5px; font-weight: 600; color: var(--muted); min-width: 0; }
     .mat { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, .8fr) auto; gap: 8px; align-items: end;
@@ -177,7 +177,7 @@ import { Icon } from './icon';
     section > p { margin: 0; }
     .lbl { font-size: 12.5px; font-weight: 600; color: var(--muted); margin-top: 2px; }
     section > input { padding: 8px 10px; font-size: 15px; }
-    .tpl { background: var(--soft); border: 1.5px dashed #f6c59a; border-radius: 12px; padding: 10px 12px; }
+    .tpl { background: var(--soft); border: 1.5px dashed var(--soft-line); border-radius: 12px; padding: 10px 12px; }
     .pv { background: var(--bg); border-radius: 12px; padding: 10px 12px; }
     .pv ul { margin: 0; padding-left: 18px; display: grid; gap: 2px; font-size: 14px; }
     .tg { display: flex; gap: 18px; flex-wrap: wrap; }

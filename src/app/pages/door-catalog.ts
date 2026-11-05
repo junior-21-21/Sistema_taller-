@@ -76,7 +76,7 @@ import { fmt, norm } from '../core/calc';
     .pr b { color: var(--fire-dark); font-size: 16px; }
     .empty { grid-column: 1 / -1; text-align: center; }
     .foot { margin: 0; }
-    .back { position: fixed; inset: 0; background: rgba(15, 18, 22, .6); z-index: 80; backdrop-filter: blur(2px); }
+    .back { position: fixed; inset: 0; background: rgba(0, 0, 0, .7); z-index: 80; backdrop-filter: blur(2px); }
     .modal { position: fixed; z-index: 81; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(820px, calc(100% - 24px)); max-height: calc(100dvh - 24px);
       overflow: auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); background: var(--panel); border-radius: 16px; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
     .big { background: #1b2126; display: grid; place-items: center; }

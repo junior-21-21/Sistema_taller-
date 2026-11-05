@@ -151,14 +151,16 @@ import { SheetService } from '../core/sheet.service';
   `,
   styles: `
     .num { font-size: 13px; color: var(--fire-dark); }
-    .err { background: var(--warn-soft); color: var(--warn); border: 1px solid #f0c48a; border-radius: 10px; padding: 12px 14px; font-weight: 600; }
+    .err { background: var(--warn-soft); color: var(--warn); border: 1px solid var(--soft-line); border-radius: 10px; padding: 12px 14px; font-weight: 600; }
     .job { margin-bottom: 20px; display: grid; gap: 12px; }
     .job h2 { margin: 0; }
-    .jt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .jt { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
     .jt div { display: grid; background: var(--bg); border-radius: 10px; padding: 10px 12px; }
     .jt span { font-size: 12.5px; color: var(--muted); }
     .jt b { font-size: 18px; }
     .jt .ok { color: var(--ok); }
+    .jt div { min-width: 0; }
+    @media (max-width: 480px) { .jt { gap: 6px; } .jt div { padding: 8px 8px; } .jt b { font-size: 13.5px; } }
     .part { max-width: 260px; }
     .two { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: start; }
     .col { display: grid; gap: 20px; min-width: 0; }

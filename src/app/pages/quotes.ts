@@ -110,7 +110,7 @@ const PAGE = 30;
   styles: `
     .list { display: grid; gap: 12px; }
     .esp { color: var(--ok); font-weight: 700; }
-    .iconbtn.deal { border-color: #f6c59a; background: var(--soft); color: var(--fire-dark); }
+    .iconbtn.deal { border-color: var(--soft-line); background: var(--soft); color: var(--fire-dark); }
     .qc { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 12px; min-width: 0; }
     .acts > * { max-width: 100%; white-space: normal; text-align: left; }
     @media (max-width: 400px) { .qc { padding: 12px; } .acts { gap: 6px; } }
@@ -124,7 +124,7 @@ const PAGE = 30;
     .st { width: auto; padding: 6px 10px; font-weight: 700; font-size: 14px; }
     @media (pointer: coarse) { .st { font-size: 16px; } }
     .st.Aceptada { color: var(--ok); border-color: var(--ok); }
-    .st.Pendiente { color: var(--warn); border-color: #f0c48a; }
+    .st.Pendiente { color: var(--warn); border-color: var(--soft-line); }
     .st.Rechazada { color: var(--muted); }
     .acts { display: flex; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 12px; }
     @media (max-width: 560px) { .top { flex-direction: column; } .amt { justify-items: start; } }

@@ -162,19 +162,19 @@ import { Sparks } from './sparks';
     </div>
   `,
   styles: `
-    .hero { position: relative; overflow: hidden; border-bottom: 1px solid #0d1013; }
+    .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
     .hero .in { position: relative; max-width: 1180px; margin: 0 auto; padding: 30px 16px 34px; display: flex; align-items: center; gap: 24px; justify-content: space-between; flex-wrap: wrap; }
     .hi { display: grid; gap: 6px; min-width: 0; flex: 1 1 320px; }
     .eyebrow { display: inline-flex; align-items: center; gap: 6px; font: 700 13px var(--f-body); letter-spacing: .14em; text-transform: uppercase; color: var(--amber); }
-    .hero h1 { font-size: clamp(32px, 6vw, 52px); color: #fff; margin: 0; }
+    .hero h1 { font-size: clamp(32px, 6vw, 52px); color: #fff; margin: 0; background: linear-gradient(180deg, #ffd27a 0%, #ff8a1e 55%, #e04400 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 10px rgba(255, 106, 0, .25)); }
     .hero h1::after { width: 90px; }
-    .sum { margin: 4px 0 0; color: #d5dce2; font-size: 17px; max-width: 560px; }
+    .sum { margin: 4px 0 0; color: #e6dacd; font-size: 17px; max-width: 560px; }
     .month { flex: 0 1 320px; display: grid; gap: 6px; text-decoration: none; color: #fff; padding: 16px 18px; border-radius: 16px;
       background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .14); backdrop-filter: blur(4px); }
     .month:hover { border-color: var(--amber); }
-    .ml { font: 700 12px var(--f-body); letter-spacing: .1em; text-transform: uppercase; color: #aeb8c1; }
+    .ml { font: 700 12px var(--f-body); letter-spacing: .1em; text-transform: uppercase; color: #b8a999; }
     .month b { font-size: 32px; color: #4ade80; line-height: 1.1; }
-    .month small { color: #c9d1d8; }
+    .month small { color: #d8cbbd; }
     .mbar { height: 8px; border-radius: 8px; background: rgba(255, 255, 255, .12); overflow: hidden; }
     .mbar span { display: block; height: 100%; background: linear-gradient(90deg, #22c55e, #4ade80); border-radius: 8px; }
     @media (max-width: 700px) { .month { flex-basis: 100%; } .hero .in { padding: 24px 16px 26px; gap: 16px; } .sum { font-size: 15.5px; } }
@@ -186,8 +186,8 @@ import { Sparks } from './sparks';
     .act:active { transform: translateY(0); }
     .ai { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; flex: none; background: var(--soft); color: var(--fire-dark); }
     .ai.g { background: var(--ok-soft); color: var(--ok); }
-    .ai.b { background: #e6effa; color: #1d5fa8; }
-    .ai.s { background: #eceff2; color: var(--steel-2); }
+    .ai.b { background: rgba(127, 216, 255, .12); color: var(--cyan); }
+    .ai.s { background: var(--tile); color: var(--ink); }
     .at { display: grid; min-width: 0; }
     .at b { font-size: 16.5px; line-height: 1.25; }
     .at small { color: var(--muted); font-size: 13px; line-height: 1.3; }
@@ -232,7 +232,7 @@ import { Sparks } from './sparks';
       text-decoration: none; color: var(--ink); min-width: 0; box-shadow: var(--shadow); overflow: hidden; }
     .st::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--steel-3); }
     .st:hover { border-color: var(--fire); }
-    .si { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: #eceff2; color: var(--steel-2); margin-bottom: 6px; }
+    .si { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--tile); color: var(--ink); margin-bottom: 6px; }
     .st.ac::before { background: var(--fire); } .st.ac .si { background: var(--soft); color: var(--fire-dark); }
     .st.in::before { background: var(--ok); } .st.in .si { background: var(--ok-soft); color: var(--ok); } .st.in b { color: var(--ok); }
     .st.due::before { background: var(--amber); } .st.due .si { background: var(--warn-soft); color: var(--warn); } .st.due b { color: var(--warn); }
@@ -250,7 +250,7 @@ import { Sparks } from './sparks';
     .lm:hover b { color: var(--fire-dark); }
     .av { width: 42px; height: 42px; border-radius: 50%; flex: none; display: grid; place-items: center; font: 700 15px var(--f-body);
       background: var(--warn-soft); color: var(--warn); }
-    .av.w { background: #eceff2; color: var(--steel-2); }
+    .av.w { background: var(--tile); color: var(--ink); }
     .lt { display: grid; min-width: 0; flex: 1; gap: 1px; }
     .lt b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .lt small { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -265,7 +265,7 @@ import { Sparks } from './sparks';
     .feed li + li { border-top: 1px solid var(--line); }
     .feed a { display: flex; align-items: center; gap: 12px; padding: 10px 0; text-decoration: none; color: var(--ink); min-width: 0; }
     .feed a:hover b { color: var(--fire-dark); }
-    .fi { width: 34px; height: 34px; border-radius: 10px; flex: none; display: grid; place-items: center; background: #eceff2; color: var(--steel-2); }
+    .fi { width: 34px; height: 34px; border-radius: 10px; flex: none; display: grid; place-items: center; background: var(--tile); color: var(--ink); }
     .fi.q { background: var(--soft); color: var(--fire-dark); }
     .fi.s { background: var(--ok-soft); color: var(--ok); }
     .fr { display: grid; justify-items: end; flex: none; }
